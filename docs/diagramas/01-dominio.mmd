@@ -1,0 +1,249 @@
+classDiagram
+    direction TB
+
+    %% ===================== ABSTRAÇÕES =====================
+    class Pessoa {
+        <<abstract>>
+        #Long id
+        #String nome
+        #String telefone
+        #String email
+        #boolean ativo
+        #LocalDateTime criadoEm
+        +getIdentificacaoPrincipal() String
+        +getTipo() String
+        +validar() void
+    }
+
+    class Atendimento {
+        <<abstract>>
+        #Long id
+        #Paciente paciente
+        #ProfissionalSaude profissional
+        #String observacoes
+        #LocalDateTime criadoEm
+        +getInicio() LocalDateTime
+        +getFim() LocalDateTime
+        +getResumo() String
+        +conflitaCom(Atendimento outro) boolean
+        +estaAtivo() boolean
+    }
+
+    %% ===================== ENTIDADES =====================
+    class Paciente {
+        -String cpf
+        -LocalDate dataNascimento
+        -Endereco endereco
+        -List~Consulta~ consultas
+        -List~Internacao~ internacoes
+        +getIdade() int
+        +estaInternado() boolean
+        +adicionarConsulta(Consulta c) void
+        +adicionarInternacao(Internacao i) void
+        +getIdentificacaoPrincipal() String
+    }
+
+    class ProfissionalSaude {
+        -String registroProfissional
+        -Especialidade especialidade
+        -List~Disponibilidade~ disponibilidades
+        -List~Atendimento~ atendimentos
+        +estaDisponivelEm(LocalDateTime ini, LocalDateTime fim) boolean
+        +possuiConflito(Atendimento novo) boolean
+        +getAgendaDoDia(LocalDate data) List~Atendimento~
+        +getIdentificacaoPrincipal() String
+    }
+
+    class Endereco {
+        <<value object>>
+        -String logradouro
+        -String numero
+        -String complemento
+        -String bairro
+        -String cidade
+        -UF uf
+        -String cep
+        +getEnderecoFormatado() String
+    }
+
+    class Consulta {
+        -LocalDate data
+        -LocalTime horario
+        -int duracaoMinutos
+        -String motivo
+        -String observacoesMedicas
+        -StatusConsulta status
+        +agendar() void
+        +reagendar(LocalDate d, LocalTime h) void
+        +realizar(String observacoesMedicas) void
+        +cancelar(String motivo) void
+        +getInicio() LocalDateTime
+        +getFim() LocalDateTime
+    }
+
+    class Internacao {
+        -Quarto quarto
+        -LocalDateTime dataEntrada
+        -LocalDate dataPrevistaAlta
+        -LocalDateTime dataEfetivaAlta
+        -String motivo
+        -StatusInternacao status
+        +registrarAlta(LocalDateTime data, String obs) void
+        +transferirPara(Quarto novo) void
+        +getDiasInternado() long
+        +estaAtiva() boolean
+        +getInicio() LocalDateTime
+        +getFim() LocalDateTime
+    }
+
+    class Quarto {
+        -Long id
+        -String numero
+        -int andar
+        -int capacidadeMaxima
+        -TipoQuarto tipo
+        -SituacaoQuarto situacao
+        -List~Internacao~ internacoesAtivas
+        +getOcupacaoAtual() int
+        +getVagasDisponiveis() int
+        +estaDisponivel() boolean
+        +ocupar(Internacao i) void
+        +liberar(Internacao i) void
+        +atualizarSituacao() void
+    }
+
+    class Disponibilidade {
+        -Long id
+        -ProfissionalSaude profissional
+        -DiaSemana diaSemana
+        -LocalTime horaInicio
+        -LocalTime horaFim
+        -boolean ativo
+        +cobre(LocalDateTime momento) boolean
+        +sobrepoe(Disponibilidade outra) boolean
+    }
+
+    class RegistroClinico {
+        -Long id
+        -Atendimento atendimento
+        -ProfissionalSaude autor
+        -TipoRegistro tipo
+        -String descricao
+        -LocalDateTime dataRegistro
+    }
+
+    class HistoricoMedico {
+        <<aggregate>>
+        -Paciente paciente
+        -List~Consulta~ consultas
+        -List~Internacao~ internacoes
+        -List~RegistroClinico~ registros
+        +getTotalConsultas() int
+        +getTotalInternacoes() int
+        +getUltimoAtendimento() Atendimento
+        +filtrarPorPeriodo(LocalDate ini, LocalDate fim) List~Atendimento~
+    }
+
+    %% ===================== ENUMERAÇÕES =====================
+    class Especialidade {
+        <<enumeration>>
+        CLINICA_GERAL
+        CARDIOLOGIA
+        PEDIATRIA
+        ORTOPEDIA
+        GINECOLOGIA
+        NEUROLOGIA
+        ENFERMAGEM
+        FISIOTERAPIA
+    }
+
+    class StatusConsulta {
+        <<enumeration>>
+        AGENDADA
+        REALIZADA
+        CANCELADA
+        NAO_COMPARECEU
+    }
+
+    class StatusInternacao {
+        <<enumeration>>
+        ATIVA
+        ALTA_CONCEDIDA
+        TRANSFERIDA
+        CANCELADA
+    }
+
+    class SituacaoQuarto {
+        <<enumeration>>
+        DISPONIVEL
+        OCUPADO
+        MANUTENCAO
+        INTERDITADO
+    }
+
+    class TipoQuarto {
+        <<enumeration>>
+        ENFERMARIA
+        APARTAMENTO
+        UTI
+        ISOLAMENTO
+    }
+
+    class DiaSemana {
+        <<enumeration>>
+        SEGUNDA
+        TERCA
+        QUARTA
+        QUINTA
+        SEXTA
+        SABADO
+        DOMINGO
+    }
+
+    class TipoRegistro {
+        <<enumeration>>
+        ANAMNESE
+        DIAGNOSTICO
+        PRESCRICAO
+        EXAME
+        EVOLUCAO
+    }
+
+    class UF {
+        <<enumeration>>
+        MG
+        SP
+        RJ
+        ES
+    }
+
+    %% ===================== HERANÇA =====================
+    Pessoa <|-- Paciente
+    Pessoa <|-- ProfissionalSaude
+    Atendimento <|-- Consulta
+    Atendimento <|-- Internacao
+
+    %% ===================== ASSOCIAÇÕES =====================
+    Paciente "1" *-- "1" Endereco : possui
+    Paciente "1" o-- "0..*" Consulta : realiza
+    Paciente "1" o-- "0..*" Internacao : passa por
+    ProfissionalSaude "1" o-- "0..*" Consulta : atende
+    ProfissionalSaude "1" o-- "0..*" Internacao : e responsavel
+    ProfissionalSaude "1" *-- "0..*" Disponibilidade : define
+    Quarto "1" o-- "0..*" Internacao : aloja
+    Atendimento "1" *-- "0..*" RegistroClinico : gera
+    ProfissionalSaude "1" --> "0..*" RegistroClinico : registra
+    HistoricoMedico "1" --> "1" Paciente : consolida
+    HistoricoMedico "1" o-- "0..*" Consulta
+    HistoricoMedico "1" o-- "0..*" Internacao
+    HistoricoMedico "1" o-- "0..*" RegistroClinico
+
+    %% ===================== DEPENDÊNCIAS DE ENUM =====================
+    ProfissionalSaude ..> Especialidade
+    Consulta ..> StatusConsulta
+    Internacao ..> StatusInternacao
+    Quarto ..> SituacaoQuarto
+    Quarto ..> TipoQuarto
+    Disponibilidade ..> DiaSemana
+    RegistroClinico ..> TipoRegistro
+    Endereco ..> UF

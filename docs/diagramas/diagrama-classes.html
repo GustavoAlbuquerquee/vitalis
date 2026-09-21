@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sistema Hospitalar — Diagrama de Classes</title>
+<style>
+  :root { --ink:#1f2328; --muted:#5a6169; --line:#d8dde3; --bg:#ffffff; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 40px 64px; background:var(--bg); color:var(--ink);
+         font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+  header { border-bottom:1px solid var(--line); padding-bottom:16px; margin-bottom:8px; }
+  h1 { font-size:22px; font-weight:600; margin:0 0 4px; }
+  header p { margin:0; color:var(--muted); font-size:14px; }
+  section { margin-top:40px; }
+  h2 { font-size:17px; font-weight:600; margin:0 0 4px; }
+  .legenda { color:var(--muted); font-size:13px; margin:0 0 16px; }
+  .quadro { border:1px solid var(--line); border-radius:8px; padding:16px; overflow:auto; background:#fff; }
+  .quadro svg { display:block; margin:0 auto; max-width:none; }
+  .barra { display:flex; align-items:center; gap:6px; margin:0 0 10px; }
+  .barra button { font:inherit; font-size:13px; color:var(--ink); background:#fff; border:1px solid var(--line);
+                  border-radius:6px; padding:4px 10px; cursor:pointer; }
+  .barra button:hover { background:#f4f6f8; }
+  .barra .zoom { font-size:13px; color:var(--muted); margin-left:4px; }
+  @media print { .barra { display:none; } }
+  footer { margin-top:48px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); font-size:13px; }
+  @media print { body { padding:0; } .quadro { border:0; page-break-inside:avoid; } section { page-break-before:always; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sistema de Informação Hospitalar — Diagrama de Classes</h1>
+  <p>PUC Minas · Engenharia de Software · Programação Modular — Trabalho Prático</p>
+</header>
+
+<section>
+  <h2>1. Modelo de domínio</h2>
+  <p class="legenda">Triângulo vazado = herança · losango cheio = composição · losango vazado = agregação · linha tracejada = dependência</p>
+  <div class="quadro" id="d1"></div>
+</section>
+
+<section>
+  <h2>2. Arquitetura em camadas</h2>
+  <p class="legenda">Controller → Service → Repository → Model, com DTOs, mappers e validadores de regra de negócio</p>
+  <div class="quadro" id="d2"></div>
+</section>
+
+<section>
+  <h2>3. Hierarquia de exceções</h2>
+  <p class="legenda">Todas as exceções de negócio derivam de HospitalException e são convertidas em ErroResponse pelo GlobalExceptionHandler</p>
+  <div class="quadro" id="d3"></div>
+</section>
+
+<footer>Gerado a partir de docs/diagrama-de-classes.md · use Ctrl+P → Salvar como PDF para anexar à documentação</footer>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+const dominio = `classDiagram
+direction TB
+
+class Pessoa {
+  <<abstract>>
+  #Long id
+  #String nome
+  #String telefone
+  #String email
+  #boolean ativo
+  +getIdentificacaoPrincipal() String
+  +getTipo() String
+}
+
+class Paciente {
+  -String cpf
+  -LocalDate dataNascimento
+  -Endereco endereco
+  -List~Consulta~ consultas
+  -List~Internacao~ internacoes
+  +getIdade() int
+  +estaInternado() boolean
+  +adicionarConsulta(Consulta c) void
+  +getIdentificacaoPrincipal() String
+}
+
+class ProfissionalSaude {
+  -String registroProfissional
+  -Especialidade especialidade
+  -List~Disponibilidade~ disponibilidades
+  +estaDisponivelEm(LocalDateTime i, LocalDateTime f) boolean
+  +possuiConflito(Atendimento novo) boolean
+  +getAgendaDoDia(LocalDate data) List~Atendimento~
+  +getIdentificacaoPrincipal() String
+}
+
+class Endereco {
+  <<value object>>
+  -String logradouro
+  -String numero
+  -String complemento
+  -String bairro
+  -String cidade
+  -UF uf
+  -String cep
+  +getEnderecoFormatado() String
+}
+
+class Atendimento {
+  <<abstract>>
+  #Long id
+  #Paciente paciente
+  #ProfissionalSaude profissional
+  #String observacoes
+  #LocalDateTime criadoEm
+  +getInicio() LocalDateTime
+  +getFim() LocalDateTime
+  +conflitaCom(Atendimento outro) boolean
+  +estaAtivo() boolean
+}
+
+class Consulta {
+  -LocalDate data
+  -LocalTime horario
+  -int duracaoMinutos
+  -String motivo
+  -String observacoesMedicas
+  -StatusConsulta status
+  +agendar() void
+  +reagendar(LocalDate d, LocalTime h) void
+  +realizar(String obs) void
+  +cancelar(String motivo) void
+}
+
+class Internacao {
+  -Quarto quarto
+  -LocalDateTime dataEntrada
+  -LocalDate dataPrevistaAlta
+  -LocalDateTime dataEfetivaAlta
+  -String motivo
+  -StatusInternacao status
+  +registrarAlta(LocalDateTime d, String obs) void
+  +transferirPara(Quarto novo) void
+  +getDiasInternado() long
+  +estaAtiva() boolean
+}
+
+class Quarto {
+  -Long id
+  -String numero
+  -int andar
+  -int capacidadeMaxima
+  -TipoQuarto tipo
+  -SituacaoQuarto situacao
+  +getOcupacaoAtual() int
+  +getVagasDisponiveis() int
+  +estaDisponivel() boolean
+  +ocupar(Internacao i) void
+  +liberar(Internacao i) void
+  +atualizarSituacao() void
+}
+
+class Disponibilidade {
+  -Long id
+  -DiaSemana diaSemana
+  -LocalTime horaInicio
+  -LocalTime horaFim
+  -boolean ativo
+  +cobre(LocalDateTime momento) boolean
+  +sobrepoe(Disponibilidade outra) boolean
+}
+
+class RegistroClinico {
+  -Long id
+  -Atendimento atendimento
+  -ProfissionalSaude autor
+  -TipoRegistro tipo
+  -String descricao
+  -LocalDateTime dataRegistro
+}
+
+class HistoricoMedico {
+  <<aggregate>>
+  -Paciente paciente
+  -List~Consulta~ consultas
+  -List~Internacao~ internacoes
+  -List~RegistroClinico~ registros
+  +getTotalConsultas() int
+  +getTotalInternacoes() int
+  +getUltimoAtendimento() Atendimento
+}
+
+class Especialidade {
+  <<enumeration>>
+  CLINICA_GERAL
+  CARDIOLOGIA
+  PEDIATRIA
+  ORTOPEDIA
+  GINECOLOGIA
+  NEUROLOGIA
+  ENFERMAGEM
+  FISIOTERAPIA
+}
+class StatusConsulta {
+  <<enumeration>>
+  AGENDADA
+  REALIZADA
+  CANCELADA
+  NAO_COMPARECEU
+}
+class StatusInternacao {
+  <<enumeration>>
+  ATIVA
+  ALTA_CONCEDIDA
+  TRANSFERIDA
+  CANCELADA
+}
+class SituacaoQuarto {
+  <<enumeration>>
+  DISPONIVEL
+  OCUPADO
+  MANUTENCAO
+  INTERDITADO
+}
+class TipoQuarto {
+  <<enumeration>>
+  ENFERMARIA
+  APARTAMENTO
+  UTI
+  ISOLAMENTO
+}
+class DiaSemana {
+  <<enumeration>>
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
+}
+class TipoRegistro {
+  <<enumeration>>
+  ANAMNESE
+  DIAGNOSTICO
+  PRESCRICAO
+  EXAME
+  EVOLUCAO
+}
+
+Pessoa <|-- Paciente
+Pessoa <|-- ProfissionalSaude
+Atendimento <|-- Consulta
+Atendimento <|-- Internacao
+
+Paciente "1" *-- "1" Endereco : possui
+Paciente "1" o-- "0..*" Consulta : realiza
+Paciente "1" o-- "0..*" Internacao : passa por
+ProfissionalSaude "1" o-- "0..*" Consulta : atende
+ProfissionalSaude "1" o-- "0..*" Internacao : responsavel
+ProfissionalSaude "1" *-- "0..*" Disponibilidade : define
+Quarto "1" o-- "0..*" Internacao : aloja
+Atendimento "1" *-- "0..*" RegistroClinico : gera
+ProfissionalSaude "1" --> "0..*" RegistroClinico : registra
+HistoricoMedico "1" --> "1" Paciente : consolida
+HistoricoMedico "1" o-- "0..*" Consulta
+HistoricoMedico "1" o-- "0..*" Internacao
+HistoricoMedico "1" o-- "0..*" RegistroClinico
+
+ProfissionalSaude ..> Especialidade
+Consulta ..> StatusConsulta
+Internacao ..> StatusInternacao
+Quarto ..> SituacaoQuarto
+Quarto ..> TipoQuarto
+Disponibilidade ..> DiaSemana
+RegistroClinico ..> TipoRegistro
+`;
+
+const camadas = `classDiagram
+direction LR
+
+class PacienteController {
+  <<RestController>>
+  -PacienteService service
+  +criar(PacienteRequest dto) ResponseEntity
+  +buscarPorId(Long id) ResponseEntity
+  +listar(Pageable p) ResponseEntity
+  +atualizar(Long id, PacienteRequest dto) ResponseEntity
+  +remover(Long id) ResponseEntity
+  +historico(Long id) ResponseEntity
+}
+class ConsultaController {
+  <<RestController>>
+  -ConsultaService service
+  +agendar(ConsultaRequest dto) ResponseEntity
+  +reagendar(Long id, ReagendamentoRequest dto) ResponseEntity
+  +realizar(Long id, ObservacaoRequest dto) ResponseEntity
+  +cancelar(Long id) ResponseEntity
+}
+class InternacaoController {
+  <<RestController>>
+  -InternacaoService service
+  +internar(InternacaoRequest dto) ResponseEntity
+  +darAlta(Long id, AltaRequest dto) ResponseEntity
+  +transferir(Long id, Long quartoId) ResponseEntity
+  +listarAtivas() ResponseEntity
+}
+class GlobalExceptionHandler {
+  <<RestControllerAdvice>>
+  +tratarNaoEncontrado(RecursoNaoEncontradoException e) ResponseEntity
+  +tratarRegraNegocio(RegraDeNegocioException e) ResponseEntity
+  +tratarValidacao(MethodArgumentNotValidException e) ResponseEntity
+}
+
+class CrudService~T, ID, REQ, RES~ {
+  <<interface>>
+  +criar(REQ dto) RES
+  +buscarPorId(ID id) RES
+  +listar(Pageable p) Page
+  +atualizar(ID id, REQ dto) RES
+  +remover(ID id) void
+}
+class PacienteService {
+  <<interface>>
+  +buscarPorCpf(String cpf) PacienteResponse
+  +obterHistorico(Long id) HistoricoResponse
+}
+class ConsultaService {
+  <<interface>>
+  +agendar(ConsultaRequest dto) ConsultaResponse
+  +realizar(Long id, String obs) ConsultaResponse
+  +cancelar(Long id) void
+}
+class InternacaoService {
+  <<interface>>
+  +internar(InternacaoRequest dto) InternacaoResponse
+  +darAlta(Long id, AltaRequest dto) InternacaoResponse
+  +transferir(Long id, Long quartoId) InternacaoResponse
+}
+class PacienteServiceImpl {
+  <<Service>>
+  -PacienteRepository repository
+  -PacienteMapper mapper
+  -validarCpfUnico(String cpf) void
+}
+class ConsultaServiceImpl {
+  <<Service>>
+  -ConsultaRepository repository
+  -AgendaValidator agendaValidator
+  -ConsultaMapper mapper
+}
+class InternacaoServiceImpl {
+  <<Service>>
+  -InternacaoRepository repository
+  -QuartoRepository quartoRepository
+  -OcupacaoValidator ocupacaoValidator
+}
+class AgendaValidator {
+  <<Component>>
+  +validarConflitoDeHorario(Long profId, LocalDateTime i, LocalDateTime f) void
+  +validarDentroDaDisponibilidade(ProfissionalSaude p, LocalDateTime i) void
+}
+class OcupacaoValidator {
+  <<Component>>
+  +validarCapacidade(Quarto q) void
+  +validarSituacao(Quarto q) void
+  +validarPacienteSemInternacaoAtiva(Paciente p) void
+}
+
+class JpaRepository~T, ID~ {
+  <<interface>>
+  +save(T entidade) T
+  +findById(ID id) Optional
+  +findAll(Pageable p) Page
+  +deleteById(ID id) void
+}
+class PacienteRepository {
+  <<interface>>
+  +findByCpf(String cpf) Optional
+  +existsByCpf(String cpf) boolean
+}
+class ConsultaRepository {
+  <<interface>>
+  +findByProfissionalIdAndData(Long id, LocalDate d) List
+  +existsConflitoHorario(Long profId, LocalDateTime i, LocalDateTime f) boolean
+  +findByPacienteIdOrderByDataDesc(Long id) List
+}
+class InternacaoRepository {
+  <<interface>>
+  +findByStatus(StatusInternacao s) List
+  +countByQuartoIdAndStatus(Long quartoId, StatusInternacao s) int
+}
+class QuartoRepository {
+  <<interface>>
+  +findBySituacao(SituacaoQuarto s) List
+}
+
+class PacienteRequest {
+  <<record>>
+  +String nome
+  +String cpf
+  +LocalDate dataNascimento
+  +String telefone
+  +String email
+  +EnderecoDTO endereco
+}
+class PacienteResponse {
+  <<record>>
+  +Long id
+  +String nome
+  +String cpf
+  +int idade
+  +boolean internado
+}
+class PacienteMapper {
+  <<interface>>
+  +toEntity(PacienteRequest dto) Paciente
+  +toResponse(Paciente e) PacienteResponse
+}
+
+PacienteController --> PacienteService : usa
+ConsultaController --> ConsultaService : usa
+InternacaoController --> InternacaoService : usa
+
+CrudService <|-- PacienteService
+CrudService <|-- ConsultaService
+CrudService <|-- InternacaoService
+
+PacienteService <|.. PacienteServiceImpl
+ConsultaService <|.. ConsultaServiceImpl
+InternacaoService <|.. InternacaoServiceImpl
+
+PacienteServiceImpl --> PacienteRepository
+PacienteServiceImpl --> PacienteMapper
+ConsultaServiceImpl --> ConsultaRepository
+ConsultaServiceImpl --> AgendaValidator
+InternacaoServiceImpl --> InternacaoRepository
+InternacaoServiceImpl --> QuartoRepository
+InternacaoServiceImpl --> OcupacaoValidator
+
+JpaRepository <|-- PacienteRepository
+JpaRepository <|-- ConsultaRepository
+JpaRepository <|-- InternacaoRepository
+JpaRepository <|-- QuartoRepository
+
+PacienteController ..> PacienteRequest
+PacienteController ..> PacienteResponse
+PacienteMapper ..> PacienteRequest
+PacienteMapper ..> PacienteResponse
+`;
+
+const excecoes = `classDiagram
+direction TB
+
+class RuntimeException {
+  <<java.lang>>
+}
+class HospitalException {
+  <<abstract>>
+  #String codigo
+  #HttpStatus status
+  +getCodigo() String
+  +getStatus() HttpStatus
+}
+class RecursoNaoEncontradoException {
+  +RecursoNaoEncontradoException(String recurso, Object id)
+}
+class RegraDeNegocioException {
+  <<abstract>>
+}
+class ConflitoDeHorarioException {
+  -Long profissionalId
+  -LocalDateTime horario
+}
+class ProfissionalIndisponivelException {
+  -Long profissionalId
+}
+class QuartoIndisponivelException {
+  -String numeroQuarto
+}
+class CapacidadeExcedidaException {
+  -String numeroQuarto
+  -int capacidadeMaxima
+}
+class PacienteJaInternadoException {
+  -String cpf
+}
+class AltaInvalidaException {
+  -Long internacaoId
+}
+class RegistroDuplicadoException {
+  -String campo
+  -String valor
+}
+class DadosInvalidosException {
+  -Map~String, String~ erros
+}
+class ErroResponse {
+  <<record>>
+  +LocalDateTime timestamp
+  +int status
+  +String codigo
+  +String mensagem
+  +String caminho
+  +List~String~ detalhes
+}
+
+RuntimeException <|-- HospitalException
+HospitalException <|-- RecursoNaoEncontradoException
+HospitalException <|-- RegraDeNegocioException
+HospitalException <|-- DadosInvalidosException
+RegraDeNegocioException <|-- ConflitoDeHorarioException
+RegraDeNegocioException <|-- ProfissionalIndisponivelException
+RegraDeNegocioException <|-- QuartoIndisponivelException
+RegraDeNegocioException <|-- CapacidadeExcedidaException
+RegraDeNegocioException <|-- PacienteJaInternadoException
+RegraDeNegocioException <|-- AltaInvalidaException
+RegraDeNegocioException <|-- RegistroDuplicadoException
+HospitalException ..> ErroResponse : convertida em
+`;
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'neutral',
+  securityLevel: 'loose',
+  class: { useMaxWidth: false },
+  themeVariables: { fontFamily: 'Segoe UI, Arial, sans-serif', fontSize: '14px' }
+});
+
+const alvos = [['d1', dominio, 'dominio'], ['d2', camadas, 'camadas'], ['d3', excecoes, 'excecoes']];
+
+function montarBarra(caixa, svg, nome) {
+  const vb = svg.getAttribute('viewBox').split(' ').map(Number);
+  const larguraNatural = vb[2], alturaNatural = vb[3];
+  let escala = 1;
+
+  const disponivel = () => Math.max(600, caixa.clientWidth || document.body.clientWidth || 1100) - 34;
+
+  const aplicar = () => {
+    escala = Math.min(3, Math.max(0.2, escala));
+    svg.setAttribute('width', Math.round(larguraNatural * escala));
+    svg.setAttribute('height', Math.round(alturaNatural * escala));
+    rotulo.textContent = Math.round(escala * 100) + '%';
+  };
+
+  const barra = document.createElement('div');
+  barra.className = 'barra';
+  const rotulo = document.createElement('span');
+  rotulo.className = 'zoom';
+
+  const botao = (texto, acao) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = texto;
+    b.onclick = acao;
+    barra.appendChild(b);
+    return b;
+  };
+
+  botao('−', () => { escala = Math.max(0.25, escala - 0.15); aplicar(); });
+  botao('+', () => { escala = Math.min(3, escala + 0.15); aplicar(); });
+  botao('ajustar à largura', () => { escala = disponivel() / larguraNatural; aplicar(); });
+  botao('100%', () => { escala = 1; aplicar(); });
+  botao('baixar .svg', () => {
+    const copia = svg.cloneNode(true);
+    copia.setAttribute('width', larguraNatural);
+    copia.setAttribute('height', alturaNatural);
+    const blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + copia.outerHTML], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'diagrama-' + nome + '.svg';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  barra.appendChild(rotulo);
+  caixa.parentNode.insertBefore(barra, caixa);
+
+  escala = Math.min(1, disponivel() / larguraNatural);
+  aplicar();
+}
+
+for (const [id, def, nome] of alvos) {
+  const caixa = document.getElementById(id);
+  try {
+    const { svg } = await mermaid.render(id + '-svg', def);
+    caixa.innerHTML = svg;
+    montarBarra(caixa, caixa.querySelector('svg'), nome);
+  } catch (e) {
+    caixa.textContent = 'Falha ao renderizar: ' + e.message;
+  }
+}
+</script>
+
+</body>
+</html>

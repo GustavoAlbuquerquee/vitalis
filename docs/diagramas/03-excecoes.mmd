@@ -1,0 +1,81 @@
+classDiagram
+    direction TB
+
+    class RuntimeException {
+        <<java.lang>>
+    }
+
+    class HospitalException {
+        <<abstract>>
+        #String codigo
+        #HttpStatus status
+        +getCodigo() String
+        +getStatus() HttpStatus
+    }
+
+    class RecursoNaoEncontradoException {
+        +RecursoNaoEncontradoException(String recurso, Object id)
+    }
+
+    class RegraDeNegocioException {
+        <<abstract>>
+    }
+
+    class ConflitoDeHorarioException {
+        -Long profissionalId
+        -LocalDateTime horario
+    }
+
+    class ProfissionalIndisponivelException {
+        -Long profissionalId
+    }
+
+    class QuartoIndisponivelException {
+        -String numeroQuarto
+    }
+
+    class CapacidadeExcedidaException {
+        -String numeroQuarto
+        -int capacidadeMaxima
+    }
+
+    class PacienteJaInternadoException {
+        -String cpf
+    }
+
+    class AltaInvalidaException {
+        -Long internacaoId
+    }
+
+    class RegistroDuplicadoException {
+        -String campo
+        -String valor
+    }
+
+    class DadosInvalidosException {
+        -Map~String, String~ erros
+    }
+
+    class ErroResponse {
+        <<record>>
+        +LocalDateTime timestamp
+        +int status
+        +String codigo
+        +String mensagem
+        +String caminho
+        +List~String~ detalhes
+    }
+
+    RuntimeException <|-- HospitalException
+    HospitalException <|-- RecursoNaoEncontradoException
+    HospitalException <|-- RegraDeNegocioException
+    HospitalException <|-- DadosInvalidosException
+    RegraDeNegocioException <|-- ConflitoDeHorarioException
+    RegraDeNegocioException <|-- ProfissionalIndisponivelException
+    RegraDeNegocioException <|-- QuartoIndisponivelException
+    RegraDeNegocioException <|-- CapacidadeExcedidaException
+    RegraDeNegocioException <|-- PacienteJaInternadoException
+    RegraDeNegocioException <|-- AltaInvalidaException
+    RegraDeNegocioException <|-- RegistroDuplicadoException
+
+    HospitalException ..> ErroResponse : convertida em

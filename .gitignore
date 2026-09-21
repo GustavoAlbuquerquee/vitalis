@@ -1,0 +1,38 @@
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editores e IDEs
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+
+# Build (quando a implementação começar)
+target/
+build/
+out/
+bin/
+*.class
+*.jar
+*.war
+
+# Dependências
+node_modules/
+
+# Ambiente
+.env
+.env.local
+*.local
+
+# Logs e temporários
+*.log
+logs/
+tmp/
+temp/
+
+# Diagramas renderizados localmente
+docs/diagramas/*.png
+docs/diagramas/out/

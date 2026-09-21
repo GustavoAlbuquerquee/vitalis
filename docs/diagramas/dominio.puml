@@ -1,0 +1,231 @@
+@startuml Sistema-Hospitalar-Diagrama-de-Classes
+' Diagrama de classes - Sistema de Informacao Hospitalar
+' PUC Minas - Engenharia de Software - Programacao Modular
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "model" {
+
+    abstract class Pessoa {
+        # id : Long
+        # nome : String
+        # telefone : String
+        # email : String
+        # ativo : boolean
+        # criadoEm : LocalDateTime
+        + {abstract} getIdentificacaoPrincipal() : String
+        + {abstract} getTipo() : String
+        + validar() : void
+    }
+
+    class Paciente extends Pessoa {
+        - cpf : String
+        - dataNascimento : LocalDate
+        - endereco : Endereco
+        - consultas : List<Consulta>
+        - internacoes : List<Internacao>
+        + getIdade() : int
+        + estaInternado() : boolean
+        + adicionarConsulta(c : Consulta) : void
+        + adicionarInternacao(i : Internacao) : void
+        + getIdentificacaoPrincipal() : String
+    }
+
+    class ProfissionalSaude extends Pessoa {
+        - registroProfissional : String
+        - especialidade : Especialidade
+        - disponibilidades : List<Disponibilidade>
+        - atendimentos : List<Atendimento>
+        + estaDisponivelEm(ini : LocalDateTime, fim : LocalDateTime) : boolean
+        + possuiConflito(novo : Atendimento) : boolean
+        + getAgendaDoDia(data : LocalDate) : List<Atendimento>
+        + getIdentificacaoPrincipal() : String
+    }
+
+    class Endereco <<value object>> {
+        - logradouro : String
+        - numero : String
+        - complemento : String
+        - bairro : String
+        - cidade : String
+        - uf : UF
+        - cep : String
+        + getEnderecoFormatado() : String
+    }
+
+    abstract class Atendimento {
+        # id : Long
+        # paciente : Paciente
+        # profissional : ProfissionalSaude
+        # observacoes : String
+        # criadoEm : LocalDateTime
+        + {abstract} getInicio() : LocalDateTime
+        + {abstract} getFim() : LocalDateTime
+        + {abstract} getResumo() : String
+        + conflitaCom(outro : Atendimento) : boolean
+        + estaAtivo() : boolean
+    }
+
+    class Consulta extends Atendimento {
+        - data : LocalDate
+        - horario : LocalTime
+        - duracaoMinutos : int
+        - motivo : String
+        - observacoesMedicas : String
+        - status : StatusConsulta
+        + agendar() : void
+        + reagendar(d : LocalDate, h : LocalTime) : void
+        + realizar(obs : String) : void
+        + cancelar(motivo : String) : void
+        + getInicio() : LocalDateTime
+        + getFim() : LocalDateTime
+    }
+
+    class Internacao extends Atendimento {
+        - quarto : Quarto
+        - dataEntrada : LocalDateTime
+        - dataPrevistaAlta : LocalDate
+        - dataEfetivaAlta : LocalDateTime
+        - motivo : String
+        - status : StatusInternacao
+        + registrarAlta(data : LocalDateTime, obs : String) : void
+        + transferirPara(novo : Quarto) : void
+        + getDiasInternado() : long
+        + estaAtiva() : boolean
+        + getInicio() : LocalDateTime
+        + getFim() : LocalDateTime
+    }
+
+    class Quarto {
+        - id : Long
+        - numero : String
+        - andar : int
+        - capacidadeMaxima : int
+        - tipo : TipoQuarto
+        - situacao : SituacaoQuarto
+        - internacoesAtivas : List<Internacao>
+        + getOcupacaoAtual() : int
+        + getVagasDisponiveis() : int
+        + estaDisponivel() : boolean
+        + ocupar(i : Internacao) : void
+        + liberar(i : Internacao) : void
+        + atualizarSituacao() : void
+    }
+
+    class Disponibilidade {
+        - id : Long
+        - profissional : ProfissionalSaude
+        - diaSemana : DiaSemana
+        - horaInicio : LocalTime
+        - horaFim : LocalTime
+        - ativo : boolean
+        + cobre(momento : LocalDateTime) : boolean
+        + sobrepoe(outra : Disponibilidade) : boolean
+    }
+
+    class RegistroClinico {
+        - id : Long
+        - atendimento : Atendimento
+        - autor : ProfissionalSaude
+        - tipo : TipoRegistro
+        - descricao : String
+        - dataRegistro : LocalDateTime
+    }
+
+    class HistoricoMedico <<aggregate>> {
+        - paciente : Paciente
+        - consultas : List<Consulta>
+        - internacoes : List<Internacao>
+        - registros : List<RegistroClinico>
+        + getTotalConsultas() : int
+        + getTotalInternacoes() : int
+        + getUltimoAtendimento() : Atendimento
+        + filtrarPorPeriodo(ini : LocalDate, fim : LocalDate) : List<Atendimento>
+    }
+}
+
+package "model.enums" {
+    enum Especialidade {
+        CLINICA_GERAL
+        CARDIOLOGIA
+        PEDIATRIA
+        ORTOPEDIA
+        GINECOLOGIA
+        NEUROLOGIA
+        ENFERMAGEM
+        FISIOTERAPIA
+    }
+    enum StatusConsulta {
+        AGENDADA
+        REALIZADA
+        CANCELADA
+        NAO_COMPARECEU
+    }
+    enum StatusInternacao {
+        ATIVA
+        ALTA_CONCEDIDA
+        TRANSFERIDA
+        CANCELADA
+    }
+    enum SituacaoQuarto {
+        DISPONIVEL
+        OCUPADO
+        MANUTENCAO
+        INTERDITADO
+    }
+    enum TipoQuarto {
+        ENFERMARIA
+        APARTAMENTO
+        UTI
+        ISOLAMENTO
+    }
+    enum DiaSemana {
+        SEGUNDA
+        TERCA
+        QUARTA
+        QUINTA
+        SEXTA
+        SABADO
+        DOMINGO
+    }
+    enum TipoRegistro {
+        ANAMNESE
+        DIAGNOSTICO
+        PRESCRICAO
+        EXAME
+        EVOLUCAO
+    }
+    enum UF {
+        MG
+        SP
+        RJ
+        ES
+    }
+}
+
+Paciente "1" *-- "1" Endereco : possui >
+Paciente "1" o-- "0..*" Consulta : realiza >
+Paciente "1" o-- "0..*" Internacao : passa por >
+ProfissionalSaude "1" o-- "0..*" Consulta : atende >
+ProfissionalSaude "1" o-- "0..*" Internacao : e responsavel >
+ProfissionalSaude "1" *-- "0..*" Disponibilidade : define >
+Quarto "1" o-- "0..*" Internacao : aloja >
+Atendimento "1" *-- "0..*" RegistroClinico : gera >
+ProfissionalSaude "1" --> "0..*" RegistroClinico : registra >
+HistoricoMedico "1" --> "1" Paciente : consolida >
+HistoricoMedico "1" o-- "0..*" Consulta
+HistoricoMedico "1" o-- "0..*" Internacao
+HistoricoMedico "1" o-- "0..*" RegistroClinico
+
+ProfissionalSaude ..> Especialidade
+Consulta ..> StatusConsulta
+Internacao ..> StatusInternacao
+Quarto ..> SituacaoQuarto
+Quarto ..> TipoQuarto
+Disponibilidade ..> DiaSemana
+RegistroClinico ..> TipoRegistro
+Endereco ..> UF
+
+@enduml

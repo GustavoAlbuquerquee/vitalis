@@ -1,0 +1,231 @@
+classDiagram
+    direction LR
+
+    %% ===================== CAMADA CONTROLLER =====================
+    class PacienteController {
+        <<RestController>>
+        -PacienteService service
+        +criar(PacienteRequest dto) ResponseEntity~PacienteResponse~
+        +buscarPorId(Long id) ResponseEntity~PacienteResponse~
+        +listar(Pageable p) ResponseEntity~Page~
+        +atualizar(Long id, PacienteRequest dto) ResponseEntity~PacienteResponse~
+        +remover(Long id) ResponseEntity~Void~
+        +historico(Long id) ResponseEntity~HistoricoResponse~
+    }
+
+    class ProfissionalController {
+        <<RestController>>
+        -ProfissionalService service
+        +criar(ProfissionalRequest dto) ResponseEntity~ProfissionalResponse~
+        +listarPorEspecialidade(Especialidade e) ResponseEntity~List~
+        +agenda(Long id, LocalDate data) ResponseEntity~List~
+        +definirDisponibilidade(Long id, DisponibilidadeRequest dto) ResponseEntity~Void~
+    }
+
+    class ConsultaController {
+        <<RestController>>
+        -ConsultaService service
+        +agendar(ConsultaRequest dto) ResponseEntity~ConsultaResponse~
+        +reagendar(Long id, ReagendamentoRequest dto) ResponseEntity~ConsultaResponse~
+        +realizar(Long id, ObservacaoRequest dto) ResponseEntity~ConsultaResponse~
+        +cancelar(Long id) ResponseEntity~Void~
+    }
+
+    class InternacaoController {
+        <<RestController>>
+        -InternacaoService service
+        +internar(InternacaoRequest dto) ResponseEntity~InternacaoResponse~
+        +darAlta(Long id, AltaRequest dto) ResponseEntity~InternacaoResponse~
+        +transferir(Long id, Long quartoId) ResponseEntity~InternacaoResponse~
+        +listarAtivas() ResponseEntity~List~
+    }
+
+    class QuartoController {
+        <<RestController>>
+        -QuartoService service
+        +criar(QuartoRequest dto) ResponseEntity~QuartoResponse~
+        +listarDisponiveis() ResponseEntity~List~
+        +ocupacao(Long id) ResponseEntity~OcupacaoResponse~
+    }
+
+    class GlobalExceptionHandler {
+        <<RestControllerAdvice>>
+        +tratarNaoEncontrado(RecursoNaoEncontradoException e) ResponseEntity~ErroResponse~
+        +tratarRegraNegocio(RegraDeNegocioException e) ResponseEntity~ErroResponse~
+        +tratarValidacao(MethodArgumentNotValidException e) ResponseEntity~ErroResponse~
+        +tratarGenerico(Exception e) ResponseEntity~ErroResponse~
+    }
+
+    %% ===================== CAMADA SERVICE =====================
+    class CrudService~T, ID, REQ, RES~ {
+        <<interface>>
+        +criar(REQ dto) RES
+        +buscarPorId(ID id) RES
+        +listar(Pageable p) Page
+        +atualizar(ID id, REQ dto) RES
+        +remover(ID id) void
+    }
+
+    class PacienteService {
+        <<interface>>
+        +buscarPorCpf(String cpf) PacienteResponse
+        +obterHistorico(Long id) HistoricoResponse
+    }
+
+    class ConsultaService {
+        <<interface>>
+        +agendar(ConsultaRequest dto) ConsultaResponse
+        +reagendar(Long id, LocalDateTime novo) ConsultaResponse
+        +realizar(Long id, String obs) ConsultaResponse
+        +cancelar(Long id) void
+    }
+
+    class InternacaoService {
+        <<interface>>
+        +internar(InternacaoRequest dto) InternacaoResponse
+        +darAlta(Long id, AltaRequest dto) InternacaoResponse
+        +transferir(Long id, Long quartoId) InternacaoResponse
+    }
+
+    class PacienteServiceImpl {
+        <<Service>>
+        -PacienteRepository repository
+        -PacienteMapper mapper
+        -validarCpfUnico(String cpf) void
+    }
+
+    class ConsultaServiceImpl {
+        <<Service>>
+        -ConsultaRepository repository
+        -PacienteRepository pacienteRepository
+        -ProfissionalRepository profissionalRepository
+        -AgendaValidator agendaValidator
+        -ConsultaMapper mapper
+    }
+
+    class InternacaoServiceImpl {
+        <<Service>>
+        -InternacaoRepository repository
+        -QuartoRepository quartoRepository
+        -PacienteRepository pacienteRepository
+        -OcupacaoValidator ocupacaoValidator
+        -InternacaoMapper mapper
+    }
+
+    class AgendaValidator {
+        <<Component>>
+        -ConsultaRepository consultaRepository
+        -InternacaoRepository internacaoRepository
+        +validarConflitoDeHorario(Long profId, LocalDateTime ini, LocalDateTime fim) void
+        +validarDentroDaDisponibilidade(ProfissionalSaude p, LocalDateTime ini) void
+    }
+
+    class OcupacaoValidator {
+        <<Component>>
+        +validarCapacidade(Quarto q) void
+        +validarSituacao(Quarto q) void
+        +validarPacienteSemInternacaoAtiva(Paciente p) void
+    }
+
+    %% ===================== CAMADA REPOSITORY =====================
+    class JpaRepository~T, ID~ {
+        <<interface>>
+        +save(T entidade) T
+        +findById(ID id) Optional
+        +findAll(Pageable p) Page
+        +deleteById(ID id) void
+    }
+
+    class PacienteRepository {
+        <<interface>>
+        +findByCpf(String cpf) Optional
+        +existsByCpf(String cpf) boolean
+        +findByNomeContainingIgnoreCase(String nome) List
+    }
+
+    class ProfissionalRepository {
+        <<interface>>
+        +findByRegistroProfissional(String reg) Optional
+        +findByEspecialidade(Especialidade e) List
+    }
+
+    class ConsultaRepository {
+        <<interface>>
+        +findByProfissionalIdAndData(Long id, LocalDate data) List
+        +existsConflitoHorario(Long profId, LocalDateTime ini, LocalDateTime fim) boolean
+        +findByPacienteIdOrderByDataDesc(Long id) List
+    }
+
+    class InternacaoRepository {
+        <<interface>>
+        +findByStatus(StatusInternacao s) List
+        +countByQuartoIdAndStatus(Long quartoId, StatusInternacao s) int
+        +findByPacienteId(Long id) List
+    }
+
+    class QuartoRepository {
+        <<interface>>
+        +findBySituacao(SituacaoQuarto s) List
+        +findByNumero(String numero) Optional
+    }
+
+    %% ===================== DTO / MAPPER =====================
+    class PacienteRequest {
+        <<record>>
+        +String nome
+        +String cpf
+        +LocalDate dataNascimento
+        +String telefone
+        +String email
+        +EnderecoDTO endereco
+    }
+
+    class PacienteResponse {
+        <<record>>
+        +Long id
+        +String nome
+        +String cpf
+        +int idade
+        +boolean internado
+    }
+
+    class PacienteMapper {
+        <<interface>>
+        +toEntity(PacienteRequest dto) Paciente
+        +toResponse(Paciente e) PacienteResponse
+        +atualizar(Paciente e, PacienteRequest dto) void
+    }
+
+    %% ===================== RELACOES =====================
+    PacienteController --> PacienteService : usa
+    ProfissionalController --> CrudService : usa
+    ConsultaController --> ConsultaService : usa
+    InternacaoController --> InternacaoService : usa
+    QuartoController --> CrudService : usa
+
+    CrudService <|-- PacienteService
+    CrudService <|-- ConsultaService
+    CrudService <|-- InternacaoService
+
+    PacienteService <|.. PacienteServiceImpl
+    ConsultaService <|.. ConsultaServiceImpl
+    InternacaoService <|.. InternacaoServiceImpl
+
+    PacienteServiceImpl --> PacienteRepository
+    PacienteServiceImpl --> PacienteMapper
+    ConsultaServiceImpl --> ConsultaRepository
+    ConsultaServiceImpl --> AgendaValidator
+    InternacaoServiceImpl --> InternacaoRepository
+    InternacaoServiceImpl --> QuartoRepository
+    InternacaoServiceImpl --> OcupacaoValidator
+
+    JpaRepository <|-- PacienteRepository
+    JpaRepository <|-- ProfissionalRepository
+    JpaRepository <|-- ConsultaRepository
+    JpaRepository <|-- InternacaoRepository
+    JpaRepository <|-- QuartoRepository
+
+    PacienteController ..> PacienteRequest
+    PacienteController ..> PacienteResponse
+    PacienteMapper ..> PacienteRequest
+    PacienteMapper ..> PacienteResponse
