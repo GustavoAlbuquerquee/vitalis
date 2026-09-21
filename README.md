@@ -66,10 +66,10 @@ flowchart TB
 
     subgraph Modulo["Módulo (ex.: consultas)"]
         direction TB
-        C["Controller<br/><i>expõe a API REST</i>"]
-        S["Service<br/><i>regras de negócio</i>"]
-        R["Repository<br/><i>acesso a dados</i>"]
-        M["Model<br/><i>entidades do domínio</i>"]
+        C["Controller<br/>expõe a API REST"]
+        S["Service<br/>regras de negócio"]
+        R["Repository<br/>acesso a dados"]
+        M["Model<br/>entidades do domínio"]
     end
 
     BD[("Banco de dados")]
