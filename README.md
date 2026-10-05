@@ -257,6 +257,9 @@ vitalis/
 │   ├── diagramas/            # fontes Mermaid, PlantUML e a versão renderizada
 │   └── decisoes/             # ADRs — por que cada escolha foi feita
 │
+├── frontend/                 # interface web — React + TypeScript + Tailwind
+│   └── src/modulos/          # uma pasta por módulo, espelhando modulos/
+│
 ├── testes/
 │   ├── unitarios/            # regras de negócio isoladas
 │   ├── integracao/           # módulo + banco
@@ -280,6 +283,8 @@ Cada diretório de módulo tem seu próprio `README.md` com responsabilidade, en
 | [Modelo de dados](docs/modelo-de-dados.md) | Como o domínio vira tabelas ou documentos |
 | [API](docs/api.md) | Os endpoints previstos, recurso por recurso |
 | [Glossário](docs/glossario.md) | O vocabulário do hospital, sem ambiguidade |
+| [Design system](docs/design-system.md) | Tokens, componentes e regras da interface |
+| [Front-end](frontend/README.md) | Como rodar a interface e como ela se liga à API |
 | [Decisões (ADRs)](docs/decisoes) | Toda escolha arquitetural registrada |
 
 ---
@@ -287,6 +292,7 @@ Cada diretório de módulo tem seu próprio `README.md` com responsabilidade, en
 ## 🗺 Roadmap
 
 - [x] **Etapa 1 — Modelagem.** Domínio, diagrama de classes, regras de negócio, estrutura modular
+- [x] **Interface.** Design system e todas as telas, navegáveis com dados de exemplo ([frontend](frontend))
 - [ ] **Etapa 2 — Camadas.** Model e Repository implementados, testes unitários do domínio
 - [ ] **Etapa 3 — API REST.** Controllers, DTOs, validação de entrada, tratamento de exceções
 - [ ] **Etapa 4 — Persistência.** Banco escolhido, migrações, testes de integração
