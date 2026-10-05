@@ -1,0 +1,61 @@
+.metrica {
+  display: block;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  background: var(--surface);
+}
+
+a.metrica { transition: border-color 150ms; }
+a.metrica:hover { border-color: var(--line-strong); }
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rotulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.rotulo svg { width: 16px; height: 16px; color: var(--ink-3); }
+
+.seta {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3);
+  opacity: 0;
+  transition: opacity 150ms;
+}
+a.metrica:hover .seta { opacity: 1; }
+
+.valor {
+  margin-top: 12px;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-2xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Unidade ao lado do número: "%", "/ 10" */
+.unidade {
+  font-size: var(--fs-lg);
+  color: var(--ink-3);
+}
+
+.detalhe {
+  margin-top: 4px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.extra { margin-top: 16px; }

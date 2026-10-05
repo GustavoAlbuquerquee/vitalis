@@ -1,0 +1,55 @@
+/* ───────── Busca e filtros ───────── */
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .filtros { flex-direction: row; align-items: center; justify-content: space-between; }
+  .busca { width: 320px; }
+}
+
+/* ───────── Tabela ───────── */
+.cartao { overflow: hidden; }
+
+.colunaPaciente { min-width: 240px; }
+
+.direita { text-align: right; }
+.secundario { color: var(--ink-2); }
+
+/* Células de dado em uma linha só: CPF, telefone, cidade, data */
+.dado {
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+.apagado { color: var(--ink-3); }
+
+.ambulatorial {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+/* ───────── Paginação ───────── */
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.paginas {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paginaAtual { padding: 0 4px; }

@@ -1,9 +1,7 @@
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
 import { cn } from '@/lib/cn'
-
-const controle =
-  'w-full rounded-control border border-line-strong bg-surface px-3 text-base text-ink placeholder:text-ink-3 transition-[border-color,box-shadow] outline-none hover:border-ink-3 focus:border-brand focus:ring-3 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-ink-3 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15'
+import s from './Formulario.module.css'
 
 interface CampoProps {
   rotulo: string
@@ -12,24 +10,34 @@ interface CampoProps {
   erro?: string
   obrigatorio?: boolean
   className?: string
+  /** Quantas das 6 colunas da Secao o campo ocupa a partir de 640px. */
+  colunas?: 1 | 2 | 3 | 4 | 5 | 6
   children: (props: { id: string; 'aria-invalid': boolean; 'aria-describedby'?: string }) => ReactNode
 }
 
 /** Envolve qualquer controle com rótulo, ajuda e erro, ligando os atributos de acessibilidade. */
-export function Campo({ rotulo, ajuda, erro, obrigatorio, className, children }: CampoProps) {
+export function Campo({ rotulo, ajuda, erro, obrigatorio, className, colunas, children }: CampoProps) {
   const id = useId()
   const descId = erro || ajuda ? `${id}-desc` : undefined
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
-      <label htmlFor={id} className="text-sm font-medium text-ink">
+    <div className={cn(s.campo, className)} data-colunas={colunas}>
+      <label htmlFor={id} className={s.rotulo}>
         {rotulo}
-        {obrigatorio && <span className="ml-0.5 text-danger" aria-hidden>*</span>}
+        {obrigatorio && (
+          <span className={s.obrigatorio} aria-hidden>
+            *
+          </span>
+        )}
       </label>
       {children({ id, 'aria-invalid': Boolean(erro), 'aria-describedby': descId })}
       {erro ? (
-        <p id={descId} className="text-xs text-danger">{erro}</p>
+        <p id={descId} className={s.erro}>
+          {erro}
+        </p>
       ) : ajuda ? (
-        <p id={descId} className="text-xs text-ink-3">{ajuda}</p>
+        <p id={descId} className={s.ajuda}>
+          {ajuda}
+        </p>
       ) : null}
     </div>
   )
@@ -39,22 +47,22 @@ export const Entrada = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInpu
   { className, mono, ...props },
   ref,
 ) {
-  return <input ref={ref} className={cn(controle, 'h-9', mono && 'font-mono text-sm tabular', className)} {...props} />
+  return <input ref={ref} className={cn(s.controle, s.linha, mono && s.mono, className)} {...props} />
 })
 
 export const Selecao = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Selecao({ className, children, ...props }, ref) {
   return (
-    <div className="relative">
-      <select ref={ref} className={cn(controle, 'h-9 appearance-none pr-9', className)} {...props}>
+    <div className={cn(s.envoltorio, className)}>
+      <select ref={ref} className={cn(s.controle, s.linha, s.selecao)} {...props}>
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-ink-3" aria-hidden />
+      <ChevronDown className={s.seta} aria-hidden />
     </div>
   )
 })
 
 export const AreaTexto = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function AreaTexto({ className, ...props }, ref) {
-  return <textarea ref={ref} className={cn(controle, 'min-h-24 resize-y py-2 leading-relaxed', className)} {...props} />
+  return <textarea ref={ref} className={cn(s.controle, s.area, className)} {...props} />
 })
 
 interface BuscaProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -64,14 +72,14 @@ interface BuscaProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChan
 
 export function Busca({ valor, aoMudar, className, placeholder = 'Buscar…', ...props }: BuscaProps) {
   return (
-    <div className={cn('relative', className)}>
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3" aria-hidden />
+    <div className={cn(s.envoltorio, className)}>
+      <Search className={s.lupa} aria-hidden />
       <input
         type="search"
         value={valor}
         onChange={(e) => aoMudar(e.target.value)}
         placeholder={placeholder}
-        className={cn(controle, 'h-9 pl-9')}
+        className={cn(s.controle, s.linha, s.busca)}
         {...props}
       />
     </div>
@@ -81,12 +89,12 @@ export function Busca({ valor, aoMudar, className, placeholder = 'Buscar…', ..
 /** Grupo de campos com título — divide formulários longos em blocos que se leem de uma vez. */
 export function Secao({ titulo, descricao, children }: { titulo: string; descricao?: string; children: ReactNode }) {
   return (
-    <section className="grid gap-x-10 gap-y-4 border-b border-line py-7 first:pt-0 last:border-0 lg:grid-cols-[220px_minmax(0,1fr)]">
+    <section className={s.secao}>
       <div>
-        <h2 className="text-base font-semibold">{titulo}</h2>
-        {descricao && <p className="mt-1 text-sm text-ink-3">{descricao}</p>}
+        <h2 className={s.secaoTitulo}>{titulo}</h2>
+        {descricao && <p className={s.secaoDescricao}>{descricao}</p>}
       </div>
-      <div className="grid gap-4 sm:grid-cols-6">{children}</div>
+      <div className={s.grade}>{children}</div>
     </section>
   )
 }

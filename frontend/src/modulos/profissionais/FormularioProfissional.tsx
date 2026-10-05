@@ -7,6 +7,7 @@ import { mascaraTelefone } from '@/lib/formato'
 import { especialidades } from '@/lib/rotulos'
 import type { Especialidade } from '@/tipos/dominio'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
+import s from './FormularioProfissional.module.css'
 
 interface Dados {
   nome: string
@@ -109,12 +110,12 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
       />
 
       <form ref={form} onSubmit={enviar} noValidate>
-        <Cartao className="px-5 py-7 sm:px-8">
+        <Cartao className={s.cartao}>
           <Secao titulo="Identificação" descricao="Como o profissional aparece na agenda e nos atendimentos.">
-            <Campo rotulo="Nome" obrigatorio erro={erros.nome} ajuda="Inclua o tratamento usado na agenda: Dr., Dra., Enf., Ft." className="sm:col-span-6">
+            <Campo rotulo="Nome" obrigatorio erro={erros.nome} ajuda="Inclua o tratamento usado na agenda: Dr., Dra., Enf., Ft.">
               {(p) => <Entrada {...p} value={dados.nome} onChange={(e) => mudar('nome', e.target.value)} autoComplete="name" placeholder="Dra. Maria Souza" />}
             </Campo>
-            <Campo rotulo="Especialidade" obrigatorio erro={erros.especialidade} className="sm:col-span-3">
+            <Campo rotulo="Especialidade" obrigatorio erro={erros.especialidade} colunas={3}>
               {(p) => (
                 <Selecao {...p} value={dados.especialidade} onChange={(e) => mudar('especialidade', e.target.value as Especialidade)}>
                   <option value="" disabled>
@@ -133,7 +134,7 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
               obrigatorio
               erro={erros.registro}
               ajuda={conselho && infoConselho ? `Número no ${conselho} — ${infoConselho.nome}. Único no sistema.` : 'Número no conselho de classe (CRM, COREN, CREFITO). Único no sistema.'}
-              className="sm:col-span-3"
+              colunas={3}
             >
               {(p) => (
                 <Entrada {...p} mono value={dados.registro} onChange={(e) => mudar('registro', e.target.value)} placeholder={infoConselho?.exemplo ?? 'CRM-MG 00.000'} />
@@ -142,7 +143,7 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
           </Secao>
 
           <Secao titulo="Contato" descricao="Usado pela recepção para avisos de agenda.">
-            <Campo rotulo="Telefone" obrigatorio erro={erros.telefone} className="sm:col-span-2">
+            <Campo rotulo="Telefone" obrigatorio erro={erros.telefone} colunas={2}>
               {(p) => (
                 <Entrada
                   {...p}
@@ -156,7 +157,7 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
                 />
               )}
             </Campo>
-            <Campo rotulo="E-mail" obrigatorio erro={erros.email} className="sm:col-span-4">
+            <Campo rotulo="E-mail" obrigatorio erro={erros.email} colunas={4}>
               {(p) => (
                 <Entrada {...p} type="email" autoComplete="email" value={dados.email} onChange={(e) => mudar('email', e.target.value)} placeholder="nome.sobrenome@vitalis.med.br" />
               )}
@@ -164,14 +165,14 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
           </Secao>
 
           <Secao titulo="Disponibilidade">
-            <div className="flex gap-3 rounded-card bg-surface-2 p-3.5 text-sm text-ink-2 sm:col-span-6">
-              <CalendarClock className="mt-0.5 size-[18px] shrink-0 text-ink-3" aria-hidden />
+            <div className={s.disponibilidade}>
+              <CalendarClock className={s.disponibilidadeIcone} aria-hidden />
               <p>
                 As janelas de atendimento são definidas na página do profissional
                 {edicao ? (
                   <>
                     {' — '}
-                    <Link to={`/profissionais/${idAtual}`} className="font-medium text-brand hover:underline">
+                    <Link to={`/profissionais/${idAtual}`} className={s.link}>
                       ver disponibilidade semanal
                     </Link>
                     .
@@ -184,7 +185,7 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
           </Secao>
         </Cartao>
 
-        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className={s.acoes}>
           <Botao variante="fantasma" onClick={() => navegar(-1)}>
             Cancelar
           </Botao>

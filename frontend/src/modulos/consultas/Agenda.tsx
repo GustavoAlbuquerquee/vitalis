@@ -17,7 +17,6 @@ import {
   Tabela,
   Td,
   Th,
-  tons,
 } from '@/ds'
 import { Horario, Pessoa, SeloConsulta, nomeEspecialidade } from '@/componentes/dominio'
 import { buscarPaciente, buscarProfissional, listarConsultas, listarProfissionais } from '@/api'
@@ -26,6 +25,7 @@ import { diaDaSemana, formatarDataLonga, plural, relativo } from '@/lib/formato'
 import { diasSemana, especialidades, statusConsulta } from '@/lib/rotulos'
 import type { Consulta, Especialidade, StatusConsulta } from '@/tipos/dominio'
 import { cn } from '@/lib/cn'
+import s from './Agenda.module.css'
 
 type Visao = 'dia' | 'lista'
 
@@ -50,7 +50,7 @@ export function Agenda() {
   const agendadas = consultas.filter((c) => c.status === 'AGENDADA').length
 
   return (
-    <Pagina className="max-w-none">
+    <Pagina larga>
       <CabecalhoPagina
         titulo="Agenda"
         descricao={`${plural(consultas.length, 'consulta')} em ${formatarDataLonga(data)} · ${agendadas} a realizar`}
@@ -61,9 +61,9 @@ export function Agenda() {
         }
       />
 
-      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center">
+      <div className={s.barra}>
+        <div className={s.grupo}>
+          <div className={s.setas}>
             <BotaoIcone rotulo="Dia anterior" onClick={() => irPara(somarDias(data, -1))}>
               <ChevronLeft />
             </BotaoIcone>
@@ -74,23 +74,23 @@ export function Agenda() {
           <Botao tamanho="sm" onClick={() => irPara(hoje())} disabled={data === hoje()}>
             Hoje
           </Botao>
-          <label className="relative ml-1 flex items-center gap-2 rounded-control px-2 py-1 hover:bg-surface-2">
-            <span className="inline-block text-md font-semibold first-letter:uppercase">
+          <label className={s.seletorData}>
+            <span className={cn('inicial-maiuscula', s.dataTitulo)}>
               {diaDaSemana(data)}, <span>{formatarDataLonga(data).replace(/ de \d{4}$/, '')}</span>
             </span>
-            {data !== hoje() && <span className="text-sm text-ink-3">· {relativo(data)}</span>}
-            <CalendarDays className="size-4 text-ink-3" aria-hidden />
+            {data !== hoje() && <span className={s.relativo}>· {relativo(data)}</span>}
+            <CalendarDays className={s.iconeData} aria-hidden />
             <input
               type="date"
               value={data}
               onChange={(e) => e.target.value && irPara(e.target.value)}
               aria-label="Escolher data"
-              className="absolute inset-0 cursor-pointer opacity-0"
+              className={s.entradaData}
             />
           </label>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Selecao value={especialidade} onChange={(e) => setEspecialidade(e.target.value as Especialidade | '')} aria-label="Filtrar por especialidade" className="w-48">
+        <div className={s.grupo}>
+          <Selecao value={especialidade} onChange={(e) => setEspecialidade(e.target.value as Especialidade | '')} aria-label="Filtrar por especialidade">
             <option value="">Todas as especialidades</option>
             {Object.entries(especialidades).map(([k, v]) => (
               <option key={k} value={k}>
@@ -156,23 +156,23 @@ function GradeDoDia({ data, consultas, especialidade }: { data: string; consulta
   const altura = (FIM - INICIO) * PX_POR_MIN
 
   return (
-    <Cartao className="overflow-hidden">
-      <div ref={rolagem} className="max-h-[calc(100dvh-260px)] min-h-[420px] overflow-auto">
-        <div className="grid" style={{ gridTemplateColumns: `64px repeat(${colunas.length}, minmax(176px, 1fr))` }}>
+    <Cartao className={s.recorte}>
+      <div ref={rolagem} className={s.rolagem}>
+        <div className={s.grade} style={{ gridTemplateColumns: `64px repeat(${colunas.length}, minmax(176px, 1fr))` }}>
           {/* Cabeçalho fixo */}
-          <div className="sticky top-0 left-0 z-30 border-r border-b border-line bg-surface" />
+          <div className={s.canto} />
           {colunas.map((p) => {
             const doDia = consultas.filter((c) => c.profissionalId === p.id && c.status !== 'CANCELADA')
             return (
               <Link
                 key={p.id}
                 to={`/profissionais/${p.id}`}
-                className="sticky top-0 z-20 flex items-center gap-2.5 border-r border-b border-line bg-surface px-3 py-2.5 last:border-r-0 hover:bg-surface-2"
+                className={s.cabecalhoProf}
               >
                 <Avatar nome={p.nome} tamanho="sm" />
-                <div className="min-w-0 leading-tight">
-                  <p className="truncate text-sm font-semibold">{p.nome}</p>
-                  <p className="truncate text-xs text-ink-3">
+                <div className={s.profTexto}>
+                  <p className={s.profNome}>{p.nome}</p>
+                  <p className={s.profDetalhe}>
                     {nomeEspecialidade(p)} · {doDia.length}
                   </p>
                 </div>
@@ -181,15 +181,15 @@ function GradeDoDia({ data, consultas, especialidade }: { data: string; consulta
           })}
 
           {/* Régua de horas */}
-          <div className="sticky left-0 z-10 border-r border-line bg-surface" style={{ height: altura }}>
+          <div className={s.regua} style={{ height: altura }}>
             {horas.map((h) => (
-              <span key={h} className="absolute right-2 -translate-y-1/2 font-mono text-2xs text-ink-3 tabular" style={{ top: (h - INICIO) * PX_POR_MIN }}>
+              <span key={h} className={s.hora} style={{ top: (h - INICIO) * PX_POR_MIN }}>
                 {h === INICIO ? '' : hhmm(h)}
               </span>
             ))}
             {mostrarAgora && (
               <span
-                className="absolute right-1 z-[1] -translate-y-1/2 rounded bg-danger px-1 font-mono text-2xs font-semibold text-white tabular dark:text-[#2a0a0c]"
+                className={s.agora}
                 style={{ top: (agora - INICIO) * PX_POR_MIN }}
               >
                 {hhmm(agora)}
@@ -203,7 +203,7 @@ function GradeDoDia({ data, consultas, especialidade }: { data: string; consulta
             return (
               <div
                 key={p.id}
-                className="relative border-r border-line bg-[repeating-linear-gradient(135deg,transparent_0_6px,var(--surface-2)_6px_7px)] last:border-r-0"
+                className={s.coluna}
                 style={{ height: altura }}
               >
                 {/* Janelas de disponibilidade: o que não é janela fica hachurado */}
@@ -219,16 +219,16 @@ function GradeDoDia({ data, consultas, especialidade }: { data: string; consulta
                         const slot = Math.min(fim - 30, ini + Math.floor(y / PX_POR_MIN / 30) * 30)
                         navegar(`/consultas/nova?profissionalId=${p.id}&data=${data}&horario=${hhmm(slot)}`)
                       }}
-                      className="absolute inset-x-0 cursor-copy bg-surface transition-colors hover:bg-brand-soft/40"
+                      className={s.janela}
                       style={{ top: (ini - INICIO) * PX_POR_MIN, height: (fim - ini) * PX_POR_MIN }}
                     />
                   )
                 })}
                 {/* Linhas de hora */}
                 {horas.slice(1).map((h) => (
-                  <div key={h} className="pointer-events-none absolute inset-x-0 border-t border-line/70" style={{ top: (h - INICIO) * PX_POR_MIN }} />
+                  <div key={h} className={s.linhaHora} style={{ top: (h - INICIO) * PX_POR_MIN }} />
                 ))}
-                {mostrarAgora && <div className="pointer-events-none absolute inset-x-0 z-[6] h-0.5 bg-danger" style={{ top: (agora - INICIO) * PX_POR_MIN - 1 }} aria-hidden />}
+                {mostrarAgora && <div className={s.linhaAgora} style={{ top: (agora - INICIO) * PX_POR_MIN - 1 }} aria-hidden />}
                 {consultas
                   .filter((c) => c.profissionalId === p.id)
                   .map((c) => (
@@ -249,42 +249,36 @@ function BlocoConsulta({ c }: { c: Consulta }) {
   const paciente = buscarPaciente(c.pacienteId)!
   const ini = minutos(c.horario)
   const altura = c.duracaoMinutos * PX_POR_MIN - 3
-  const t = tons[statusConsulta[c.status].tom]
   const curto = altura < 34
   return (
     <Link
       to={`/consultas/${c.id}`}
       title={`${c.horario} · ${paciente.nome} — ${c.motivo} (${statusConsulta[c.status].rotulo})`}
-      className={cn(
-        'absolute inset-x-1 z-[5] overflow-hidden rounded-[6px] border-l-[3px] px-2 transition-[filter,box-shadow] hover:shadow-pop hover:brightness-[0.98]',
-        t.suave,
-        t.borda,
-        curto ? 'flex items-center gap-1.5 py-0' : 'py-1',
-        c.status === 'CANCELADA' && 'opacity-60',
-      )}
+      data-tom={statusConsulta[c.status].tom}
+      className={cn(s.bloco, curto && s.blocoCurto, c.status === 'CANCELADA' && s.blocoCancelado)}
       style={{ top: (ini - INICIO) * PX_POR_MIN + 1, height: altura }}
     >
-      <span className={cn('font-mono text-2xs tabular', t.texto)}>{c.horario}</span>
-      <p className={cn('truncate text-xs font-semibold text-ink', c.status === 'CANCELADA' && 'line-through')}>{paciente.nome}</p>
-      {!curto && altura > 48 && <p className="truncate text-2xs text-ink-2">{c.motivo}</p>}
+      <span className={s.blocoHorario}>{c.horario}</span>
+      <p className={s.blocoPaciente}>{paciente.nome}</p>
+      {!curto && altura > 48 && <p className={s.blocoMotivo}>{c.motivo}</p>}
     </Link>
   )
 }
 
 function Legenda() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line px-5 py-2.5 text-xs text-ink-3">
-      {(Object.keys(statusConsulta) as StatusConsulta[]).map((s) => (
-        <span key={s} className="flex items-center gap-1.5">
-          <span className={cn('h-3 w-1 rounded-full', tons[statusConsulta[s].tom].ponto)} />
-          {statusConsulta[s].rotulo}
+    <div className={s.legenda}>
+      {(Object.keys(statusConsulta) as StatusConsulta[]).map((st) => (
+        <span key={st} className={s.legendaItem}>
+          <span data-tom={statusConsulta[st].tom} className={s.legendaPonto} />
+          {statusConsulta[st].rotulo}
         </span>
       ))}
-      <span className="flex items-center gap-1.5">
-        <span className="size-3 rounded-sm border border-line bg-[repeating-linear-gradient(135deg,transparent_0_3px,var(--line-strong)_3px_4px)]" />
+      <span className={s.legendaItem}>
+        <span className={s.legendaHachura} />
         Fora da disponibilidade
       </span>
-      <span className="ml-auto hidden sm:inline">Clique num horário livre para agendar</span>
+      <span className={s.legendaDica}>Clique num horário livre para agendar</span>
     </div>
   )
 }
@@ -294,21 +288,21 @@ function Legenda() {
 function ListaDoDia({ consultas }: { consultas: Consulta[] }) {
   const [status, setStatus] = useState<StatusConsulta | 'TODAS'>('TODAS')
   const visiveis = consultas.filter((c) => status === 'TODAS' || c.status === status)
-  const contar = (s: StatusConsulta) => consultas.filter((c) => c.status === s).length
+  const contar = (st: StatusConsulta) => consultas.filter((c) => c.status === st).length
 
   return (
     <>
       <Pilulas<StatusConsulta | 'TODAS'>
         rotulo="Filtrar por status"
-        className="mb-4"
+        className={s.pilulas}
         valor={status}
         aoMudar={setStatus}
         opcoes={[
           { valor: 'TODAS', rotulo: 'Todas', contagem: consultas.length },
-          ...(Object.keys(statusConsulta) as StatusConsulta[]).map((s) => ({ valor: s, rotulo: statusConsulta[s].rotulo, contagem: contar(s) })),
+          ...(Object.keys(statusConsulta) as StatusConsulta[]).map((st) => ({ valor: st, rotulo: statusConsulta[st].rotulo, contagem: contar(st) })),
         ]}
       />
-      <Cartao className="overflow-hidden">
+      <Cartao className={s.recorte}>
         {visiveis.length === 0 ? (
           <EstadoVazio icone={<CalendarDays />} titulo="Nenhuma consulta" descricao="Não há consultas com esse filtro neste dia." />
         ) : (
@@ -328,17 +322,17 @@ function ListaDoDia({ consultas }: { consultas: Consulta[] }) {
                 const prof = buscarProfissional(c.profissionalId)!
                 return (
                   <Linha key={c.id} para={`/consultas/${c.id}`}>
-                    <Td className="whitespace-nowrap">
+                    <Td className={s.semQuebra}>
                       <Horario c={c} />
                     </Td>
-                    <Td className="min-w-[220px]">
+                    <Td className={s.colPaciente}>
                       <Pessoa nome={paciente.nome} para={`/pacientes/${paciente.id}`} tamanho="sm" />
                     </Td>
-                    <Td className="min-w-[200px]">
-                      <p className="text-ink">{prof.nome}</p>
-                      <p className="text-sm text-ink-3">{nomeEspecialidade(prof)}</p>
+                    <Td className={s.colProfissional}>
+                      <p className={s.listaProfNome}>{prof.nome}</p>
+                      <p className={s.listaProfEsp}>{nomeEspecialidade(prof)}</p>
                     </Td>
-                    <Td className="max-w-[320px] min-w-[200px] truncate text-ink-2">{c.motivo}</Td>
+                    <Td className={s.colMotivo}>{c.motivo}</Td>
                     <Td>
                       <SeloConsulta status={c.status} />
                     </Td>

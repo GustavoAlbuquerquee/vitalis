@@ -8,7 +8,9 @@ import type { StatusInternacao } from '@/tipos/dominio'
 import { idade } from '@/lib/datas'
 import { formatarCpf, formatarData, formatarDataHora, normalizar, plural } from '@/lib/formato'
 import { statusInternacao, tiposQuarto } from '@/lib/rotulos'
+import { cn } from '@/lib/cn'
 import { AltaPrevista } from './utilidades'
+import s from './ListaInternacoes.module.css'
 
 type Aba = StatusInternacao | 'TODAS'
 
@@ -65,12 +67,12 @@ export function ListaInternacoes() {
         }
       />
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <Abas rotulo="Status da internação" valor={aba} aoMudar={mudarAba} opcoes={abas.map((a) => ({ valor: a, rotulo: rotuloAba(a), contagem: contagem(a) }))} className="min-w-0 lg:flex-1" />
-        <Busca valor={busca} aoMudar={setBusca} placeholder="Buscar paciente…" aria-label="Buscar internação por nome do paciente" className="w-full lg:mb-2 lg:w-72" />
+      <div className={s.barra}>
+        <Abas rotulo="Status da internação" valor={aba} aoMudar={mudarAba} opcoes={abas.map((a) => ({ valor: a, rotulo: rotuloAba(a), contagem: contagem(a) }))} className={s.abas} />
+        <Busca valor={busca} aoMudar={setBusca} placeholder="Buscar paciente…" aria-label="Buscar internação por nome do paciente" className={s.busca} />
       </div>
 
-      <Cartao className="mt-4 overflow-hidden">
+      <Cartao className={s.cartao}>
         {lista.length === 0 ? (
           q ? (
             <EstadoVazio icone={<SearchX />} titulo="Nenhum paciente encontrado" descricao={`Nenhuma internação nesta aba corresponde a “${busca.trim()}”.`} />
@@ -114,54 +116,54 @@ export function ListaInternacoes() {
                 const dias = diasInternado(i)
                 return (
                   <Linha key={i.id} para={`/internacoes/${i.id}`}>
-                    <Td className="min-w-[240px]">
+                    <Td className={s.colunaPaciente}>
                       <Pessoa
                         nome={paciente.nome}
                         para={`/pacientes/${paciente.id}`}
                         detalhe={
                           <>
-                            {idade(paciente.dataNascimento)} anos · <span className="font-mono text-xs tabular">{formatarCpf(paciente.cpf)}</span>
+                            {idade(paciente.dataNascimento)} anos · <span className={cn(s.cpf, 'tabular')}>{formatarCpf(paciente.cpf)}</span>
                           </>
                         }
                       />
                     </Td>
                     <Td>
-                      <div className="flex items-center gap-2 whitespace-nowrap">
-                        <Link to={`/quartos/${quarto.id}`} className="font-mono text-sm font-medium tabular hover:underline hover:underline-offset-4" aria-label={`Quarto ${quarto.numero}`}>
+                      <div className={s.quarto}>
+                        <Link to={`/quartos/${quarto.id}`} className={cn(s.quartoNumero, 'tabular')} aria-label={`Quarto ${quarto.numero}`}>
                           {quarto.numero}
                         </Link>
                         <Etiqueta>{tiposQuarto[quarto.tipo].rotulo}</Etiqueta>
                       </div>
                     </Td>
-                    <Td className="min-w-[180px]">
-                      <p className="truncate text-sm text-ink-2">{prof.nome}</p>
-                      <p className="truncate text-xs text-ink-3">{nomeEspecialidade(prof)}</p>
+                    <Td className={s.colunaResponsavel}>
+                      <p className={s.responsavel}>{prof.nome}</p>
+                      <p className={s.especialidade}>{nomeEspecialidade(prof)}</p>
                     </Td>
-                    <Td className="whitespace-nowrap">
-                      <p className="text-sm tabular">{formatarData(i.dataEntrada)}</p>
-                      <p className="mt-0.5 text-xs text-ink-3">
+                    <Td className={s.semQuebra}>
+                      <p className={cn(s.data, 'tabular')}>{formatarData(i.dataEntrada)}</p>
+                      <p className={s.permanencia}>
                         {i.status === 'ATIVA' ? (dias === 0 ? 'entrou hoje' : `há ${plural(dias, 'dia')}`) : i.dataEfetivaAlta ? `${plural(dias, 'dia')} de permanência` : 'sem permanência'}
                       </p>
                     </Td>
-                    <Td className="whitespace-nowrap">
+                    <Td className={s.semQuebra}>
                       {i.status === 'ATIVA' ? (
                         <AltaPrevista data={i.dataPrevistaAlta} />
                       ) : i.dataEfetivaAlta ? (
-                        <span className="text-sm tabular">{formatarDataHora(i.dataEfetivaAlta)}</span>
+                        <span className={cn(s.data, 'tabular')}>{formatarDataHora(i.dataEfetivaAlta)}</span>
                       ) : (
-                        <span className="text-sm text-ink-3">—</span>
+                        <span className={s.semData}>—</span>
                       )}
                     </Td>
                     <Td>
                       <SeloInternacao status={i.status} />
                     </Td>
-                    <Td className="w-10 text-right">
+                    <Td className={s.colunaAbrir}>
                       <Link
                         to={`/internacoes/${i.id}`}
                         aria-label={`Abrir internação de ${paciente.nome}`}
-                        className="inline-flex size-8 items-center justify-center rounded-control text-ink-3 hover:bg-surface-3 hover:text-ink"
+                        className={s.abrir}
                       >
-                        <ChevronRight className="size-4" />
+                        <ChevronRight />
                       </Link>
                     </Td>
                   </Linha>
@@ -172,7 +174,7 @@ export function ListaInternacoes() {
         )}
       </Cartao>
       {lista.length > 0 && (
-        <p className="mt-3 text-sm text-ink-3">
+        <p className={s.total}>
           {plural(lista.length, 'internação', 'internações')}
           {aba === 'TODAS' ? ' — ativas mostram a alta prevista; encerradas, a efetiva.' : '.'}
         </p>

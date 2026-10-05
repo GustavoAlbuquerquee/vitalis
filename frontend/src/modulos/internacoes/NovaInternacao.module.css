@@ -1,0 +1,140 @@
+.cartao { padding: 28px 20px; }
+
+/* ───────── Quarto escolhido ───────── */
+.quartoErro,
+.quartoResumo {
+  margin-top: 8px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.quartoErro { color: var(--danger); }
+.quartoResumo { color: var(--ink-3); }
+
+.codigo { font-family: var(--fonte-mono); }
+
+/* ───────── Rodapé do formulário ───────── */
+.acoes {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.bloqueio {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--danger);
+}
+
+/* ───────── Grade de quartos ───────── */
+.grade {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.andarTopo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+
+.andarVagas {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.quartos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.quarto {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--raio-controle);
+  background: var(--surface);
+  text-align: left;
+  transition: border-color 150ms, background-color 150ms, box-shadow 150ms;
+}
+.quarto[aria-checked='false']:enabled:hover { border-color: var(--ink-3); }
+.quarto[aria-checked='true'] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  box-shadow: 0 0 0 3px var(--anel-foco);
+}
+.quarto:disabled {
+  cursor: not-allowed;
+  background: var(--surface-2);
+  opacity: 0.7;
+}
+
+.quartoTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.quartoNumero {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  font-weight: 600;
+}
+.quarto[aria-checked='true'] .quartoNumero { color: var(--brand-ink); }
+
+.quartoTipo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.quartoVagas {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-2);
+}
+
+.seloQuarto { align-self: flex-start; }
+
+.semQuartos {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.linkMapa {
+  font-weight: 500;
+  color: var(--brand);
+}
+.linkMapa:hover { text-decoration: underline; }
+
+@media (min-width: 640px) {
+  .cartao { padding-right: 32px; padding-left: 32px; }
+  .acoes { flex-direction: row; align-items: center; justify-content: flex-end; }
+  .bloqueio { margin-right: auto; }
+  .quartos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .quartos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

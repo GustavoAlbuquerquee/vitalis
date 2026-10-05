@@ -1,0 +1,38 @@
+.alerta {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-left: 3px solid var(--tom);
+  border-radius: var(--raio-cartao);
+  background: var(--tom-suave);
+}
+
+.icone {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--tom);
+}
+
+.texto {
+  min-width: 0;
+  flex: 1;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+
+.titulo {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.corpo {
+  margin-top: 2px;
+  color: var(--ink-2);
+}
+
+.acao {
+  flex-shrink: 0;
+  align-self: center;
+}

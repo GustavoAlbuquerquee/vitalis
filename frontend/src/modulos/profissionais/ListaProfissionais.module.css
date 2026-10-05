@@ -1,0 +1,220 @@
+/* ───────── Dias de atendimento (Seg…Dom) ───────── */
+.dias {
+  display: flex;
+  gap: 4px;
+}
+
+.dia {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.diaAtivo {
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+
+.diaHoje {
+  box-shadow: inset 0 0 0 1px var(--ink-3);
+}
+
+/* ───────── Busca, visão e filtros ───────── */
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.busca {
+  flex: 1;
+  min-width: 0;
+}
+
+.visao {
+  margin-left: auto;
+}
+
+/* Só o ícone no celular; o texto volta a partir de 640px */
+.rotuloVisao {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .busca { max-width: 384px; }
+
+  .rotuloVisao {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
+
+/* ───────── Grade de cartões ───────── */
+.grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+  .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1536px) {
+  .grade { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.item {
+  min-width: 0;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  background: var(--surface);
+  transition: border-color 150ms;
+}
+.cartao:hover { border-color: var(--line-strong); }
+
+.topo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 20px 0;
+}
+
+.identificacao {
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.nome,
+.especialidade,
+.registro {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nome {
+  font-weight: 500;
+  color: var(--ink);
+}
+.cartao:hover .nome {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 4px;
+}
+
+.especialidade {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.registro {
+  margin-top: 4px;
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+.semana {
+  padding: 16px 20px;
+}
+
+.rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-top: auto;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.consultas {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+/* ───────── Tabela ───────── */
+.colunaPessoa {
+  min-width: 220px;
+}
+
+.registroCelula {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+.contato {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  white-space: nowrap;
+}
+
+.telefone {
+  color: var(--ink-2);
+}
+
+.email {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+.hoje {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.hojeDetalhe {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  white-space: nowrap;
+  color: var(--ink-3);
+}

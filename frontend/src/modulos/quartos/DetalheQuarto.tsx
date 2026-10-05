@@ -32,6 +32,7 @@ import { formatarData, formatarDataHora, plural, relativo } from '@/lib/formato'
 import { hoje } from '@/lib/datas'
 import { situacaoQuarto, tiposQuarto } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
+import s from './DetalheQuarto.module.css'
 
 type Bloqueio = NonNullable<Quarto['bloqueio']>
 
@@ -53,11 +54,11 @@ export function DetalheQuarto() {
         migalhas={[{ rotulo: 'Quartos', para: '/quartos' }, { rotulo: `Quarto ${quarto.numero}` }]}
         titulo={
           <>
-            Quarto <span className="font-mono">{quarto.numero}</span>
+            Quarto <span className={s.numeroTitulo}>{quarto.numero}</span>
           </>
         }
         descricao={
-          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span className={s.descricaoLinha}>
             <Etiqueta>{tiposQuarto[quarto.tipo].rotulo}</Etiqueta>
             <span>{quarto.andar}º andar</span>
             <SeloQuarto situacao={quarto.situacao} />
@@ -76,8 +77,8 @@ export function DetalheQuarto() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="flex min-w-0 flex-col gap-6">
+      <div className={s.colunas}>
+        <div className={s.coluna}>
           <Cartao>
             <CabecalhoCartao
               titulo="Ocupação"
@@ -86,14 +87,14 @@ export function DetalheQuarto() {
               acoes={<PontosOcupacao ocupacao={quarto.ocupacao} capacidade={quarto.capacidadeMaxima} situacao={quarto.situacao} />}
             />
             <CorpoCartao>
-              <ul className="grid gap-3 sm:grid-cols-2">
+              <ul className={s.vagas}>
                 {ativas.map((i, n) => (
-                  <li key={i.id} className="min-w-0">
+                  <li key={i.id} className={s.celula}>
                     <VagaOcupada internacao={i} posicao={n + 1} />
                   </li>
                 ))}
                 {Array.from({ length: vagasLivres }, (_, n) => (
-                  <li key={`livre-${n}`} className="min-w-0">
+                  <li key={`livre-${n}`} className={s.celula}>
                     <VagaLivre quarto={quarto} posicao={ativas.length + n + 1} />
                   </li>
                 ))}
@@ -101,7 +102,7 @@ export function DetalheQuarto() {
             </CorpoCartao>
           </Cartao>
 
-          <Cartao className="overflow-hidden">
+          <Cartao className={s.historico}>
             <CabecalhoCartao titulo="Histórico de ocupação" icone={<History />} descricao="Todas as internações que passaram por este quarto. Nada é apagado (RN6)." />
             {historico.length === 0 ? (
               <EstadoVazio icone={<History />} titulo="Nenhuma internação neste quarto" descricao="Quando alguém for internado aqui, a passagem fica registrada nesta lista." />
@@ -121,14 +122,14 @@ export function DetalheQuarto() {
                     const p = buscarPaciente(i.pacienteId)!
                     return (
                       <Linha key={i.id} para={`/internacoes/${i.id}`}>
-                        <Td className="min-w-[200px]">
-                          <Link to={`/internacoes/${i.id}`} className="block min-w-0 rounded-control" aria-label={`Internação de ${p.nome}`}>
+                        <Td className={s.celulaPaciente}>
+                          <Link to={`/internacoes/${i.id}`} className={s.linkPaciente} aria-label={`Internação de ${p.nome}`}>
                             <Pessoa nome={p.nome} tamanho="sm" detalhe={i.motivo} />
                           </Link>
                         </Td>
-                        <Td className="text-sm whitespace-nowrap tabular">{formatarDataHora(i.dataEntrada)}</Td>
-                        <Td className="text-sm whitespace-nowrap tabular">
-                          {i.dataEfetivaAlta ? formatarDataHora(i.dataEfetivaAlta) : <span className="text-ink-3">{i.status === 'ATIVA' ? 'em curso' : '—'}</span>}
+                        <Td className={cn(s.celulaData, 'tabular')}>{formatarDataHora(i.dataEntrada)}</Td>
+                        <Td className={cn(s.celulaData, 'tabular')}>
+                          {i.dataEfetivaAlta ? formatarDataHora(i.dataEfetivaAlta) : <span className={s.semSaida}>{i.status === 'ATIVA' ? 'em curso' : '—'}</span>}
                         </Td>
                         <Td>
                           <SeloInternacao status={i.status} />
@@ -142,7 +143,7 @@ export function DetalheQuarto() {
           </Cartao>
         </div>
 
-        <aside className="flex min-w-0 flex-col gap-6" aria-label="Ficha do quarto">
+        <aside className={s.coluna} aria-label="Ficha do quarto">
           <Cartao>
             <CabecalhoCartao titulo="Ficha" icone={<DoorOpen />} />
             <CorpoCartao>
@@ -178,13 +179,13 @@ function VagaOcupada({ internacao: i, posicao }: { internacao: Internacao; posic
   return (
     <Link
       to={`/internacoes/${i.id}`}
-      className="flex h-full flex-col gap-3 rounded-card border border-line bg-surface p-4 transition-[border-color,box-shadow] hover:border-line-strong hover:shadow-pop"
+      className={s.vaga}
     >
-      <p className="text-2xs font-semibold tracking-wide text-ink-3 uppercase">Vaga {posicao}</p>
+      <p className={s.vagaRotulo}>Vaga {posicao}</p>
       <Pessoa nome={p.nome} detalhe={i.motivo} />
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-line pt-3 text-xs">
-        <span className="text-ink-2 tabular">{dias === 0 ? 'entrou hoje' : `${plural(dias, 'dia')} internado`}</span>
-        <span className={cn('font-medium tabular', atrasada ? 'text-danger' : i.dataPrevistaAlta === dia ? 'text-warn' : 'text-ink-3')}>
+      <div className={s.vagaRodape}>
+        <span className={cn(s.dias, 'tabular')}>{dias === 0 ? 'entrou hoje' : `${plural(dias, 'dia')} internado`}</span>
+        <span data-tom={atrasada ? 'danger' : i.dataPrevistaAlta === dia ? 'warn' : undefined} className={cn(s.alta, 'tabular')}>
           Alta {atrasada ? `atrasada (${formatarData(i.dataPrevistaAlta)})` : relativo(i.dataPrevistaAlta)}
         </span>
       </div>
@@ -195,20 +196,20 @@ function VagaOcupada({ internacao: i, posicao }: { internacao: Internacao; posic
 function VagaLivre({ quarto, posicao }: { quarto: QuartoComOcupacao; posicao: number }) {
   const bloqueado = Boolean(quarto.bloqueio)
   return (
-    <div className="flex h-full min-h-[132px] flex-col items-start gap-1 rounded-card border-[1.5px] border-dashed border-line-strong bg-surface-2/40 p-4">
-      <p className="text-2xs font-semibold tracking-wide text-ink-3 uppercase">Vaga {posicao}</p>
+    <div className={s.vagaLivre}>
+      <p className={s.vagaRotulo}>Vaga {posicao}</p>
       {bloqueado ? (
         <>
-          <p className="flex items-center gap-1.5 text-sm font-medium text-ink-2">
-            <Lock className="size-3.5" aria-hidden />
+          <p className={s.livreTitulo}>
+            <Lock aria-hidden />
             Bloqueada
           </p>
-          <p className="text-xs text-ink-3">Quarto em {situacaoQuarto[quarto.bloqueio!].rotulo.toLowerCase()} — não recebe pacientes.</p>
+          <p className={s.livreNota}>Quarto em {situacaoQuarto[quarto.bloqueio!].rotulo.toLowerCase()} — não recebe pacientes.</p>
         </>
       ) : (
         <>
-          <p className="text-sm font-medium text-ink-2">Vaga livre</p>
-          <BotaoLink to={`/internacoes/nova?quartoId=${quarto.id}`} variante="fantasma" tamanho="sm" icone={<Plus />} className="mt-auto -ml-3 text-brand hover:text-brand">
+          <p className={s.livreTitulo}>Vaga livre</p>
+          <BotaoLink to={`/internacoes/nova?quartoId=${quarto.id}`} variante="fantasma" tamanho="sm" icone={<Plus />} className={s.internarAqui}>
             Internar aqui
           </BotaoLink>
         </>
@@ -246,14 +247,14 @@ function ModalBloquear({ quarto, aoFechar }: { quarto: QuartoComOcupacao; aoFech
         </>
       }
     >
-      <form id={idForm} onSubmit={enviar} noValidate className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Situação</span>
+      <form id={idForm} onSubmit={enviar} noValidate className={s.formulario}>
+        <div className={s.grupo}>
+          <span className={s.grupoRotulo}>Situação</span>
           <Segmentado
             rotulo="Situação do bloqueio"
             valor={bloqueio}
             aoMudar={setBloqueio}
-            className="self-start"
+            className={s.segmentado}
             opcoes={[
               { valor: 'MANUTENCAO', rotulo: situacaoQuarto.MANUTENCAO.rotulo },
               { valor: 'INTERDITADO', rotulo: situacaoQuarto.INTERDITADO.rotulo },
@@ -266,7 +267,7 @@ function ModalBloquear({ quarto, aoFechar }: { quarto: QuartoComOcupacao; aoFech
           </Alerta>
         )}
         <Campo rotulo="Motivo" ajuda="Ex.: troca de rede de gases, desinfecção terminal.">
-          {(p) => <AreaTexto {...p} value={motivo} onChange={(e) => setMotivo(e.target.value)} className="min-h-20" disabled={temPacientes} />}
+          {(p) => <AreaTexto {...p} value={motivo} onChange={(e) => setMotivo(e.target.value)} className={s.motivo} disabled={temPacientes} />}
         </Campo>
       </form>
     </Modal>

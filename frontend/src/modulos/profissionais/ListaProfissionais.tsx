@@ -9,6 +9,7 @@ import { formatarTelefone, normalizar, plural } from '@/lib/formato'
 import { diasSemana, especialidades, type Tom } from '@/lib/rotulos'
 import type { Especialidade, ProfissionalSaude } from '@/tipos/dominio'
 import { cn } from '@/lib/cn'
+import s from './ListaProfissionais.module.css'
 
 type Filtro = Especialidade | 'TODAS'
 type Visao = 'grade' | 'tabela'
@@ -35,18 +36,14 @@ function DiasAtendimento({ p }: { p: ProfissionalSaude }) {
   const indiceHoje = indiceDiaSemana(hoje())
   const atende = diasSemana.filter((d) => p.disponibilidades.some((j) => j.diaSemana === d.valor))
   return (
-    <div role="img" aria-label={atende.length ? `Atende: ${atende.map((d) => d.rotulo).join(', ')}` : 'Sem disponibilidade cadastrada'} className="flex gap-1">
+    <div role="img" aria-label={atende.length ? `Atende: ${atende.map((d) => d.rotulo).join(', ')}` : 'Sem disponibilidade cadastrada'} className={s.dias}>
       {diasSemana.map((d, i) => {
         const ativo = atende.includes(d)
         return (
           <span
             key={d.valor}
             aria-hidden
-            className={cn(
-              'flex h-6 min-w-0 flex-1 items-center justify-center rounded-[5px] text-2xs font-medium',
-              ativo ? 'bg-brand-soft text-brand-ink' : 'bg-surface-2 text-ink-3',
-              i === indiceHoje && 'ring-1 ring-ink-3 ring-inset',
-            )}
+            className={cn(s.dia, ativo && s.diaAtivo, i === indiceHoje && s.diaHoje)}
           >
             {d.curto}
           </span>
@@ -100,17 +97,17 @@ export function ListaProfissionais() {
         }
       />
 
-      <div className="mb-5 flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <Busca valor={busca} aoMudar={setBusca} placeholder="Buscar por nome ou registro…" aria-label="Buscar profissional" className="min-w-0 flex-1 sm:max-w-sm" />
+      <div className={s.filtros}>
+        <div className={s.barra}>
+          <Busca valor={busca} aoMudar={setBusca} placeholder="Buscar por nome ou registro…" aria-label="Buscar profissional" className={s.busca} />
           <Segmentado
             rotulo="Modo de visualização"
             valor={visao}
             aoMudar={setVisao}
-            className="ml-auto"
+            className={s.visao}
             opcoes={[
-              { valor: 'grade', rotulo: <><LayoutGrid aria-hidden /><span className="sr-only sm:not-sr-only">Grade</span></> },
-              { valor: 'tabela', rotulo: <><List aria-hidden /><span className="sr-only sm:not-sr-only">Tabela</span></> },
+              { valor: 'grade', rotulo: <><LayoutGrid aria-hidden /><span className={s.rotuloVisao}>Grade</span></> },
+              { valor: 'tabela', rotulo: <><List aria-hidden /><span className={s.rotuloVisao}>Tabela</span></> },
             ]}
           />
         </div>
@@ -127,30 +124,27 @@ export function ListaProfissionais() {
           />
         </Cartao>
       ) : visao === 'grade' ? (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <ul className={s.grade}>
           {visiveis.map((p) => {
-            const s = situacaoHoje(p, agora)
+            const sit = situacaoHoje(p, agora)
             const n = consultasHoje(p)
             return (
-              <li key={p.id} className="min-w-0">
-                <Link
-                  to={`/profissionais/${p.id}`}
-                  className="group flex h-full flex-col rounded-card border border-line bg-surface transition-colors hover:border-line-strong"
-                >
-                  <div className="flex items-start gap-3 px-5 pt-5">
+              <li key={p.id} className={s.item}>
+                <Link to={`/profissionais/${p.id}`} className={s.cartao}>
+                  <div className={s.topo}>
                     <Avatar nome={p.nome} tamanho="lg" />
-                    <div className="min-w-0 leading-tight">
-                      <p className="truncate font-medium text-ink group-hover:underline group-hover:decoration-line-strong group-hover:underline-offset-4">{p.nome}</p>
-                      <p className="mt-0.5 truncate text-sm text-ink-2">{nomeEspecialidade(p)}</p>
-                      <p className="mt-1 truncate font-mono text-xs text-ink-3 tabular">{p.registroProfissional}</p>
+                    <div className={s.identificacao}>
+                      <p className={s.nome}>{p.nome}</p>
+                      <p className={s.especialidade}>{nomeEspecialidade(p)}</p>
+                      <p className={cn(s.registro, 'tabular')}>{p.registroProfissional}</p>
                     </div>
                   </div>
-                  <div className="px-5 pt-4 pb-4">
+                  <div className={s.semana}>
                     <DiasAtendimento p={p} />
                   </div>
-                  <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-t border-line px-5 py-3">
-                    <Selo tom={s.tom}>{s.rotulo}</Selo>
-                    <span className="text-sm text-ink-3 tabular">
+                  <div className={s.rodape}>
+                    <Selo tom={sit.tom}>{sit.rotulo}</Selo>
+                    <span className={cn(s.consultas, 'tabular')}>
                       {n.total ? `${plural(n.total, 'consulta')} hoje` : 'Sem consultas hoje'}
                     </span>
                   </div>
@@ -173,26 +167,26 @@ export function ListaProfissionais() {
             </thead>
             <tbody>
               {visiveis.map((p) => {
-                const s = situacaoHoje(p, agora)
+                const sit = situacaoHoje(p, agora)
                 const n = consultasHoje(p)
                 return (
                   <Linha key={p.id} para={`/profissionais/${p.id}`}>
-                    <Td className="min-w-[220px]">
+                    <Td className={s.colunaPessoa}>
                       <Pessoa nome={p.nome} para={`/profissionais/${p.id}`} />
                     </Td>
                     <Td>
                       <Etiqueta>{nomeEspecialidade(p)}</Etiqueta>
                     </Td>
-                    <Td className="font-mono text-sm whitespace-nowrap text-ink-2 tabular">{p.registroProfissional}</Td>
-                    <Td className="text-sm whitespace-nowrap">
-                      <p className="text-ink-2 tabular">{formatarTelefone(p.telefone)}</p>
-                      <p className="text-xs text-ink-3">{p.email}</p>
+                    <Td className={cn(s.registroCelula, 'tabular')}>{p.registroProfissional}</Td>
+                    <Td className={s.contato}>
+                      <p className={cn(s.telefone, 'tabular')}>{formatarTelefone(p.telefone)}</p>
+                      <p className={s.email}>{p.email}</p>
                     </Td>
                     <Td>
-                      <div className="flex flex-col items-start gap-1">
-                        <Selo tom={s.tom}>{s.rotulo}</Selo>
+                      <div className={s.hoje}>
+                        <Selo tom={sit.tom}>{sit.rotulo}</Selo>
                         {n.total > 0 && (
-                          <span className="text-xs whitespace-nowrap text-ink-3 tabular">
+                          <span className={cn(s.hojeDetalhe, 'tabular')}>
                             {plural(n.total, 'consulta')} · {n.aSeguir} a seguir
                           </span>
                         )}

@@ -1,0 +1,138 @@
+/* ───────── Abas e busca ───────── */
+.barra {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.abas {
+  min-width: 0;
+}
+
+.busca {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .barra {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .abas { flex: 1; }
+
+  .busca {
+    width: 288px;
+    margin-bottom: 8px;
+  }
+}
+
+.cartao {
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+/* ───────── Tabela ───────── */
+.colunaPaciente {
+  min-width: 240px;
+}
+
+.cpf {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+
+.quarto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.quartoNumero {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+.quartoNumero:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.colunaResponsavel {
+  min-width: 180px;
+}
+
+.responsavel,
+.especialidade {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.responsavel {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.especialidade {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+.semQuebra {
+  white-space: nowrap;
+}
+
+.data {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+
+.semData {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.permanencia {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+.colunaAbrir {
+  width: 40px;
+  text-align: right;
+}
+
+.abrir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-controle);
+  color: var(--ink-3);
+}
+.abrir:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+.abrir svg {
+  width: 16px;
+  height: 16px;
+}
+
+.total {
+  margin-top: 12px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}

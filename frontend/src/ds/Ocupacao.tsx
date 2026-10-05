@@ -1,5 +1,6 @@
 import type { SituacaoQuarto } from '@/tipos/dominio'
 import { cn } from '@/lib/cn'
+import s from './Ocupacao.module.css'
 
 interface PontosProps {
   ocupacao: number
@@ -15,21 +16,11 @@ interface PontosProps {
 export function PontosOcupacao({ ocupacao, capacidade, situacao, tamanho = 'md' }: PontosProps) {
   const bloqueado = situacao === 'MANUTENCAO' || situacao === 'INTERDITADO'
   return (
-    <span className="inline-flex items-center gap-1" role="img" aria-label={`${ocupacao} de ${capacidade} vagas ocupadas`}>
+    <span className={cn(s.pontos, s[tamanho])} role="img" aria-label={`${ocupacao} de ${capacidade} vagas ocupadas`}>
       {Array.from({ length: capacidade }, (_, i) => (
         <span
           key={i}
-          className={cn(
-            'rounded-full border-[1.5px]',
-            tamanho === 'sm' ? 'size-2' : 'size-2.5',
-            bloqueado
-              ? 'border-dashed border-ink-3'
-              : i < ocupacao
-                ? situacao === 'OCUPADO'
-                  ? 'border-danger bg-danger'
-                  : 'border-brand bg-brand'
-                : 'border-line-strong bg-transparent',
-          )}
+          className={cn(s.ponto, bloqueado ? s.bloqueado : i < ocupacao && (situacao === 'OCUPADO' ? s.lotado : s.ocupado))}
         />
       ))}
     </span>
@@ -47,8 +38,8 @@ interface BarraProps {
 export function BarraProgresso({ valor, total, className, limiteAlerta = 0.85 }: BarraProps) {
   const fracao = total ? valor / total : 0
   return (
-    <div className={cn('h-1.5 overflow-hidden rounded-full bg-surface-3', className)} role="progressbar" aria-valuenow={valor} aria-valuemax={total}>
-      <div className={cn('h-full rounded-full transition-[width] duration-500', fracao >= limiteAlerta ? 'bg-warn' : 'bg-brand')} style={{ width: `${Math.min(100, fracao * 100)}%` }} />
+    <div className={cn(s.trilho, className)} role="progressbar" aria-valuenow={valor} aria-valuemax={total}>
+      <div className={cn(s.barra, fracao >= limiteAlerta && s.alerta)} style={{ width: `${Math.min(100, fracao * 100)}%` }} />
     </div>
   )
 }

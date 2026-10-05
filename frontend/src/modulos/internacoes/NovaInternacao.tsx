@@ -23,6 +23,7 @@ import { formatarCpf, formatarData, formatarDataHora, plural } from '@/lib/forma
 import { situacaoQuarto, tiposQuarto } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
 import { agora } from './utilidades'
+import s from './NovaInternacao.module.css'
 
 type CampoForm = 'paciente' | 'profissional' | 'quarto' | 'entrada' | 'alta' | 'motivo'
 
@@ -86,9 +87,9 @@ export function NovaInternacao() {
       />
 
       <form onSubmit={enviar} noValidate>
-        <Cartao className="px-5 py-7 sm:px-8">
+        <Cartao className={s.cartao}>
           <Secao titulo="Paciente" descricao="Somente pacientes ativos. Um paciente não pode ter duas internações ativas (RN4).">
-            <Campo rotulo="Paciente" obrigatorio erro={jaInternado ? undefined : erro('paciente')} className="sm:col-span-6">
+            <Campo rotulo="Paciente" obrigatorio erro={jaInternado ? undefined : erro('paciente')}>
               {(p) => (
                 <Selecao {...p} aria-invalid={p['aria-invalid'] || Boolean(jaInternado)} value={pacienteId} onChange={(e) => setPacienteId(e.target.value)} required>
                   <option value="">Selecione o paciente…</option>
@@ -105,7 +106,6 @@ export function NovaInternacao() {
               <Alerta
                 tom="danger"
                 titulo="Paciente já internado"
-                className="sm:col-span-6"
                 acao={
                   <BotaoLink to={`/internacoes/${jaInternado.id}`} tamanho="sm" iconeDireita={<ArrowRight />}>
                     Ver internação
@@ -118,7 +118,7 @@ export function NovaInternacao() {
           </Secao>
 
           <Secao titulo="Responsável" descricao="Profissional da saúde que acompanha a internação.">
-            <Campo rotulo="Profissional responsável" obrigatorio erro={erro('profissional')} className="sm:col-span-6">
+            <Campo rotulo="Profissional responsável" obrigatorio erro={erro('profissional')}>
               {(p) => (
                 <Selecao {...p} value={profissionalId} onChange={(e) => setProfissionalId(e.target.value)} required>
                   <option value="">Selecione o profissional…</option>
@@ -133,13 +133,13 @@ export function NovaInternacao() {
           </Secao>
 
           <Secao titulo="Quarto" descricao="A situação é derivada da ocupação. Lotados e bloqueados não recebem pacientes (RN4, RN5).">
-            <div className="sm:col-span-6">
+            <div>
               <GradeQuartos quartos={quartos} valor={quartoId} aoMudar={setQuartoId} invalido={Boolean(erro('quarto'))} />
               {erro('quarto') ? (
-                <p className="mt-2 text-xs text-danger">{erro('quarto')}</p>
+                <p className={s.quartoErro}>{erro('quarto')}</p>
               ) : quarto ? (
-                <p className="mt-2 text-xs text-ink-3 tabular">
-                  Quarto <span className="font-mono">{quarto.numero}</span> · {tiposQuarto[quarto.tipo].rotulo} — após a internação, {quarto.ocupacao + 1}/{quarto.capacidadeMaxima}{' '}
+                <p className={cn(s.quartoResumo, 'tabular')}>
+                  Quarto <span className={s.codigo}>{quarto.numero}</span> · {tiposQuarto[quarto.tipo].rotulo} — após a internação, {quarto.ocupacao + 1}/{quarto.capacidadeMaxima}{' '}
                   {quarto.ocupacao + 1 === quarto.capacidadeMaxima ? '(o quarto passa a lotado)' : 'ocupado'}.
                 </p>
               ) : null}
@@ -147,7 +147,7 @@ export function NovaInternacao() {
           </Secao>
 
           <Secao titulo="Período" descricao="A alta prevista é uma estimativa; a efetiva é registrada no encerramento.">
-            <Campo rotulo="Data e hora de entrada" obrigatorio erro={erro('entrada')} className="sm:col-span-3">
+            <Campo rotulo="Data e hora de entrada" obrigatorio erro={erro('entrada')} colunas={3}>
               {(p) => <Entrada {...p} type="datetime-local" mono value={entrada} onChange={(e) => setEntrada(e.target.value)} required />}
             </Campo>
             <Campo
@@ -155,24 +155,24 @@ export function NovaInternacao() {
               obrigatorio
               erro={erro('alta')}
               ajuda={dataEntrada ? `A partir de ${formatarData(dataEntrada)}.` : undefined}
-              className="sm:col-span-3"
+              colunas={3}
             >
               {(p) => <Entrada {...p} type="date" mono value={alta} min={dataEntrada || undefined} onChange={(e) => setAlta(e.target.value)} required />}
             </Campo>
           </Secao>
 
           <Secao titulo="Motivo">
-            <Campo rotulo="Motivo da internação" obrigatorio erro={erro('motivo')} className="sm:col-span-6">
+            <Campo rotulo="Motivo da internação" obrigatorio erro={erro('motivo')}>
               {(p) => <Entrada {...p} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: Pneumonia adquirida na comunidade" required />}
             </Campo>
-            <Campo rotulo="Observações" className="sm:col-span-6">
+            <Campo rotulo="Observações">
               {(p) => <AreaTexto {...p} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />}
             </Campo>
           </Secao>
         </Cartao>
 
-        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
-          {bloqueado && <p className="text-sm text-danger sm:mr-auto">Corrija os pontos em vermelho para continuar.</p>}
+        <div className={s.acoes}>
+          {bloqueado && <p className={s.bloqueio}>Corrija os pontos em vermelho para continuar.</p>}
           <BotaoLink to="/internacoes">Cancelar</BotaoLink>
           <Botao type="submit" variante="primario" icone={<BedDouble />} disabled={bloqueado}>
             Registrar internação
@@ -209,17 +209,17 @@ function GradeQuartos({ quartos, valor, aoMudar, invalido }: GradeQuartosProps) 
   }
 
   return (
-    <div role="radiogroup" aria-label="Quarto" aria-required aria-invalid={invalido} className="flex flex-col gap-5">
+    <div role="radiogroup" aria-label="Quarto" aria-required aria-invalid={invalido} className={s.grade}>
       {andares.map((andar) => {
         const doAndar = ordenados.filter((q) => q.andar === andar)
-        const vagas = doAndar.reduce((s, q) => s + q.vagas, 0)
+        const vagas = doAndar.reduce((t, q) => t + q.vagas, 0)
         return (
           <div key={andar} role="group" aria-label={`${andar}º andar`}>
-            <p className="mb-2 flex items-baseline justify-between gap-3 text-sm font-medium">
+            <p className={s.andarTopo}>
               {andar}º andar
-              <span className="text-xs font-normal text-ink-3 tabular">{plural(vagas, 'vaga livre', 'vagas livres')}</span>
+              <span className={cn(s.andarVagas, 'tabular')}>{plural(vagas, 'vaga livre', 'vagas livres')}</span>
             </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+            <div className={s.quartos}>
               {doAndar.map((q) => {
                 const ok = podeReceber(q)
                 const marcado = q.id === valor
@@ -238,23 +238,19 @@ function GradeQuartos({ quartos, valor, aoMudar, invalido }: GradeQuartosProps) 
                     tabIndex={q.id === focavel ? 0 : -1}
                     onClick={() => aoMudar(q.id)}
                     onKeyDown={(e) => teclar(e, q.id)}
-                    className={cn(
-                      'flex min-w-0 flex-col gap-1.5 rounded-control border p-2.5 text-left transition-[border-color,background-color,box-shadow]',
-                      'disabled:cursor-not-allowed disabled:bg-surface-2 disabled:opacity-70',
-                      marcado ? 'border-brand bg-brand-soft ring-3 ring-brand/15' : 'border-line-strong bg-surface enabled:hover:border-ink-3',
-                    )}
+                    className={s.quarto}
                   >
-                    <span className="flex items-center justify-between gap-2">
-                      <span className={cn('font-mono text-md font-semibold tabular', marcado && 'text-brand-ink')}>{q.numero}</span>
-                      <span className="truncate text-2xs font-medium tracking-wide text-ink-3 uppercase" title={tiposQuarto[q.tipo].rotulo}>
+                    <span className={s.quartoTopo}>
+                      <span className={cn(s.quartoNumero, 'tabular')}>{q.numero}</span>
+                      <span className={s.quartoTipo} title={tiposQuarto[q.tipo].rotulo}>
                         {tiposQuarto[q.tipo].curto}
                       </span>
                     </span>
                     <PontosOcupacao ocupacao={q.ocupacao} capacidade={q.capacidadeMaxima} situacao={q.situacao} tamanho="sm" />
                     {ok ? (
-                      <span className="text-xs text-ink-2 tabular">{plural(q.vagas, 'vaga')}</span>
+                      <span className={cn(s.quartoVagas, 'tabular')}>{plural(q.vagas, 'vaga')}</span>
                     ) : (
-                      <Selo tom={situacaoQuarto[q.situacao].tom} compacto className="self-start">
+                      <Selo tom={situacaoQuarto[q.situacao].tom} compacto className={s.seloQuarto}>
                         {situacaoQuarto[q.situacao].rotulo}
                       </Selo>
                     )}
@@ -266,8 +262,8 @@ function GradeQuartos({ quartos, valor, aoMudar, invalido }: GradeQuartosProps) 
         )
       })}
       {habilitados.length === 0 && (
-        <p className="text-sm text-ink-3">
-          Nenhum quarto com vaga agora. Confira o <Link to="/quartos" className="font-medium text-brand hover:underline">mapa de quartos</Link>.
+        <p className={s.semQuartos}>
+          Nenhum quarto com vaga agora. Confira o <Link to="/quartos" className={s.linkMapa}>mapa de quartos</Link>.
         </p>
       )}
     </div>

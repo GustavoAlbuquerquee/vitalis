@@ -39,6 +39,7 @@ import {
   relativo,
 } from '@/lib/formato'
 import { cn } from '@/lib/cn'
+import s from './DetalhePaciente.module.css'
 
 type Aba = 'geral' | 'historico'
 
@@ -56,20 +57,20 @@ export function DetalhePaciente() {
     <Pagina>
       <CabecalhoPagina
         migalhas={[{ rotulo: 'Pacientes', para: '/pacientes' }, { rotulo: paciente.nome }]}
-        antes={<Avatar nome={paciente.nome} tamanho="xl" className="hidden sm:inline-flex" />}
+        antes={<Avatar nome={paciente.nome} tamanho="xl" className={s.avatarCabecalho} />}
         titulo={
-          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className={s.titulo}>
             {paciente.nome}
             {internacao && <Selo tom="brand">Internado</Selo>}
             {!paciente.ativo && <Selo tom="neutral">Desativado</Selo>}
           </span>
         }
         descricao={
-          <span className="flex flex-wrap gap-x-2 text-ink-2">
-            <span className="font-mono text-sm tabular">{formatarCpf(paciente.cpf)}</span>
-            <span className="text-ink-3">·</span>
+          <span className={s.descricao}>
+            <span className={s.cpf}>{formatarCpf(paciente.cpf)}</span>
+            <span className={s.separador}>·</span>
             {idade(paciente.dataNascimento)} anos
-            <span className="text-ink-3">·</span>
+            <span className={s.separador}>·</span>
             {paciente.endereco.cidade}/{paciente.endereco.uf}
           </span>
         }
@@ -92,7 +93,7 @@ export function DetalhePaciente() {
 
       <Abas<Aba>
         rotulo="Seções do paciente"
-        className="mb-6"
+        className={s.abas}
         valor={aba}
         aoMudar={(a) => setParams(a === 'geral' ? {} : { aba: a }, { replace: true })}
         opcoes={[
@@ -116,8 +117,8 @@ function VisaoGeral({ pacienteId }: { pacienteId: number }) {
   const e = p.endereco
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="flex flex-col gap-6">
+    <div className={s.visaoGeral}>
+      <div className={s.coluna}>
         {internacao && (
           <Alerta
             tom="info"
@@ -136,7 +137,7 @@ function VisaoGeral({ pacienteId }: { pacienteId: number }) {
           <CabecalhoCartao titulo="Próximas consultas" icone={<CalendarDays />} />
           {proximas.length === 0 ? (
             <EstadoVazio
-              className="py-10"
+              className={s.vazioCompacto}
               icone={<CalendarDays />}
               titulo="Nenhuma consulta agendada"
               acao={
@@ -146,25 +147,25 @@ function VisaoGeral({ pacienteId }: { pacienteId: number }) {
               }
             />
           ) : (
-            <ul className="divide-y divide-line">
+            <ul className={s.lista}>
               {proximas.map((c) => {
                 const prof = buscarProfissional(c.profissionalId)!
                 return (
                   <li key={c.id}>
-                    <Link to={`/consultas/${c.id}`} className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-surface-2/60">
-                      <div className="flex w-12 shrink-0 flex-col items-center rounded-control border border-line bg-surface-2 py-1 leading-none">
-                        <span className="text-2xs font-semibold text-ink-3 uppercase">{diaDaSemanaCurto(c.data)}</span>
-                        <span className="mt-1 text-md font-semibold tabular">{c.data.slice(8)}</span>
+                    <Link to={`/consultas/${c.id}`} className={s.consulta}>
+                      <div className={s.dia}>
+                        <span className={s.diaSemana}>{diaDaSemanaCurto(c.data)}</span>
+                        <span className={s.diaNumero}>{c.data.slice(8)}</span>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{c.motivo}</p>
-                        <p className="truncate text-sm text-ink-3">
+                      <div className={s.texto}>
+                        <p className={s.consultaMotivo}>{c.motivo}</p>
+                        <p className={s.linhaSecundaria}>
                           {prof.nome} · {nomeEspecialidade(prof)}
                         </p>
                       </div>
-                      <div className="hidden text-right sm:block">
+                      <div className={s.quando}>
                         <Horario c={c} />
-                        <p className="text-xs text-ink-3">{relativo(c.data)}</p>
+                        <p className={s.quandoRelativo}>{relativo(c.data)}</p>
                       </div>
                     </Link>
                   </li>
@@ -184,9 +185,9 @@ function VisaoGeral({ pacienteId }: { pacienteId: number }) {
               </BotaoLink>
             }
           />
-          <ul className="divide-y divide-line">
+          <ul className={s.lista}>
             {historico.filter((h) => h.data.slice(0, 10) <= hoje()).slice(0, 4).map((h) => (
-              <li key={`${h.tipo}-${h.tipo === 'consulta' ? h.consulta.id : h.internacao.id}`} className="px-5 py-3">
+              <li key={`${h.tipo}-${h.tipo === 'consulta' ? h.consulta.id : h.internacao.id}`} className={s.itemRecente}>
                 <LinhaEvento evento={h} />
               </li>
             ))}
@@ -194,18 +195,18 @@ function VisaoGeral({ pacienteId }: { pacienteId: number }) {
         </Cartao>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className={s.coluna}>
         <Cartao>
           <CabecalhoCartao titulo="Resumo" />
-          <CorpoCartao className="grid grid-cols-3 gap-3 text-center">
+          <CorpoCartao className={s.resumo}>
             {[
               [realizadas.length, 'consultas realizadas'],
               [historico.filter((h) => h.tipo === 'internacao').length, 'internações'],
               [proximas.length, 'agendadas'],
             ].map(([n, r]) => (
-              <div key={r} className="rounded-control bg-surface-2 px-2 py-3">
-                <p className="text-xl font-semibold tabular">{n}</p>
-                <p className="text-xs text-ink-3">{r}</p>
+              <div key={r} className={s.resumoItem}>
+                <p className={s.resumoNumero}>{n}</p>
+                <p className={s.resumoRotulo}>{r}</p>
               </div>
             ))}
           </CorpoCartao>
@@ -226,15 +227,15 @@ function VisaoGeral({ pacienteId }: { pacienteId: number }) {
         </Cartao>
         <Cartao>
           <CabecalhoCartao titulo="Endereço" />
-          <CorpoCartao className="text-base leading-relaxed">
+          <CorpoCartao className={s.endereco}>
             <p>
               {e.logradouro}, {e.numero}
               {e.complemento && ` · ${e.complemento}`}
             </p>
-            <p className="text-ink-2">
+            <p className={s.enderecoBairro}>
               {e.bairro} · {e.cidade}/{e.uf}
             </p>
-            <p className="font-mono text-sm text-ink-3 tabular">CEP {formatarCep(e.cep)}</p>
+            <p className={s.cep}>CEP {formatarCep(e.cep)}</p>
           </CorpoCartao>
         </Cartao>
       </div>
@@ -248,11 +249,11 @@ function LinhaEvento({ evento }: { evento: EventoHistorico }) {
     const c = evento.consulta
     const prof = buscarProfissional(c.profissionalId)!
     return (
-      <Link to={`/consultas/${c.id}`} className="flex items-center gap-3 hover:[&_p:first-child]:underline">
+      <Link to={`/consultas/${c.id}`} className={s.evento}>
         <IconeEvento tipo="consulta" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-medium underline-offset-4">{c.motivo}</p>
-          <p className="truncate text-sm text-ink-3">
+        <div className={s.texto}>
+          <p className={s.eventoTitulo}>{c.motivo}</p>
+          <p className={s.linhaSecundaria}>
             {formatarData(c.data)} · {prof.nome}
           </p>
         </div>
@@ -262,11 +263,11 @@ function LinhaEvento({ evento }: { evento: EventoHistorico }) {
   }
   const i = evento.internacao
   return (
-    <Link to={`/internacoes/${i.id}`} className="flex items-center gap-3 hover:[&_p:first-child]:underline">
+    <Link to={`/internacoes/${i.id}`} className={s.evento}>
       <IconeEvento tipo="internacao" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-medium underline-offset-4">{i.motivo}</p>
-        <p className="truncate text-sm text-ink-3">
+      <div className={s.texto}>
+        <p className={s.eventoTitulo}>{i.motivo}</p>
+        <p className={s.linhaSecundaria}>
           {formatarData(i.dataEntrada)} · {plural(diasInternado(i), 'dia')} · quarto {buscarQuarto(i.quartoId)?.numero}
         </p>
       </div>
@@ -277,13 +278,7 @@ function LinhaEvento({ evento }: { evento: EventoHistorico }) {
 
 function IconeEvento({ tipo }: { tipo: EventoHistorico['tipo'] }) {
   return (
-    <span
-      className={cn(
-        'flex size-8 shrink-0 items-center justify-center rounded-full [&_svg]:size-4',
-        tipo === 'consulta' ? 'bg-info-soft text-info' : 'bg-brand-soft text-brand-ink',
-      )}
-      aria-hidden
-    >
+    <span data-tom={tipo === 'consulta' ? 'info' : 'brand'} className={s.iconeEvento} aria-hidden>
       {tipo === 'consulta' ? <Stethoscope /> : <BedDouble />}
     </span>
   )
@@ -303,11 +298,11 @@ function Historico({ eventos }: { eventos: EventoHistorico[] }) {
   }, {})
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className={s.historico}>
       <div>
         <Pilulas<FiltroHistorico>
           rotulo="Filtrar histórico"
-          className="mb-5"
+          className={s.filtros}
           valor={filtro}
           aoMudar={setFiltro}
           opcoes={[
@@ -324,9 +319,9 @@ function Historico({ eventos }: { eventos: EventoHistorico[] }) {
           Object.entries(porAno)
             .sort(([a], [b]) => b.localeCompare(a))
             .map(([ano, lista]) => (
-              <section key={ano} className="mb-8">
-                <h2 className="mb-3 font-mono text-sm font-medium text-ink-3 tabular">{ano}</h2>
-                <ol className="relative flex flex-col gap-3 before:absolute before:top-4 before:bottom-4 before:left-[15px] before:w-px before:bg-line">
+              <section key={ano} className={s.ano}>
+                <h2 className={s.anoTitulo}>{ano}</h2>
+                <ol className={s.linhaTempo}>
                   {lista.map((e) => (
                     <ItemHistorico key={`${e.tipo}-${e.tipo === 'consulta' ? e.consulta.id : e.internacao.id}`} evento={e} />
                   ))}
@@ -379,37 +374,37 @@ function ItemHistorico({ evento }: { evento: EventoHistorico }) {
         })()
 
   return (
-    <li className="relative flex gap-4">
-      <span className="relative z-10 mt-3">
+    <li className={s.itemHistorico}>
+      <span className={s.marcador}>
         <IconeEvento tipo={evento.tipo} />
       </span>
-      <Cartao className={cn('min-w-0 flex-1', futuro && 'border-dashed')}>
-        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-4 py-3">
-          <div className="min-w-0">
-            <p className="text-2xs font-semibold tracking-[0.06em] text-ink-3 uppercase">
+      <Cartao className={cn(s.cartaoEvento, futuro && s.futuro)}>
+        <div className={s.eventoCabecalho}>
+          <div className={s.eventoInfo}>
+            <p className={s.eventoTipo}>
               {cabecalho.tipo}
               {futuro && ' · agendada'}
             </p>
-            <Link to={cabecalho.para} className="mt-0.5 block font-semibold hover:underline hover:underline-offset-4">
+            <Link to={cabecalho.para} className={s.eventoLink}>
               {cabecalho.titulo}
             </Link>
-            <p className="mt-0.5 text-sm text-ink-3">{cabecalho.meta}</p>
+            <p className={s.eventoMeta}>{cabecalho.meta}</p>
           </div>
           {cabecalho.selo}
         </div>
-        {cabecalho.nota && <p className="border-t border-line px-4 py-2.5 text-sm text-ink-2">{cabecalho.nota}</p>}
+        {cabecalho.nota && <p className={s.nota}>{cabecalho.nota}</p>}
         {registros.length > 0 && (
-          <div className="border-t border-line">
+          <div className={s.registros}>
             <button
               onClick={() => setAberto(!aberto)}
               aria-expanded={aberto}
-              className="flex w-full items-center gap-1.5 px-4 py-2 text-sm font-medium text-ink-2 hover:text-ink"
+              className={s.alternar}
             >
-              <ChevronDown className={cn('size-4 transition-transform', aberto && 'rotate-180')} />
+              <ChevronDown className={cn(s.seta, aberto && s.setaAberta)} />
               {plural(registros.length, 'registro clínico', 'registros clínicos')}
             </button>
             {aberto && (
-              <div className="px-4 pt-1 pb-4">
+              <div className={s.registrosCorpo}>
                 <RegistrosClinicos registros={registros} />
               </div>
             )}

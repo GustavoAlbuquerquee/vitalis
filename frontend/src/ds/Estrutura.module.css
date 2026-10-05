@@ -1,0 +1,144 @@
+/* ───────── Página ───────── */
+.pagina {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+.estreita { max-width: 896px; }
+.larga { max-width: none; }
+
+@media (min-width: 640px) {
+  .pagina { padding: 32px; }
+}
+
+/* ───────── Cabeçalho de página ───────── */
+.cabecalho { margin-bottom: 24px; }
+
+.migalhas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+.migalha { display: flex; align-items: center; gap: 4px; }
+.migalha svg { width: 14px; height: 14px; }
+.migalha a:hover { color: var(--ink); }
+.migalhaAtual { color: var(--ink-2); }
+
+.linha {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.identidade {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 16px;
+}
+
+.textos { min-width: 0; }
+
+.titulo {
+  font-size: var(--fs-xl);
+  line-height: var(--lh-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.descricao {
+  margin-top: 4px;
+  font-size: var(--fs-base);
+  color: var(--ink-2);
+}
+
+.acoes {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .linha { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+  .titulo { font-size: var(--fs-2xl); line-height: var(--lh-2xl); letter-spacing: -0.02em; }
+}
+
+/* ───────── Estado vazio ───────── */
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  text-align: center;
+}
+
+.vazioIcone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-3);
+}
+.vazioIcone svg { width: 20px; height: 20px; }
+
+.vazioTitulo { font-weight: 600; }
+
+.vazioDescricao {
+  max-width: 384px;
+  margin-top: 4px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.vazioAcao { margin-top: 20px; }
+
+/* ───────── Lista de definição ───────── */
+.definicoes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 24px;
+  row-gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .col2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .col3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.definicao { min-width: 0; }
+
+.termo {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.valor {
+  margin-top: 2px;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+
+.valorMono {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.semValor { color: var(--ink-3); }

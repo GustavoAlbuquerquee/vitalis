@@ -257,7 +257,7 @@ vitalis/
 │   ├── diagramas/            # fontes Mermaid, PlantUML e a versão renderizada
 │   └── decisoes/             # ADRs — por que cada escolha foi feita
 │
-├── frontend/                 # interface web — React + TypeScript + Tailwind
+├── frontend/                 # interface web — React + TypeScript + CSS Modules
 │   └── src/modulos/          # uma pasta por módulo, espelhando modulos/
 │
 ├── testes/

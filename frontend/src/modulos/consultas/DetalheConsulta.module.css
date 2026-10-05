@@ -1,0 +1,110 @@
+.descricao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+}
+
+.colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+@media (min-width: 1280px) {
+  .colunas { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ───────── Observações médicas ───────── */
+.observacoes {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.observacoesRotulo {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.observacoesTexto {
+  margin-top: 4px;
+  font-size: var(--fs-base);
+  line-height: 1.625;
+}
+
+.observacoesVazio {
+  margin-top: 4px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+/* ───────── Coluna lateral ───────── */
+.corpoPaciente {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.alinharInicio { align-self: flex-start; }
+
+.anteriores > li + li { border-top: 1px solid var(--line); }
+
+.anterior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+}
+.anterior:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+
+.anteriorTexto { min-width: 0; }
+
+.anteriorMotivo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+
+.anteriorData {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+/* ───────── Modais ───────── */
+@media (min-width: 640px) {
+  .naoCompareceu { margin-right: auto; }
+}
+
+.campoObservacoes { min-height: 144px; }
+
+.novoHorario {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .novoHorario { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.alertas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
