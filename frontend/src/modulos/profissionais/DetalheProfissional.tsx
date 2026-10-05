@@ -29,6 +29,7 @@ import { diasSemana, especialidades } from '@/lib/rotulos'
 import type { DiaSemana, Disponibilidade, ProfissionalSaude } from '@/tipos/dominio'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
 import { cn } from '@/lib/cn'
+import s from './DetalheProfissional.module.css'
 
 /** "às segundas", "aos sábados" */
 const nosDias = (d: (typeof diasSemana)[number]) => `${d.valor === 'SABADO' || d.valor === 'DOMINGO' ? 'aos' : 'às'} ${d.rotulo.toLowerCase()}s`
@@ -63,10 +64,10 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
         antes={<Avatar nome={p.nome} tamanho="xl" />}
         titulo={p.nome}
         descricao={
-          <span className="flex flex-wrap items-center gap-x-2">
+          <span className={s.subtitulo}>
             {nomeEspecialidade(p)}
-            <span className="text-ink-3" aria-hidden>·</span>
-            <span className="font-mono text-sm tabular">{p.registroProfissional}</span>
+            <span className={s.separador} aria-hidden>·</span>
+            <span className={cn(s.registro, 'tabular')}>{p.registroProfissional}</span>
           </span>
         }
         acoes={
@@ -81,13 +82,13 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
         }
       />
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="flex min-w-0 flex-col gap-6">
+      <div className={s.colunas}>
+        <div className={s.coluna}>
           <AgendaDoDia p={p} />
           <DisponibilidadeSemanal p={p} />
         </div>
 
-        <div className="flex min-w-0 flex-col gap-6">
+        <div className={s.coluna}>
           <Cartao>
             <CabecalhoCartao titulo="Contato" />
             <CorpoCartao>
@@ -97,7 +98,7 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
                   {
                     rotulo: 'Telefone',
                     valor: (
-                      <a href={`tel:+55${p.telefone.replace(/\D/g, '')}`} className="tabular hover:underline hover:underline-offset-4">
+                      <a href={`tel:+55${p.telefone.replace(/\D/g, '')}`} className={cn(s.linkContato, 'tabular')}>
                         {formatarTelefone(p.telefone)}
                       </a>
                     ),
@@ -105,7 +106,7 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
                   {
                     rotulo: 'E-mail',
                     valor: (
-                      <a href={`mailto:${p.email}`} className="hover:underline hover:underline-offset-4">
+                      <a href={`mailto:${p.email}`} className={s.linkContato}>
                         {p.email}
                       </a>
                     ),
@@ -118,35 +119,35 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
 
           <Cartao>
             <CabecalhoCartao titulo="Números" />
-            <dl className="grid grid-cols-3 divide-x divide-line border-b border-line">
+            <dl className={s.numeros}>
               {numeros.map((n) => (
-                <div key={n.rotulo} className="flex min-w-0 flex-col px-4 py-4 first:pl-5 last:pr-5">
-                  <dt className="order-2 mt-1 text-xs leading-tight font-medium text-ink-2">
+                <div key={n.rotulo} className={s.numero}>
+                  <dt className={s.numeroRotulo}>
                     {n.rotulo}
-                    <span className="mt-0.5 block text-2xs font-normal text-ink-3">{n.detalhe}</span>
+                    <span className={s.numeroDetalhe}>{n.detalhe}</span>
                   </dt>
-                  <dd className="order-1 text-xl font-semibold tracking-[-0.02em] tabular">{n.valor}</dd>
+                  <dd className={cn(s.numeroValor, 'tabular')}>{n.valor}</dd>
                 </div>
               ))}
             </dl>
-            <div className="px-5 pt-4 pb-1">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-ink-2">
-                <BedDouble className="size-4 text-ink-3" aria-hidden />
+            <div className={s.internacoesTopo}>
+              <h3 className={s.internacoesTitulo}>
+                <BedDouble aria-hidden />
                 Internações sob responsabilidade
               </h3>
             </div>
             {internacoes.length === 0 ? (
-              <p className="px-5 pt-1 pb-5 text-sm text-ink-3">Nenhuma internação ativa sob responsabilidade deste profissional.</p>
+              <p className={s.semInternacoes}>Nenhuma internação ativa sob responsabilidade deste profissional.</p>
             ) : (
-              <ul className="divide-y divide-line pb-1">
+              <ul className={s.internacoes}>
                 {internacoes.map((i) => {
                   const paciente = buscarPaciente(i.pacienteId)!
                   const quarto = buscarQuarto(i.quartoId)!
                   return (
                     <li key={i.id}>
-                      <Link to={`/internacoes/${i.id}`} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-2/60">
-                        <Pessoa nome={paciente.nome} tamanho="sm" detalhe={`Quarto ${quarto.numero} · ${i.motivo}`} className="flex-1" />
-                        <span className="shrink-0 text-sm text-ink-3 tabular">{plural(diasInternado(i), 'dia')}</span>
+                      <Link to={`/internacoes/${i.id}`} className={s.internacao}>
+                        <Pessoa nome={paciente.nome} tamanho="sm" detalhe={`Quarto ${quarto.numero} · ${i.motivo}`} className={s.internacaoPessoa} />
+                        <span className={cn(s.internacaoDias, 'tabular')}>{plural(diasInternado(i), 'dia')}</span>
                       </Link>
                     </li>
                   )
@@ -172,7 +173,7 @@ function AgendaDoDia({ p }: { p: ProfissionalSaude }) {
       <CabecalhoCartao
         titulo="Agenda do dia"
         descricao={
-          <span className="first-letter:uppercase">
+          <span className={s.dataAgenda}>
             {diaDaSemana(dia)}, {formatarDataLonga(dia)} · {relativo(dia)}
           </span>
         }
@@ -191,8 +192,8 @@ function AgendaDoDia({ p }: { p: ProfissionalSaude }) {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line bg-surface-2/40 px-5 py-2.5 text-sm text-ink-2">
-        <Clock className="size-4 shrink-0 text-ink-3" aria-hidden />
+      <div className={s.faixa}>
+        <Clock className={s.faixaIcone} aria-hidden />
         {janelas.length ? (
           <>
             <span>
@@ -200,13 +201,13 @@ function AgendaDoDia({ p }: { p: ProfissionalSaude }) {
               {janelas.map((j, i) => (
                 <span key={j.id}>
                   {i > 0 && ' e '}
-                  <span className="font-mono text-xs tabular">
+                  <span className={cn(s.janelaHorario, 'tabular')}>
                     {j.horaInicio}–{j.horaFim}
                   </span>
                 </span>
               ))}
             </span>
-            <span className="text-ink-3 tabular">· {plural(ativas, 'consulta')}</span>
+            <span className={cn(s.faixaContagem, 'tabular')}>· {plural(ativas, 'consulta')}</span>
           </>
         ) : (
           <span>Não atende {nosDias(semana)} — sem janela de disponibilidade neste dia da semana.</span>
@@ -231,21 +232,21 @@ function AgendaDoDia({ p }: { p: ProfissionalSaude }) {
           <EstadoVazio icone={<CalendarOff />} titulo={`Não atende ${nosDias(semana)}`} descricao="Escolha outro dia ou adicione uma janela de disponibilidade para este dia da semana." />
         )
       ) : (
-        <ul className="divide-y divide-line">
+        <ul className={s.consultas}>
           {consultas.map((c) => {
             const paciente = buscarPaciente(c.pacienteId)!
             return (
-              <li key={c.id} className="relative flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 transition-colors hover:bg-surface-2/60">
+              <li key={c.id} className={s.consulta}>
                 {/* Link da linha inteira por baixo; o nome do paciente fica por cima com o próprio link */}
-                <Link to={`/consultas/${c.id}`} className="absolute inset-0" aria-label={`Consulta das ${c.horario} com ${paciente.nome}`} />
-                <Horario c={c} className={cn('w-[104px] shrink-0', c.status === 'CANCELADA' && 'text-ink-3 line-through')} />
+                <Link to={`/consultas/${c.id}`} className={s.consultaLink} aria-label={`Consulta das ${c.horario} com ${paciente.nome}`} />
+                <Horario c={c} className={cn(s.consultaHorario, c.status === 'CANCELADA' && s.cancelada)} />
                 <Pessoa
                   nome={paciente.nome}
                   para={`/pacientes/${paciente.id}`}
                   detalhe={c.motivo}
-                  className="order-last w-full sm:order-none sm:w-auto sm:flex-1 [&_a]:relative [&_a]:z-10"
+                  className={s.consultaPessoa}
                 />
-                <span className="ml-auto sm:ml-0">
+                <span className={s.consultaSelo}>
                   <SeloConsulta status={c.status} />
                 </span>
               </li>
@@ -267,7 +268,7 @@ function DisponibilidadeSemanal({ p }: { p: ProfissionalSaude }) {
   const fechar = useCallback(() => setAberto(false), [])
   const indiceHoje = indiceDiaSemana(hoje())
   const horas = Array.from({ length: HORA_FIM - HORA_INICIO + 1 }, (_, i) => HORA_INICIO + i)
-  const totalMinutos = p.disponibilidades.reduce((s, j) => s + minutos(j.horaFim) - minutos(j.horaInicio), 0)
+  const totalMinutos = p.disponibilidades.reduce((soma, j) => soma + minutos(j.horaFim) - minutos(j.horaInicio), 0)
   const diasComJanela = diasSemana.filter((d) => p.disponibilidades.some((j) => j.diaSemana === d.valor)).length
 
   const posicao = (j: Disponibilidade) => {
@@ -287,39 +288,39 @@ function DisponibilidadeSemanal({ p }: { p: ProfissionalSaude }) {
         }
         acoes={
           <Botao tamanho="sm" icone={<Plus />} onClick={() => setAberto(true)}>
-            <span className="sr-only sm:not-sr-only">Adicionar janela</span>
+            <span className={s.somenteTelaLarga}>Adicionar janela</span>
           </Botao>
         }
       />
-      <div className="overflow-x-auto px-5 py-4">
-        <div className="grid min-w-[600px] grid-cols-[44px_repeat(7,minmax(0,1fr))]">
+      <div className={s.rolagem}>
+        <div className={s.semana}>
           <div />
           {diasSemana.map((d, i) => (
-            <div key={d.valor} className={cn('pb-2 text-center text-xs font-medium', i === indiceHoje ? 'text-brand-ink' : 'text-ink-3')}>
+            <div key={d.valor} className={cn(s.diaNome, i === indiceHoje && s.diaNomeHoje)}>
               {d.curto}
               {i === indiceHoje && <span className="sr-only"> (hoje)</span>}
             </div>
           ))}
 
-          <div className="relative" style={{ height: (HORA_FIM - HORA_INICIO) * ALTURA_HORA }} aria-hidden>
+          <div className={s.horas} style={{ height: (HORA_FIM - HORA_INICIO) * ALTURA_HORA }} aria-hidden>
             {horas.map((h) => (
-              <span key={h} className="absolute right-2 -translate-y-1/2 font-mono text-2xs text-ink-3 tabular" style={{ top: (h - HORA_INICIO) * ALTURA_HORA }}>
+              <span key={h} className={cn(s.hora, 'tabular')} style={{ top: (h - HORA_INICIO) * ALTURA_HORA }}>
                 {String(h).padStart(2, '0')}h
               </span>
             ))}
           </div>
 
           {diasSemana.map((d, i) => (
-            <div key={d.valor} className={cn('relative border-l border-line', i === 6 && 'border-r', i === indiceHoje && 'bg-surface-2/50')}>
+            <div key={d.valor} className={cn(s.diaColuna, i === 6 && s.diaColunaUltima, i === indiceHoje && s.diaColunaHoje)}>
               {horas.slice(0, -1).map((h) => (
-                <div key={h} className="border-t border-line/70" style={{ height: ALTURA_HORA }} aria-hidden />
+                <div key={h} className={s.linhaHora} style={{ height: ALTURA_HORA }} aria-hidden />
               ))}
-              <div className="absolute inset-x-0 bottom-0 border-t border-line/70" aria-hidden />
+              <div className={s.linhaFim} aria-hidden />
               {janelasDoDia(p, d.valor).map((j) => (
                 <div
                   key={j.id}
                   title={`${d.rotulo}, ${j.horaInicio} às ${j.horaFim}`}
-                  className="absolute inset-x-1 overflow-hidden rounded-[5px] border-l-[3px] border-brand bg-brand-soft px-1.5 py-1 text-2xs leading-tight font-medium text-brand-ink tabular"
+                  className={cn(s.janela, 'tabular')}
                   style={posicao(j)}
                 >
                   <span className="sr-only">{d.rotulo}, </span>
@@ -380,9 +381,9 @@ function NovaJanela({ p, aoFechar }: { p: ProfissionalSaude; aoFechar: () => voi
         </>
       }
     >
-      <form id={formId} onSubmit={enviar} noValidate className="flex flex-col gap-4">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Campo rotulo="Dia da semana" obrigatorio className="sm:col-span-3">
+      <form id={formId} onSubmit={enviar} noValidate className={s.formulario}>
+        <div className={s.campos}>
+          <Campo rotulo="Dia da semana" obrigatorio className={s.campoLargo}>
             {(props) => (
               <Selecao {...props} value={dia} onChange={(e) => setDia(e.target.value as DiaSemana)}>
                 {diasSemana.map((d) => (
@@ -393,10 +394,10 @@ function NovaJanela({ p, aoFechar }: { p: ProfissionalSaude; aoFechar: () => voi
               </Selecao>
             )}
           </Campo>
-          <Campo rotulo="Início" obrigatorio erro={!inicio ? 'Informe o horário de início' : undefined} className="sm:col-span-1">
+          <Campo rotulo="Início" obrigatorio erro={!inicio ? 'Informe o horário de início' : undefined}>
             {(props) => <Entrada {...props} type="time" mono value={inicio} onChange={(e) => setInicio(e.target.value)} />}
           </Campo>
-          <Campo rotulo="Fim" obrigatorio erro={!fim ? 'Informe o horário de fim' : invertido ? 'O fim precisa ser depois do início' : undefined} className="sm:col-span-1">
+          <Campo rotulo="Fim" obrigatorio erro={!fim ? 'Informe o horário de fim' : invertido ? 'O fim precisa ser depois do início' : undefined}>
             {(props) => <Entrada {...props} type="time" mono value={fim} onChange={(e) => setFim(e.target.value)} />}
           </Campo>
         </div>

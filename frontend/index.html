@@ -8,8 +8,10 @@
     <title>Vitalis</title>
     <script>
       try {
+        // Ordem: escolha salva no app > tema já definido por quem hospeda a página > tema do sistema
         const t = localStorage.getItem('vitalis-tema')
-        const escuro = t ? t === 'escuro' : matchMedia('(prefers-color-scheme: dark)').matches
+        const host = document.documentElement.dataset.theme
+        const escuro = t ? t === 'escuro' : host ? host === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
         document.documentElement.dataset.theme = escuro ? 'dark' : 'light'
       } catch {
         document.documentElement.dataset.theme = 'light'

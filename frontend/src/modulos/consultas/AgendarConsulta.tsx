@@ -10,6 +10,7 @@ import { diaDaSemana, formatarData } from '@/lib/formato'
 import { diasSemana, especialidades } from '@/lib/rotulos'
 import type { Especialidade } from '@/tipos/dominio'
 import { cn } from '@/lib/cn'
+import s from './AgendarConsulta.module.css'
 
 const DURACOES = [20, 30, 45, 60]
 
@@ -95,7 +96,7 @@ export function AgendarConsulta() {
       detalhe: conflito ? (
         <>
           Conflita com a{' '}
-          <Link to={`/consultas/${conflito.id}`} className="font-medium text-danger underline underline-offset-2">
+          <Link to={`/consultas/${conflito.id}`} className={s.linkConflito}>
             consulta das {conflito.horario}
           </Link>{' '}
           de {buscarPaciente(conflito.pacienteId)?.nome}.
@@ -125,10 +126,10 @@ export function AgendarConsulta() {
     <Pagina>
       <CabecalhoPagina migalhas={[{ rotulo: 'Agenda', para: '/consultas' }, { rotulo: 'Agendar consulta' }]} titulo="Agendar consulta" />
 
-      <form onSubmit={enviar} noValidate className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Cartao className="px-5 py-7 sm:px-8">
+      <form onSubmit={enviar} noValidate className={s.formulario}>
+        <Cartao className={s.cartaoForm}>
           <Secao titulo="Quem" descricao="O paciente e o profissional que vai atendê-lo.">
-            <Campo rotulo="Paciente" obrigatorio erro={tentou && !paciente ? 'Escolha o paciente.' : undefined} className="sm:col-span-6">
+            <Campo rotulo="Paciente" obrigatorio erro={tentou && !paciente ? 'Escolha o paciente.' : undefined}>
               {(p) => (
                 <Selecao {...p} value={pacienteId} onChange={(e) => setPacienteId(e.target.value)}>
                   <option value="">Selecione…</option>
@@ -140,7 +141,7 @@ export function AgendarConsulta() {
                 </Selecao>
               )}
             </Campo>
-            <Campo rotulo="Profissional" obrigatorio erro={tentou && !profissional ? 'Escolha o profissional.' : undefined} className="sm:col-span-6">
+            <Campo rotulo="Profissional" obrigatorio erro={tentou && !profissional ? 'Escolha o profissional.' : undefined}>
               {(p) => (
                 <Selecao {...p} value={profissionalId} onChange={(e) => setProfissionalId(e.target.value)}>
                   <option value="">Selecione…</option>
@@ -159,10 +160,10 @@ export function AgendarConsulta() {
           </Secao>
 
           <Secao titulo="Quando" descricao="Os horários sugeridos respeitam a disponibilidade e a agenda já ocupada.">
-            <Campo rotulo="Data" obrigatorio className="sm:col-span-3" ajuda={<span className="inline-block first-letter:uppercase">{diaDaSemana(data)}</span>}>
+            <Campo rotulo="Data" obrigatorio colunas={3} ajuda={<span className="inicial-maiuscula">{diaDaSemana(data)}</span>}>
               {(p) => <Entrada {...p} type="date" min={hoje()} value={data} onChange={(e) => setData(e.target.value)} />}
             </Campo>
-            <Campo rotulo="Duração" obrigatorio className="sm:col-span-3">
+            <Campo rotulo="Duração" obrigatorio colunas={3}>
               {(p) => (
                 <Selecao {...p} value={duracao} onChange={(e) => setDuracao(Number(e.target.value))}>
                   {DURACOES.map((d) => (
@@ -173,14 +174,14 @@ export function AgendarConsulta() {
                 </Selecao>
               )}
             </Campo>
-            <div className="sm:col-span-6">
-              <p className="mb-1.5 text-sm font-medium">
-                Horário<span className="ml-0.5 text-danger">*</span>
+            <div>
+              <p className={s.rotuloHorario}>
+                Horário<span className={s.obrigatorio}>*</span>
               </p>
               {!profissional ? (
-                <p className="rounded-control border border-dashed border-line-strong px-3 py-4 text-center text-sm text-ink-3">Escolha o profissional para ver os horários livres.</p>
+                <p className={s.semHorarios}>Escolha o profissional para ver os horários livres.</p>
               ) : sugestoes.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 rounded-control border border-dashed border-line-strong px-3 py-4 text-center text-sm text-ink-3">
+                <div className={cn(s.semHorarios, s.semHorariosAcao)}>
                   {janelas.length ? 'Sem horários livres neste dia.' : `${profissional.nome} não atende neste dia da semana.`}
                   {proximoDia && (
                     <Botao tamanho="sm" onClick={() => (setData(proximoDia), setHorario(''))}>
@@ -189,7 +190,7 @@ export function AgendarConsulta() {
                   )}
                 </div>
               ) : (
-                <div role="radiogroup" aria-label="Horário" className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 md:grid-cols-8">
+                <div role="radiogroup" aria-label="Horário" className={s.horarios}>
                   {sugestoes.map((h) => {
                     const ok = livre(h)
                     const ativo = h === horario
@@ -201,14 +202,7 @@ export function AgendarConsulta() {
                         aria-checked={ativo}
                         disabled={!ok}
                         onClick={() => setHorario(h)}
-                        className={cn(
-                          'h-9 rounded-control border font-mono text-sm tabular transition-colors',
-                          ativo
-                            ? 'border-brand bg-brand text-on-brand'
-                            : ok
-                              ? 'border-line-strong bg-surface hover:border-brand hover:text-brand'
-                              : 'cursor-not-allowed border-line bg-surface-2 text-ink-3 line-through',
-                        )}
+                        className={cn(s.slot, ativo ? s.slotAtivo : ok ? s.slotLivre : s.slotOcupado)}
                       >
                         {h}
                       </button>
@@ -216,49 +210,49 @@ export function AgendarConsulta() {
                   })}
                 </div>
               )}
-              <div className="mt-3 flex items-center gap-2 text-sm text-ink-3">
-                <span className="whitespace-nowrap">Outro horário:</span>
-                <Entrada type="time" step={300} value={horario} onChange={(e) => setHorario(e.target.value)} className="w-32" aria-label="Horário manual" />
+              <div className={s.outroHorario}>
+                <span className={s.semQuebra}>Outro horário:</span>
+                <Entrada type="time" step={300} value={horario} onChange={(e) => setHorario(e.target.value)} aria-label="Horário manual" />
               </div>
             </div>
           </Secao>
 
           <Secao titulo="Por quê" descricao="O motivo aparece na agenda e no histórico do paciente.">
-            <Campo rotulo="Motivo da consulta" obrigatorio erro={tentou && !motivo.trim() ? 'Descreva o motivo.' : undefined} className="sm:col-span-6">
-              {(p) => <AreaTexto {...p} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: dor torácica há três dias" className="min-h-20" />}
+            <Campo rotulo="Motivo da consulta" obrigatorio erro={tentou && !motivo.trim() ? 'Descreva o motivo.' : undefined}>
+              {(p) => <AreaTexto {...p} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: dor torácica há três dias" />}
             </Campo>
           </Secao>
         </Cartao>
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+        <div className={s.lateral}>
           <Cartao>
             <CabecalhoCartao titulo="Verificação" descricao="As regras de negócio, avaliadas enquanto você preenche" />
-            <ul className="divide-y divide-line">
+            <ul className={s.verificacoes}>
               {verificacoes.map((v) => (
-                <li key={v.regra} className="flex gap-3 px-5 py-3">
+                <li key={v.regra} className={s.verificacao}>
                   {v.ok === undefined ? (
-                    <CircleDashed className="mt-0.5 size-[18px] shrink-0 text-ink-3" aria-label="Pendente" />
+                    <CircleDashed className={cn(s.icone, s.pendente)} aria-label="Pendente" />
                   ) : v.ok ? (
-                    <CircleCheck className="mt-0.5 size-[18px] shrink-0 text-ok" aria-label="Atendida" />
+                    <CircleCheck className={cn(s.icone, s.atendida)} aria-label="Atendida" />
                   ) : (
-                    <CircleX className="mt-0.5 size-[18px] shrink-0 text-danger" aria-label="Violada" />
+                    <CircleX className={cn(s.icone, s.violada)} aria-label="Violada" />
                   )}
-                  <div className="min-w-0 flex-1">
-                    <p className={cn('flex items-center justify-between gap-2 text-sm font-medium', v.ok === false && 'text-danger')}>
+                  <div className={s.verificacaoTexto}>
+                    <p className={cn(s.verificacaoTitulo, v.ok === false && s.violada)}>
                       {v.titulo}
-                      <span className="font-mono text-2xs font-normal text-ink-3">{v.regra}</span>
+                      <span className={s.regra}>{v.regra}</span>
                     </p>
-                    <p className="mt-0.5 text-sm text-ink-3">{v.detalhe}</p>
+                    <p className={s.verificacaoDetalhe}>{v.detalhe}</p>
                   </div>
                 </li>
               ))}
             </ul>
-            <div className="border-t border-line p-4">
-              <Botao type="submit" variante="primario" className="w-full" disabled={bloqueado}>
+            <div className={s.rodapeVerificacao}>
+              <Botao type="submit" variante="primario" className={s.botaoCheio} disabled={bloqueado}>
                 Agendar consulta
               </Botao>
               {paciente && profissional && horario && !bloqueado && (
-                <p className="mt-2 text-center text-xs text-ink-3">
+                <p className={s.resumo}>
                   {formatarData(data)} às {horario} · {duracao} min
                 </p>
               )}
@@ -268,15 +262,15 @@ export function AgendarConsulta() {
           {profissional && (
             <Cartao>
               <CabecalhoCartao titulo={`Agenda de ${profissional.nome.split(' ').slice(0, 2).join(' ')}`} descricao={formatarData(data)} />
-              <CorpoCartao className="py-3">
+              <CorpoCartao className={s.corpoAgenda}>
                 {ocupadas.length === 0 ? (
-                  <p className="text-sm text-ink-3">Nenhum atendimento neste dia.</p>
+                  <p className={s.semAtendimento}>Nenhum atendimento neste dia.</p>
                 ) : (
-                  <ul className="flex flex-col gap-1.5">
+                  <ul className={s.ocupadas}>
                     {ocupadas.map((c) => (
-                      <li key={c.id} className={cn('flex items-center gap-3 rounded-[6px] px-2 py-1', conflito?.id === c.id && 'bg-danger-soft')}>
-                        <Horario c={c} className="w-28 shrink-0" />
-                        <span className="truncate text-sm text-ink-2">{buscarPaciente(c.pacienteId)?.nome}</span>
+                      <li key={c.id} className={cn(s.ocupada, conflito?.id === c.id && s.ocupadaConflito)}>
+                        <Horario c={c} className={s.ocupadaHorario} />
+                        <span className={s.ocupadaPaciente}>{buscarPaciente(c.pacienteId)?.nome}</span>
                       </li>
                     ))}
                   </ul>

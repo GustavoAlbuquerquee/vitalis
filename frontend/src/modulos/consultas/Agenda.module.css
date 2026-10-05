@@ -1,0 +1,318 @@
+/* ───────── Barra de navegação do dia ───────── */
+.barra {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 1024px) {
+  .barra {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.grupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.setas {
+  display: flex;
+  align-items: center;
+}
+
+.seletorData {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 4px;
+  padding: 4px 8px;
+  border-radius: var(--raio-controle);
+}
+.seletorData:hover { background: var(--surface-2); }
+
+.dataTitulo {
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  font-weight: 600;
+}
+
+.relativo {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.iconeData {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3);
+}
+
+.entradaData {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.recorte { overflow: hidden; }
+
+/* ───────── Grade: profissionais × horários ───────── */
+.rolagem {
+  max-height: calc(100dvh - 260px);
+  min-height: 420px;
+  overflow: auto;
+}
+
+.grade { display: grid; }
+
+.canto {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.cabecalhoProf {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.cabecalhoProf:hover { background: var(--surface-2); }
+
+.profTexto {
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.profNome,
+.profDetalhe {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profNome {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.profDetalhe {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+
+/* Régua de horas */
+.regua {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.hora,
+.agora {
+  position: absolute;
+  transform: translateY(-50%);
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.hora {
+  right: 8px;
+  color: var(--ink-3);
+}
+
+.agora {
+  right: 4px;
+  z-index: 1;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--danger);
+  font-weight: 600;
+  color: var(--on-danger);
+}
+
+/* Coluna de um profissional: o que não é janela de atendimento fica hachurado */
+.coluna {
+  position: relative;
+  border-right: 1px solid var(--line);
+  background: repeating-linear-gradient(135deg, transparent 0 6px, var(--surface-2) 6px 7px);
+}
+.coluna:last-child { border-right: 0; }
+
+.janela {
+  position: absolute;
+  left: 0;
+  right: 0;
+  cursor: copy;
+  background: var(--surface);
+  transition: background-color 150ms;
+}
+.janela:hover { background: color-mix(in srgb, var(--brand-soft) 40%, transparent); }
+
+.linhaHora {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.linhaAgora {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  height: 2px;
+  background: var(--danger);
+}
+
+/* Bloco de consulta, colorido pelo status (data-tom) */
+.bloco {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  z-index: 5;
+  overflow: hidden;
+  padding: 4px 8px;
+  border-left: 3px solid var(--tom);
+  border-radius: 6px;
+  background: var(--tom-suave);
+  transition: filter 150ms, box-shadow 150ms;
+}
+.bloco:hover {
+  box-shadow: var(--sombra-pop);
+  filter: brightness(0.98);
+}
+
+.blocoCurto {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.blocoCancelado { opacity: 0.6; }
+
+.blocoHorario {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--tom-texto);
+}
+
+.blocoPaciente,
+.blocoMotivo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blocoPaciente {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.blocoCancelado .blocoPaciente { text-decoration: line-through; }
+
+.blocoMotivo {
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  color: var(--ink-2);
+}
+
+/* ───────── Legenda ───────── */
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 20px;
+  row-gap: 8px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+.legendaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendaPonto {
+  width: 4px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--tom);
+}
+
+.legendaHachura {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: repeating-linear-gradient(135deg, transparent 0 3px, var(--line-strong) 3px 4px);
+}
+
+.legendaDica {
+  display: none;
+  margin-left: auto;
+}
+
+@media (min-width: 640px) {
+  .legendaDica { display: inline; }
+}
+
+/* ───────── Lista ───────── */
+.pilulas { margin-bottom: 16px; }
+
+.semQuebra { white-space: nowrap; }
+
+.colPaciente { min-width: 220px; }
+
+.colProfissional { min-width: 200px; }
+
+.listaProfNome { color: var(--ink); }
+
+.listaProfEsp {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.colMotivo {
+  min-width: 200px;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-2);
+}

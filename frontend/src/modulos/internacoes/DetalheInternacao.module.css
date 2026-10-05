@@ -1,0 +1,227 @@
+/* ───────── Cabeçalho ───────── */
+span.avatarCabecalho { display: none; }
+
+.descricaoLinha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 4px;
+}
+
+/* ───────── Colunas: conteúdo + envolvidos ───────── */
+.colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+.coluna {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ───────── Permanência: quatro números ───────── */
+.permanencia {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* 2×2 no celular, 4 em linha a partir de 640px: as divisórias mudam junto */
+.numero {
+  min-width: 0;
+  padding: 16px 20px;
+  border: 0 solid var(--line);
+}
+.numero:nth-child(n + 3) { border-top-width: 1px; }
+.numero:nth-child(even) { border-left-width: 1px; }
+
+.numeroRotulo {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.numeroValor {
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.numeroDetalhe {
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+.numeroDetalhe[data-tom] { color: var(--tom); }
+
+.linkQuarto { font-family: var(--fonte-mono); }
+.linkQuarto:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.observacoes {
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.observacoesRotulo {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.observacoesTexto {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+/* ───────── Cartões laterais ───────── */
+.corpoPaciente {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.verHistorico { align-self: flex-start; }
+
+.quartoTopo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quartoNumero {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-2xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.quartoAndar {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.quartoSelos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.quartoOcupacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.quartoVagas {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.registroProfissional {
+  margin-top: 12px;
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+/* ───────── Modais ───────── */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.codigo { font-family: var(--fonte-mono); }
+
+.consequencias {
+  padding-left: 16px;
+  list-style: disc;
+}
+.consequencias > li + li { margin-top: 2px; }
+
+.destino {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  background: color-mix(in srgb, var(--surface-2) 50%, transparent);
+}
+
+.destinoTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.destinoTitulo {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+
+.destinoAndar {
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.destinoOcupacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 8px;
+  margin-top: 12px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.destinoDepois {
+  margin-top: 8px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+textarea.motivo { min-height: 80px; }
+textarea.descricao { min-height: 128px; }
+
+@media (min-width: 640px) {
+  span.avatarCabecalho { display: inline-flex; }
+  .permanencia { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .numero:nth-child(n + 2) { border-left-width: 1px; }
+  .numero:nth-child(n + 3) { border-top-width: 0; }
+}
+
+@media (min-width: 1024px) {
+  .colunas { grid-template-columns: minmax(0, 1fr) 320px; }
+}

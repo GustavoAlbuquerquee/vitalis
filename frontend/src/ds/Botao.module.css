@@ -1,0 +1,64 @@
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  border-radius: var(--raio-controle);
+  font-weight: 500;
+  user-select: none;
+  transition: background-color 150ms, border-color 150ms, color 150ms, box-shadow 150ms;
+}
+
+.botao:disabled,
+.botao[aria-disabled='true'] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Variantes */
+.primario {
+  background: var(--brand);
+  color: var(--on-brand);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+.primario:hover { background: var(--brand-hover); }
+
+.secundario {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
+}
+.secundario:hover { background: var(--surface-2); }
+
+.fantasma { color: var(--ink-2); }
+.fantasma:hover { background: var(--surface-2); color: var(--ink); }
+
+.perigo { background: var(--danger); color: var(--on-danger); }
+.perigo:hover { filter: brightness(0.95); }
+
+/* Tamanhos */
+.sm { height: var(--altura-controle-sm); padding: 0 12px; font-size: var(--fs-sm); }
+.sm svg { width: 14px; height: 14px; }
+.md { height: var(--altura-controle); padding: 0 14px; font-size: var(--fs-base); }
+.md svg { width: 16px; height: 16px; }
+
+.girando { animation: girar 800ms linear infinite; }
+
+/* Botão só com ícone */
+.icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--raio-controle);
+  color: var(--ink-2);
+  transition: background-color 150ms, color 150ms;
+}
+.icone:hover { background: var(--surface-2); color: var(--ink); }
+.icone:disabled { opacity: 0.4; pointer-events: none; }
+.iconeSm { width: 32px; height: 32px; }
+.iconeSm svg { width: 16px; height: 16px; }
+.iconeMd { width: 36px; height: 36px; }
+.iconeMd svg { width: 18px; height: 18px; }

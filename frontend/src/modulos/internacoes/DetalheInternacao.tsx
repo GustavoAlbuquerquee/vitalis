@@ -25,11 +25,13 @@ import { Pessoa, RegistrosClinicos, SeloInternacao, SeloQuarto, diasInternado, n
 import { buscarInternacao, buscarPaciente, buscarProfissional, buscarQuarto, listarQuartos, listarRegistros, type QuartoComOcupacao } from '@/api'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
 import type { Internacao, TipoRegistro } from '@/tipos/dominio'
-import { idade } from '@/lib/datas'
+import type { Tom } from '@/lib/rotulos'
+import { hoje, idade } from '@/lib/datas'
 import { formatarCpf, formatarData, formatarDataHora, formatarTelefone, plural } from '@/lib/formato'
 import { situacaoQuarto, tiposQuarto, tiposRegistro } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
 import { agora, prazoDaAlta } from './utilidades'
+import s from './DetalheInternacao.module.css'
 
 type ModalAberto = 'alta' | 'transferir' | 'registro' | null
 
@@ -48,15 +50,17 @@ export function DetalheInternacao() {
   const ativa = internacao.status === 'ATIVA'
   const dias = diasInternado(internacao)
   const [dataEntrada, horaEntrada] = internacao.dataEntrada.split('T')
+  const prazo = prazoDaAlta(internacao.dataPrevistaAlta)
+  const tomPrazo: Tom | undefined = prazo.atrasada ? 'danger' : internacao.dataPrevistaAlta === hoje() ? 'warn' : undefined
 
   return (
     <Pagina>
       <CabecalhoPagina
         migalhas={[{ rotulo: 'Internações', para: '/internacoes' }, { rotulo: paciente.nome }]}
-        antes={<Avatar nome={paciente.nome} tamanho="lg" className="hidden sm:inline-flex" />}
+        antes={<Avatar nome={paciente.nome} tamanho="lg" className={s.avatarCabecalho} />}
         titulo={paciente.nome}
         descricao={
-          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span className={s.descricaoLinha}>
             <span>{internacao.motivo}</span>
             <SeloInternacao status={internacao.status} />
           </span>
@@ -75,18 +79,18 @@ export function DetalheInternacao() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="flex min-w-0 flex-col gap-6">
+      <div className={s.colunas}>
+        <div className={s.coluna}>
           <Cartao>
             <h2 className="sr-only">Permanência</h2>
-            <dl className="grid grid-cols-2 sm:grid-cols-4">
+            <dl className={s.permanencia}>
               <Numero rotulo="Entrada" valor={formatarData(dataEntrada)} detalhe={`às ${horaEntrada}`} />
               {ativa ? (
                 <Numero
                   rotulo="Alta prevista"
                   valor={formatarData(internacao.dataPrevistaAlta)}
-                  detalhe={prazoDaAlta(internacao.dataPrevistaAlta).texto}
-                  tomDetalhe={prazoDaAlta(internacao.dataPrevistaAlta).cor}
+                  detalhe={prazo.texto}
+                  tomDetalhe={tomPrazo}
                 />
               ) : (
                 <Numero
@@ -99,7 +103,7 @@ export function DetalheInternacao() {
               <Numero
                 rotulo="Quarto"
                 valor={
-                  <Link to={`/quartos/${quarto.id}`} className="font-mono hover:underline hover:underline-offset-4">
+                  <Link to={`/quartos/${quarto.id}`} className={s.linkQuarto}>
                     {quarto.numero}
                   </Link>
                 }
@@ -107,9 +111,9 @@ export function DetalheInternacao() {
               />
             </dl>
             {internacao.observacoes && (
-              <div className="border-t border-line px-5 py-3.5">
-                <p className="text-xs font-medium text-ink-3">Observações</p>
-                <p className="mt-0.5 text-sm text-ink-2">{internacao.observacoes}</p>
+              <div className={s.observacoes}>
+                <p className={s.observacoesRotulo}>Observações</p>
+                <p className={s.observacoesTexto}>{internacao.observacoes}</p>
               </div>
             )}
           </Cartao>
@@ -133,10 +137,10 @@ export function DetalheInternacao() {
           </Cartao>
         </div>
 
-        <aside className="flex min-w-0 flex-col gap-6" aria-label="Envolvidos na internação">
+        <aside className={s.coluna} aria-label="Envolvidos na internação">
           <Cartao>
             <CabecalhoCartao titulo="Paciente" icone={<User />} />
-            <CorpoCartao className="flex flex-col gap-4">
+            <CorpoCartao className={s.corpoPaciente}>
               <Pessoa nome={paciente.nome} para={`/pacientes/${paciente.id}`} detalhe={paciente.email} tamanho="lg" />
               <ListaDefinicao
                 itens={[
@@ -146,7 +150,7 @@ export function DetalheInternacao() {
                   { rotulo: 'Nascimento', valor: formatarData(paciente.dataNascimento) },
                 ]}
               />
-              <BotaoLink to={`/pacientes/${paciente.id}?aba=historico`} tamanho="sm" icone={<History />} className="self-start">
+              <BotaoLink to={`/pacientes/${paciente.id}?aba=historico`} tamanho="sm" icone={<History />} className={s.verHistorico}>
                 Ver histórico
               </BotaoLink>
             </CorpoCartao>
@@ -163,19 +167,19 @@ export function DetalheInternacao() {
               }
             />
             <CorpoCartao>
-              <div className="flex items-start justify-between gap-3">
+              <div className={s.quartoTopo}>
                 <div>
-                  <p className="font-mono text-2xl font-semibold tracking-[-0.02em] tabular">{quarto.numero}</p>
-                  <p className="text-sm text-ink-3">{quarto.andar}º andar</p>
+                  <p className={cn(s.quartoNumero, 'tabular')}>{quarto.numero}</p>
+                  <p className={s.quartoAndar}>{quarto.andar}º andar</p>
                 </div>
-                <div className="flex flex-col items-end gap-1.5">
+                <div className={s.quartoSelos}>
                   <Etiqueta>{tiposQuarto[quarto.tipo].rotulo}</Etiqueta>
                   <SeloQuarto situacao={quarto.situacao} />
                 </div>
               </div>
-              <div className="mt-4 flex items-center justify-between gap-3 border-t border-line pt-3.5">
+              <div className={s.quartoOcupacao}>
                 <PontosOcupacao ocupacao={quarto.ocupacao} capacidade={quarto.capacidadeMaxima} situacao={quarto.situacao} />
-                <span className="text-sm text-ink-2 tabular">
+                <span className={cn(s.quartoVagas, 'tabular')}>
                   {quarto.ocupacao}/{quarto.capacidadeMaxima} · {plural(quarto.vagas, 'vaga')}
                 </span>
               </div>
@@ -186,7 +190,7 @@ export function DetalheInternacao() {
             <CabecalhoCartao titulo="Responsável" icone={<Stethoscope />} />
             <CorpoCartao>
               <Pessoa nome={prof.nome} para={`/profissionais/${prof.id}`} detalhe={nomeEspecialidade(prof)} />
-              <p className="mt-3 font-mono text-sm text-ink-2 tabular">{prof.registroProfissional}</p>
+              <p className={cn(s.registroProfissional, 'tabular')}>{prof.registroProfissional}</p>
             </CorpoCartao>
           </Cartao>
         </aside>
@@ -199,12 +203,16 @@ export function DetalheInternacao() {
   )
 }
 
-function Numero({ rotulo, valor, detalhe, tomDetalhe }: { rotulo: string; valor: ReactNode; detalhe?: ReactNode; tomDetalhe?: string }) {
+function Numero({ rotulo, valor, detalhe, tomDetalhe }: { rotulo: string; valor: ReactNode; detalhe?: ReactNode; tomDetalhe?: Tom }) {
   return (
-    <div className="min-w-0 border-line px-5 py-4 [&:nth-child(n+3)]:border-t sm:[&:nth-child(n+2)]:border-l sm:[&:nth-child(n+3)]:border-t-0 [&:nth-child(even)]:border-l">
-      <dt className="text-xs font-medium text-ink-3">{rotulo}</dt>
-      <dd className="mt-1 truncate text-xl font-semibold tracking-[-0.015em] tabular">{valor}</dd>
-      {detalhe && <dd className={cn('mt-0.5 truncate text-xs', tomDetalhe ?? 'text-ink-3')}>{detalhe}</dd>}
+    <div className={s.numero}>
+      <dt className={s.numeroRotulo}>{rotulo}</dt>
+      <dd className={cn(s.numeroValor, 'tabular')}>{valor}</dd>
+      {detalhe && (
+        <dd data-tom={tomDetalhe} className={s.numeroDetalhe}>
+          {detalhe}
+        </dd>
+      )}
     </div>
   )
 }
@@ -239,7 +247,7 @@ function ModalAlta({ internacao, quarto, aoFechar }: { internacao: Internacao; q
         </>
       }
     >
-      <form id={idForm} onSubmit={enviar} className="flex flex-col gap-4" noValidate>
+      <form id={idForm} onSubmit={enviar} className={s.formulario} noValidate>
         <Campo rotulo="Data e hora da alta" obrigatorio erro={!data ? 'Informe quando a alta aconteceu.' : undefined} ajuda="Alta efetiva — quando o paciente de fato deixou o quarto.">
           {(p) => <Entrada {...p} type="datetime-local" mono value={data} min={internacao.dataEntrada} onChange={(e) => setData(e.target.value)} required />}
         </Campo>
@@ -252,10 +260,10 @@ function ModalAlta({ internacao, quarto, aoFechar }: { internacao: Internacao; q
           {(p) => <AreaTexto {...p} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />}
         </Campo>
         <Alerta titulo="O que acontece ao registrar a alta">
-          <ul className="list-disc space-y-0.5 pl-4">
+          <ul className={s.consequencias}>
             <li>A internação continua no histórico do paciente, com status Alta concedida — nada é apagado (RN6).</li>
             <li>
-              A vaga no quarto <span className="font-mono">{quarto.numero}</span> é liberada e a situação do quarto é recalculada (RN5).
+              A vaga no quarto <span className={s.codigo}>{quarto.numero}</span> é liberada e a situação do quarto é recalculada (RN5).
             </li>
           </ul>
         </Alerta>
@@ -293,7 +301,7 @@ function ModalTransferir({ quarto, aoFechar }: { quarto: QuartoComOcupacao; aoFe
       titulo="Transferir de quarto"
       descricao={
         <>
-          Hoje no quarto <span className="font-mono">{quarto.numero}</span> · {tiposQuarto[quarto.tipo].rotulo}, {quarto.andar}º andar.
+          Hoje no quarto <span className={s.codigo}>{quarto.numero}</span> · {tiposQuarto[quarto.tipo].rotulo}, {quarto.andar}º andar.
         </>
       }
       rodape={
@@ -305,7 +313,7 @@ function ModalTransferir({ quarto, aoFechar }: { quarto: QuartoComOcupacao; aoFe
         </>
       }
     >
-      <form id={idForm} onSubmit={enviar} className="flex flex-col gap-4" noValidate>
+      <form id={idForm} onSubmit={enviar} className={s.formulario} noValidate>
         <Campo
           rotulo="Quarto de destino"
           obrigatorio
@@ -331,29 +339,29 @@ function ModalTransferir({ quarto, aoFechar }: { quarto: QuartoComOcupacao; aoFe
         </Campo>
 
         {destino && (
-          <div className="rounded-card border border-line bg-surface-2/50 p-3.5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium">
-                Quarto <span className="font-mono">{destino.numero}</span>
-                <span className="font-normal text-ink-3"> · {destino.andar}º andar</span>
+          <div className={s.destino}>
+            <div className={s.destinoTopo}>
+              <p className={s.destinoTitulo}>
+                Quarto <span className={s.codigo}>{destino.numero}</span>
+                <span className={s.destinoAndar}> · {destino.andar}º andar</span>
               </p>
               <SeloQuarto situacao={destino.situacao} />
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-2">
+            <div className={s.destinoOcupacao}>
               <PontosOcupacao ocupacao={destino.ocupacao} capacidade={destino.capacidadeMaxima} situacao={destino.situacao} />
               <span className="tabular">
                 Capacidade {destino.capacidadeMaxima} · ocupação {destino.ocupacao} · {plural(destino.vagas, 'vaga')}
               </span>
             </div>
             {disponivel(destino) && (
-              <p className="mt-2 text-xs text-ink-3 tabular">
+              <p className={cn(s.destinoDepois, 'tabular')}>
                 Após a transferência: {destino.ocupacao + 1}/{destino.capacidadeMaxima} no {destino.numero} e uma vaga liberada no {quarto.numero}.
               </p>
             )}
           </div>
         )}
 
-        <Campo rotulo="Motivo da transferência">{(p) => <AreaTexto {...p} value={motivo} onChange={(e) => setMotivo(e.target.value)} className="min-h-20" />}</Campo>
+        <Campo rotulo="Motivo da transferência">{(p) => <AreaTexto {...p} value={motivo} onChange={(e) => setMotivo(e.target.value)} className={s.motivo} />}</Campo>
       </form>
     </Modal>
   )
@@ -392,7 +400,7 @@ function ModalRegistro({ aoFechar }: { aoFechar: () => void }) {
         </>
       }
     >
-      <form id={idForm} onSubmit={enviar} className="flex flex-col gap-4" noValidate>
+      <form id={idForm} onSubmit={enviar} className={s.formulario} noValidate>
         <Campo rotulo="Tipo" obrigatorio>
           {(p) => (
             <Selecao {...p} value={tipo} onChange={(e) => setTipo(e.target.value as TipoRegistro)}>
@@ -405,7 +413,7 @@ function ModalRegistro({ aoFechar }: { aoFechar: () => void }) {
           )}
         </Campo>
         <Campo rotulo="Descrição" obrigatorio erro={erro}>
-          {(p) => <AreaTexto {...p} value={descricao} onChange={(e) => setDescricao(e.target.value)} className="min-h-32" required />}
+          {(p) => <AreaTexto {...p} value={descricao} onChange={(e) => setDescricao(e.target.value)} className={s.descricao} required />}
         </Campo>
       </form>
     </Modal>

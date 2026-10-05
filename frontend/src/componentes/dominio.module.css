@@ -1,0 +1,110 @@
+/* ───────── Pessoa ───────── */
+.pessoa {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.pessoaTexto {
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.pessoaNome {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+a.pessoaNome:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 4px;
+}
+
+.pessoaDetalhe {
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+/* ───────── Registros clínicos ───────── */
+.registros {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* A linha vertical da linha do tempo */
+.registros::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 5px;
+  width: 1px;
+  background: var(--line);
+}
+
+.registro {
+  position: relative;
+  padding-left: 24px;
+}
+
+.registroPonto {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+  background: var(--tom);
+}
+
+.registroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 2px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+.registroTipo {
+  font-weight: 600;
+  color: var(--tom-texto);
+}
+
+.registroTexto {
+  margin-top: 4px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.semRegistros {
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+}
+
+/* ───────── Horário ───────── */
+.horario {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.horarioFim { color: var(--ink-3); }

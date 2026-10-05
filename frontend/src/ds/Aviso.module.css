@@ -1,0 +1,62 @@
+.pilha {
+  pointer-events: none;
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.aviso {
+  pointer-events: auto;
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 384px;
+  padding: 14px 10px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  background: var(--surface);
+  box-shadow: var(--sombra-pop);
+  animation: var(--anim-subir);
+}
+
+.icone {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--tom);
+}
+
+.texto { min-width: 0; flex: 1; }
+
+.titulo {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 600;
+}
+
+.descricao {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.dispensar {
+  align-self: flex-start;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--ink-3);
+}
+.dispensar:hover { background: var(--surface-2); color: var(--ink); }
+.dispensar svg { width: 14px; height: 14px; }
+
+@media (min-width: 640px) {
+  .pilha { left: auto; }
+}

@@ -6,6 +6,8 @@ import { Pessoa } from '@/componentes/dominio'
 import { buscarQuarto, internacaoAtivaDoPaciente, listarConsultas, listarPacientes } from '@/api'
 import { hoje, idade } from '@/lib/datas'
 import { formatarCpf, formatarData, formatarTelefone, plural } from '@/lib/formato'
+import { cn } from '@/lib/cn'
+import s from './ListaPacientes.module.css'
 
 type Filtro = 'todos' | 'internados' | 'inativos'
 const POR_PAGINA = 12
@@ -56,8 +58,8 @@ export function ListaPacientes() {
         }
       />
 
-      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <Busca valor={busca} aoMudar={mudarBusca} placeholder="Nome ou CPF" className="md:w-80" aria-label="Buscar paciente por nome ou CPF" />
+      <div className={s.filtros}>
+        <Busca valor={busca} aoMudar={mudarBusca} placeholder="Nome ou CPF" className={s.busca} aria-label="Buscar paciente por nome ou CPF" />
         <Pilulas
           rotulo="Filtrar pacientes"
           valor={filtro}
@@ -70,7 +72,7 @@ export function ListaPacientes() {
         />
       </div>
 
-      <Cartao className="overflow-hidden">
+      <Cartao className={s.cartao}>
         {visiveis.length === 0 ? (
           <EstadoVazio
             icone={<Users />}
@@ -88,7 +90,7 @@ export function ListaPacientes() {
               <tr>
                 <Th>Paciente</Th>
                 <Th>CPF</Th>
-                <Th className="text-right">Idade</Th>
+                <Th className={s.direita}>Idade</Th>
                 <Th>Telefone</Th>
                 <Th>Cidade</Th>
                 <Th>Situação</Th>
@@ -98,15 +100,15 @@ export function ListaPacientes() {
             <tbody>
               {visiveis.map(({ p, internacao, quarto, ultima }) => (
                 <Linha key={p.id} para={`/pacientes/${p.id}`}>
-                  <Td className="min-w-[240px]">
+                  <Td className={s.colunaPaciente}>
                     <Pessoa nome={p.nome} detalhe={p.email} para={`/pacientes/${p.id}`} />
                   </Td>
-                  <Td className="font-mono text-sm whitespace-nowrap text-ink-2 tabular">{formatarCpf(p.cpf)}</Td>
-                  <Td className="text-right text-ink-2 tabular">{idade(p.dataNascimento)}</Td>
-                  <Td className="whitespace-nowrap text-ink-2 tabular">{formatarTelefone(p.telefone)}</Td>
-                  <Td className="whitespace-nowrap text-ink-2">
+                  <Td className={cn('mono', s.dado)}>{formatarCpf(p.cpf)}</Td>
+                  <Td className={cn('tabular', s.direita, s.secundario)}>{idade(p.dataNascimento)}</Td>
+                  <Td className={cn('tabular', s.dado)}>{formatarTelefone(p.telefone)}</Td>
+                  <Td className={s.dado}>
                     {p.endereco.cidade}
-                    <span className="text-ink-3"> · {p.endereco.uf}</span>
+                    <span className={s.apagado}> · {p.endereco.uf}</span>
                   </Td>
                   <Td>
                     {!p.ativo ? (
@@ -114,25 +116,25 @@ export function ListaPacientes() {
                     ) : internacao ? (
                       <Selo tom="brand">Internado · {quarto?.numero}</Selo>
                     ) : (
-                      <span className="text-sm text-ink-3">Ambulatorial</span>
+                      <span className={s.ambulatorial}>Ambulatorial</span>
                     )}
                   </Td>
-                  <Td className="whitespace-nowrap text-ink-2 tabular">{ultima ? formatarData(ultima.data) : <span className="text-ink-3">—</span>}</Td>
+                  <Td className={cn('tabular', s.dado)}>{ultima ? formatarData(ultima.data) : <span className={s.apagado}>—</span>}</Td>
                 </Linha>
               ))}
             </tbody>
           </Tabela>
         )}
         {filtradas.length > POR_PAGINA && (
-          <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-2.5 text-sm text-ink-3">
+          <div className={s.paginacao}>
             <span className="tabular">
               {atual * POR_PAGINA + 1}–{Math.min((atual + 1) * POR_PAGINA, filtradas.length)} de {filtradas.length}
             </span>
-            <div className="flex items-center gap-1">
+            <div className={s.paginas}>
               <BotaoIcone rotulo="Página anterior" tamanho="sm" disabled={atual === 0} onClick={() => setPagina(atual - 1)}>
                 <ChevronLeft />
               </BotaoIcone>
-              <span className="px-1 tabular">
+              <span className={cn('tabular', s.paginaAtual)}>
                 {atual + 1} / {paginas}
               </span>
               <BotaoIcone rotulo="Próxima página" tamanho="sm" disabled={atual >= paginas - 1} onClick={() => setPagina(atual + 1)}>

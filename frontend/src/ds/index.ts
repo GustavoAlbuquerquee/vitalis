@@ -11,4 +11,4 @@ export * from './Estrutura'
 export * from './Metrica'
 export * from './Ocupacao'
 export * from './Tabela'
-export { tons } from './tons'
+

@@ -1,0 +1,66 @@
+.cartao { padding: 28px 20px; }
+
+/* Barra de ações: grudada no rodapé no celular, alinhada à direita a partir de 640px */
+.acoes {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  margin: 24px -16px 0;
+  padding: 16px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-vidro);
+  backdrop-filter: blur(12px);
+}
+
+@media (min-width: 640px) {
+  .cartao { padding-right: 32px; padding-left: 32px; }
+
+  .acoes {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
+    border-top: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+}
+
+/* Zona de perigo: desativar o cadastro */
+.perigo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 20px;
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+@media (min-width: 640px) {
+  .perigo {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.perigoTitulo { font-weight: 600; }
+
+.perigoTexto {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.botaoPerigo { color: var(--danger); }
+
+.avisoInternado {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--danger);
+}

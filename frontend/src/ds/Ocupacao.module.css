@@ -1,0 +1,31 @@
+.pontos {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ponto {
+  border: 1.5px solid var(--line-strong);
+  border-radius: 999px;
+}
+.md .ponto { width: 10px; height: 10px; }
+.sm .ponto { width: 8px; height: 8px; }
+
+.ocupado { border-color: var(--brand); background: var(--brand); }
+.lotado { border-color: var(--danger); background: var(--danger); }
+.bloqueado { border-style: dashed; border-color: var(--ink-3); }
+
+.trilho {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+
+.barra {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
+  transition: width 500ms;
+}
+.alerta { background: var(--warn); }

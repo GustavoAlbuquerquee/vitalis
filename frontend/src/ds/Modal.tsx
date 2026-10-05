@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { BotaoIcone } from './Botao'
 import { cn } from '@/lib/cn'
+import s from './Modal.module.css'
 
 interface ModalProps {
   aberto: boolean
@@ -13,8 +14,6 @@ interface ModalProps {
   rodape?: ReactNode
   largura?: 'sm' | 'md' | 'lg'
 }
-
-const larguras = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl' }
 
 export function Modal({ aberto, aoFechar, titulo, descricao, children, rodape, largura = 'md' }: ModalProps) {
   const id = useId()
@@ -51,30 +50,29 @@ export function Modal({ aberto, aoFechar, titulo, descricao, children, rodape, l
   if (!aberto) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6">
-      <div className="absolute inset-0 animate-entrar bg-overlay" onClick={aoFechar} aria-hidden />
+    <div className={s.raiz}>
+      <div className={s.fundo} onClick={aoFechar} aria-hidden />
       <div
         ref={painel}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${id}-t`}
         tabIndex={-1}
-        className={cn(
-          'relative flex max-h-[92vh] w-full animate-subir flex-col rounded-t-card border border-line bg-surface shadow-modal outline-none sm:rounded-card',
-          larguras[largura],
-        )}
+        className={cn(s.painel, s[largura])}
       >
-        <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-1">
+        <div className={s.topo}>
           <div>
-            <h2 id={`${id}-t`} className="text-md font-semibold">{titulo}</h2>
-            {descricao && <div className="mt-1 text-sm text-ink-2">{descricao}</div>}
+            <h2 id={`${id}-t`} className={s.titulo}>
+              {titulo}
+            </h2>
+            {descricao && <div className={s.descricao}>{descricao}</div>}
           </div>
-          <BotaoIcone rotulo="Fechar" tamanho="sm" onClick={aoFechar} data-fechar className="-mt-1 -mr-2">
+          <BotaoIcone rotulo="Fechar" tamanho="sm" onClick={aoFechar} data-fechar className={s.fechar}>
             <X />
           </BotaoIcone>
         </div>
-        {children && <div className="overflow-y-auto px-6 py-4">{children}</div>}
-        {rodape && <div className="flex flex-col-reverse gap-2 border-t border-line bg-surface-2/50 px-6 py-3.5 sm:flex-row sm:justify-end">{rodape}</div>}
+        {children && <div className={s.corpo}>{children}</div>}
+        {rodape && <div className={s.rodape}>{rodape}</div>}
       </div>
     </div>,
     document.body,

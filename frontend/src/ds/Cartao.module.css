@@ -1,0 +1,50 @@
+.cartao {
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  background: var(--surface);
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cabecalhoTexto {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.cabecalhoIcone {
+  margin-top: 2px;
+  color: var(--ink-3);
+}
+.cabecalhoIcone svg { width: 16px; height: 16px; }
+
+.titulo {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.descricao {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.acoes {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.corpo {
+  padding: 16px 20px;
+}

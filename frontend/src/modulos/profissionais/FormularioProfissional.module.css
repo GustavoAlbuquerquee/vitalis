@@ -1,0 +1,42 @@
+.cartao { padding: 28px 20px; }
+
+@media (min-width: 640px) {
+  .cartao { padding-right: 32px; padding-left: 32px; }
+}
+
+/* Nota sobre as janelas de atendimento */
+.disponibilidade {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--raio-cartao);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.disponibilidadeIcone {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--ink-3);
+}
+
+.link {
+  font-weight: 500;
+  color: var(--brand);
+}
+.link:hover { text-decoration: underline; }
+
+.acoes {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+@media (min-width: 640px) {
+  .acoes { flex-direction: row; justify-content: flex-end; }
+}

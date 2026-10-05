@@ -37,3 +37,4 @@ temp/
 docs/diagramas/*.png
 docs/diagramas/out/
 dist/
+dist-artefato/

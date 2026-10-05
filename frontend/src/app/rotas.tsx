@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, createHashRouter, type RouteObject } from 'react-router'
 import { Layout } from './Layout'
 import { NaoEncontrada } from './NaoEncontrada'
 import { Painel } from '@/modulos/painel/Painel'
@@ -19,7 +19,7 @@ import { DetalheQuarto } from '@/modulos/quartos/DetalheQuarto'
 import { DesignSystem } from '@/modulos/design-system/DesignSystem'
 
 /** Uma rota por recurso de docs/api.md, com os mesmos nomes. */
-export const roteador = createBrowserRouter([
+const rotas: RouteObject[] = [
   {
     element: <Layout />,
     children: [
@@ -50,4 +50,7 @@ export const roteador = createBrowserRouter([
       { path: '*', element: <NaoEncontrada /> },
     ],
   },
-])
+]
+
+// O build de publicação (npm run build:artefato) roda num endereço que o app não controla: usa rotas com #
+export const roteador = import.meta.env.MODE === 'artefato' ? createHashRouter(rotas) : createBrowserRouter(rotas)

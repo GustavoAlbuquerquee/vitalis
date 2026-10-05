@@ -23,6 +23,8 @@ import { buscarConsulta, buscarPaciente, buscarProfissional, consultasDoProfissi
 import { cabeNaDisponibilidade, conflitaCom, consultaOcupaAgenda, intervaloDaConsulta } from '@/dominio/regras'
 import { hoje, idade } from '@/lib/datas'
 import { diaDaSemana, formatarCpf, formatarData, formatarDataLonga, formatarTelefone, relativo } from '@/lib/formato'
+import { cn } from '@/lib/cn'
+import s from './DetalheConsulta.module.css'
 
 type Acao = 'realizar' | 'reagendar' | 'cancelar' | 'faltou' | null
 
@@ -67,9 +69,9 @@ export function DetalheConsulta() {
         migalhas={[{ rotulo: 'Agenda', para: `/consultas${c.data !== hoje() ? `?data=${c.data}` : ''}` }, { rotulo: `Consulta nº ${c.id}` }]}
         titulo={c.motivo}
         descricao={
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className={s.descricao}>
             <SeloConsulta status={c.status} />
-            <span className="inline-block first-letter:uppercase">{diaDaSemana(c.data)}</span>, {formatarDataLonga(c.data)} · <Horario c={c} />
+            <span className="inicial-maiuscula">{diaDaSemana(c.data)}</span>, {formatarDataLonga(c.data)} · <Horario c={c} />
           </span>
         }
         acoes={
@@ -89,8 +91,8 @@ export function DetalheConsulta() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="flex flex-col gap-6">
+      <div className={s.colunas}>
+        <div className={s.pilha}>
           {c.status === 'CANCELADA' && (
             <Alerta tom="danger" titulo="Consulta cancelada">
               O registro foi mantido para o histórico do paciente (RN6). Para atendê-lo, agende uma nova consulta.
@@ -113,12 +115,12 @@ export function DetalheConsulta() {
                   { rotulo: 'Duração', valor: `${c.duracaoMinutos} minutos` },
                 ]}
               />
-              <div className="mt-5 border-t border-line pt-4">
-                <p className="text-xs font-medium text-ink-3">Observações médicas</p>
+              <div className={s.observacoes}>
+                <p className={s.observacoesRotulo}>Observações médicas</p>
                 {c.observacoesMedicas ? (
-                  <p className="mt-1 text-base leading-relaxed">{c.observacoesMedicas}</p>
+                  <p className={s.observacoesTexto}>{c.observacoesMedicas}</p>
                 ) : (
-                  <p className="mt-1 text-sm text-ink-3">{aberta ? 'Preenchidas na realização da consulta.' : 'Sem observações.'}</p>
+                  <p className={s.observacoesVazio}>{aberta ? 'Preenchidas na realização da consulta.' : 'Sem observações.'}</p>
                 )}
               </div>
             </CorpoCartao>
@@ -132,10 +134,10 @@ export function DetalheConsulta() {
           </Cartao>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className={s.pilha}>
           <Cartao>
             <CabecalhoCartao titulo="Paciente" />
-            <CorpoCartao className="flex flex-col gap-4">
+            <CorpoCartao className={s.corpoPaciente}>
               <Pessoa nome={paciente.nome} detalhe={`${idade(paciente.dataNascimento)} anos`} para={`/pacientes/${paciente.id}`} tamanho="lg" />
               <ListaDefinicao
                 colunas={1}
@@ -144,7 +146,7 @@ export function DetalheConsulta() {
                   { rotulo: 'Telefone', valor: formatarTelefone(paciente.telefone) },
                 ]}
               />
-              <BotaoLink to={`/pacientes/${paciente.id}?aba=historico`} tamanho="sm" className="self-start">
+              <BotaoLink to={`/pacientes/${paciente.id}?aba=historico`} tamanho="sm" className={s.alinharInicio}>
                 Ver histórico médico
               </BotaoLink>
             </CorpoCartao>
@@ -158,13 +160,13 @@ export function DetalheConsulta() {
           {anteriores.length > 0 && (
             <Cartao>
               <CabecalhoCartao titulo="Consultas anteriores" />
-              <ul className="divide-y divide-line">
+              <ul className={s.anteriores}>
                 {anteriores.map((x) => (
                   <li key={x.id}>
-                    <Link to={`/consultas/${x.id}`} className="flex items-center justify-between gap-3 px-5 py-2.5 hover:bg-surface-2/60">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{x.motivo}</p>
-                        <p className="text-xs text-ink-3 tabular">{formatarData(x.data)}</p>
+                    <Link to={`/consultas/${x.id}`} className={s.anterior}>
+                      <div className={s.anteriorTexto}>
+                        <p className={s.anteriorMotivo}>{x.motivo}</p>
+                        <p className={cn(s.anteriorData, 'tabular')}>{formatarData(x.data)}</p>
                       </div>
                       <SeloConsulta status={x.status} />
                     </Link>
@@ -185,7 +187,7 @@ export function DetalheConsulta() {
         largura="lg"
         rodape={
           <>
-            <Botao variante="fantasma" icone={<UserX />} onClick={() => setAcao('faltou')} className="sm:mr-auto">
+            <Botao variante="fantasma" icone={<UserX />} onClick={() => setAcao('faltou')} className={s.naoCompareceu}>
               Paciente não compareceu
             </Botao>
             <Botao variante="fantasma" onClick={fechar}>
@@ -198,7 +200,7 @@ export function DetalheConsulta() {
         }
       >
         <Campo rotulo="Observações médicas" obrigatorio ajuda="Ficam no histórico do paciente e não podem ser apagadas.">
-          {(p) => <AreaTexto {...p} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} className="min-h-36" placeholder="Queixa, exame físico, conduta…" />}
+          {(p) => <AreaTexto {...p} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} className={s.campoObservacoes} placeholder="Queixa, exame físico, conduta…" />}
         </Campo>
       </Modal>
 
@@ -237,7 +239,7 @@ export function DetalheConsulta() {
           </>
         }
       >
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className={s.novoHorario}>
           <Campo rotulo="Nova data" obrigatorio>
             {(p) => <Entrada {...p} type="date" min={hoje()} value={novaData} onChange={(e) => setNovaData(e.target.value)} />}
           </Campo>
@@ -245,7 +247,7 @@ export function DetalheConsulta() {
             {(p) => <Entrada {...p} type="time" step={300} value={novoHorario} onChange={(e) => setNovoHorario(e.target.value)} />}
           </Campo>
         </div>
-        <div className="mt-4 flex flex-col gap-2">
+        <div className={s.alertas}>
           {passado && <Alerta tom="danger" titulo="Data no passado" />}
           {foraDaJanela && !passado && (
             <Alerta tom="warn" titulo="Fora da disponibilidade">

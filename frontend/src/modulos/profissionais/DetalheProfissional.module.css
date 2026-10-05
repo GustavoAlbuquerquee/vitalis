@@ -1,0 +1,348 @@
+/* Some no celular, aparece a partir de 640px (rótulo de botão com ícone) */
+.somenteTelaLarga {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .somenteTelaLarga {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
+
+/* ───────── Cabeçalho ───────── */
+.subtitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.separador {
+  color: var(--ink-3);
+}
+
+.registro {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+
+/* ───────── Colunas da página ───────── */
+.colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+@media (min-width: 1280px) {
+  .colunas { grid-template-columns: minmax(0, 1fr) 380px; }
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.linkContato:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ───────── Números ───────── */
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+}
+
+.numero {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
+}
+.numero + .numero { border-left: 1px solid var(--line); }
+.numero:first-child { padding-left: 20px; }
+.numero:last-child { padding-right: 20px; }
+
+.numeroRotulo {
+  order: 2;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  line-height: 1.25;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.numeroDetalhe {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.numeroValor {
+  order: 1;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.internacoesTopo {
+  padding: 16px 20px 4px;
+}
+
+.internacoesTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.internacoesTitulo svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3);
+}
+
+.semInternacoes {
+  padding: 4px 20px 20px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.internacoes {
+  padding-bottom: 4px;
+}
+.internacoes > li + li { border-top: 1px solid var(--line); }
+
+.internacao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  transition: background-color 150ms;
+}
+.internacao:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+
+.internacaoPessoa {
+  flex: 1;
+}
+
+.internacaoDias {
+  flex-shrink: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+/* ───────── Agenda do dia ───────── */
+/* ::first-letter não vale em elemento inline: fica em minúscula, como antes */
+.dataAgenda {
+  display: inline-block;
+}
+
+.dataAgenda::first-letter {
+  text-transform: uppercase;
+}
+
+.faixa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-2) 40%, transparent);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.faixaIcone {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3);
+}
+
+.janelaHorario {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+
+.faixaContagem {
+  color: var(--ink-3);
+}
+
+.consultas > li + li { border-top: 1px solid var(--line); }
+
+.consulta {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 20px;
+  transition: background-color 150ms;
+}
+.consulta:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+
+/* Link da linha inteira, por baixo do resto */
+.consultaLink {
+  position: absolute;
+  inset: 0;
+}
+
+.consultaHorario {
+  flex-shrink: 0;
+  width: 104px;
+}
+
+.cancelada {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+
+.consultaPessoa {
+  order: 9999;
+  width: 100%;
+}
+/* O link do nome fica por cima do link da linha */
+.consultaPessoa a {
+  position: relative;
+  z-index: 10;
+}
+
+.consultaSelo {
+  margin-left: auto;
+}
+
+@media (min-width: 640px) {
+  .consultaPessoa {
+    order: 0;
+    flex: 1;
+    width: auto;
+  }
+
+  .consultaSelo { margin-left: 0; }
+}
+
+/* ───────── Disponibilidade semanal ───────── */
+.rolagem {
+  overflow-x: auto;
+  padding: 16px 20px;
+}
+
+.semana {
+  display: grid;
+  grid-template-columns: 44px repeat(7, minmax(0, 1fr));
+  min-width: 600px;
+}
+
+.diaNome {
+  padding-bottom: 8px;
+  text-align: center;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.diaNomeHoje {
+  color: var(--brand-ink);
+}
+
+.horas {
+  position: relative;
+}
+
+.hora {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  color: var(--ink-3);
+}
+
+.diaColuna {
+  position: relative;
+  border-left: 1px solid var(--line);
+}
+
+.diaColunaUltima {
+  border-right: 1px solid var(--line);
+}
+
+.diaColunaHoje {
+  background: color-mix(in srgb, var(--surface-2) 50%, transparent);
+}
+
+.linhaHora {
+  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.linhaFim {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.janela {
+  position: absolute;
+  right: 3px;
+  left: 3px;
+  overflow: hidden;
+  padding: 4px 4px 4px 5px;
+  letter-spacing: -0.01em;
+  border-left: 3px solid var(--brand);
+  border-radius: 5px;
+  background: var(--brand-soft);
+  font-size: var(--fs-2xs);
+  line-height: 1.25;
+  font-weight: 500;
+  color: var(--brand-ink);
+}
+
+/* ───────── Modal: nova janela ───────── */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .campos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .campoLargo { grid-column: span 3; }
+}

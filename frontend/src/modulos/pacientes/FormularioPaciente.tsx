@@ -8,6 +8,7 @@ import { hoje } from '@/lib/datas'
 import { formatarCep, formatarCpf, formatarTelefone, mascaraCep, mascaraCpf, mascaraTelefone } from '@/lib/formato'
 import { ufs } from '@/lib/rotulos'
 import type { UF } from '@/tipos/dominio'
+import s from './FormularioPaciente.module.css'
 
 interface Dados {
   nome: string
@@ -134,48 +135,48 @@ export function FormularioPaciente() {
       />
 
       <form onSubmit={enviar} noValidate>
-        <Cartao className="px-5 py-7 sm:px-8">
+        <Cartao className={s.cartao}>
           <Secao titulo="Identificação" descricao="O CPF identifica o paciente e não se repete no cadastro.">
-            <Campo rotulo="Nome completo" obrigatorio erro={erros.nome} className="sm:col-span-6">
+            <Campo rotulo="Nome completo" obrigatorio erro={erros.nome}>
               {(p) => <Entrada {...p} {...campo('nome')} autoComplete="name" />}
             </Campo>
-            <Campo rotulo="CPF" obrigatorio erro={erros.cpf} className="sm:col-span-3">
+            <Campo rotulo="CPF" obrigatorio erro={erros.cpf} colunas={3}>
               {(p) => <Entrada {...p} {...campo('cpf', mascaraCpf)} mono inputMode="numeric" placeholder="000.000.000-00" />}
             </Campo>
-            <Campo rotulo="Data de nascimento" obrigatorio erro={erros.dataNascimento} className="sm:col-span-3">
+            <Campo rotulo="Data de nascimento" obrigatorio erro={erros.dataNascimento} colunas={3}>
               {(p) => <Entrada {...p} {...campo('dataNascimento')} type="date" max={hoje()} />}
             </Campo>
           </Secao>
 
           <Secao titulo="Contato" descricao="Usado para confirmar consultas e avisar sobre altas.">
-            <Campo rotulo="Telefone" obrigatorio erro={erros.telefone} className="sm:col-span-3">
+            <Campo rotulo="Telefone" obrigatorio erro={erros.telefone} colunas={3}>
               {(p) => <Entrada {...p} {...campo('telefone', mascaraTelefone)} type="tel" placeholder="(31) 90000-0000" autoComplete="tel" />}
             </Campo>
-            <Campo rotulo="E-mail" obrigatorio erro={erros.email} className="sm:col-span-3">
+            <Campo rotulo="E-mail" obrigatorio erro={erros.email} colunas={3}>
               {(p) => <Entrada {...p} {...campo('email')} type="email" placeholder="nome@exemplo.com" autoComplete="email" />}
             </Campo>
           </Secao>
 
           <Secao titulo="Endereço">
-            <Campo rotulo="CEP" obrigatorio erro={erros.cep} className="sm:col-span-2">
+            <Campo rotulo="CEP" obrigatorio erro={erros.cep} colunas={2}>
               {(p) => <Entrada {...p} {...campo('cep', mascaraCep)} mono inputMode="numeric" placeholder="00000-000" autoComplete="postal-code" />}
             </Campo>
-            <Campo rotulo="Logradouro" obrigatorio erro={erros.logradouro} className="sm:col-span-4">
+            <Campo rotulo="Logradouro" obrigatorio erro={erros.logradouro} colunas={4}>
               {(p) => <Entrada {...p} {...campo('logradouro')} autoComplete="address-line1" />}
             </Campo>
-            <Campo rotulo="Número" obrigatorio erro={erros.numero} className="sm:col-span-2">
+            <Campo rotulo="Número" obrigatorio erro={erros.numero} colunas={2}>
               {(p) => <Entrada {...p} {...campo('numero')} />}
             </Campo>
-            <Campo rotulo="Complemento" className="sm:col-span-4">
+            <Campo rotulo="Complemento" colunas={4}>
               {(p) => <Entrada {...p} {...campo('complemento')} placeholder="Apto, bloco, casa…" autoComplete="address-line2" />}
             </Campo>
-            <Campo rotulo="Bairro" obrigatorio erro={erros.bairro} className="sm:col-span-2">
+            <Campo rotulo="Bairro" obrigatorio erro={erros.bairro} colunas={2}>
               {(p) => <Entrada {...p} {...campo('bairro')} />}
             </Campo>
-            <Campo rotulo="Cidade" obrigatorio erro={erros.cidade} className="sm:col-span-3">
+            <Campo rotulo="Cidade" obrigatorio erro={erros.cidade} colunas={3}>
               {(p) => <Entrada {...p} {...campo('cidade')} autoComplete="address-level2" />}
             </Campo>
-            <Campo rotulo="UF" obrigatorio className="sm:col-span-1">
+            <Campo rotulo="UF" obrigatorio colunas={1}>
               {(p) => (
                 <Selecao {...p} value={dados.uf} onChange={(e) => setDados({ ...dados, uf: e.target.value as UF })}>
                   {ufs.map((u) => (
@@ -187,7 +188,7 @@ export function FormularioPaciente() {
           </Secao>
         </Cartao>
 
-        <div className="sticky bottom-0 z-10 -mx-4 mt-6 flex flex-col-reverse gap-2 border-t border-line bg-bg/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:flex-row sm:justify-end sm:border-0 sm:bg-transparent sm:px-0 sm:backdrop-blur-none">
+        <div className={s.acoes}>
           <Botao variante="fantasma" onClick={() => navegar(-1)}>
             Cancelar
           </Botao>
@@ -198,12 +199,12 @@ export function FormularioPaciente() {
       </form>
 
       {existente && existente.ativo && (
-        <Cartao className="mt-10 flex flex-col gap-4 border-danger/30 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <Cartao className={s.perigo}>
           <div>
-            <p className="font-semibold">Desativar paciente</p>
-            <p className="text-sm text-ink-3">O cadastro sai das listas, mas todo o histórico é mantido. Nada é excluído (RN1).</p>
+            <p className={s.perigoTitulo}>Desativar paciente</p>
+            <p className={s.perigoTexto}>O cadastro sai das listas, mas todo o histórico é mantido. Nada é excluído (RN1).</p>
           </div>
-          <Botao variante="secundario" className="text-danger" icone={<UserX />} onClick={() => setDesativar(true)}>
+          <Botao variante="secundario" className={s.botaoPerigo} icone={<UserX />} onClick={() => setDesativar(true)}>
             Desativar
           </Botao>
         </Cartao>
@@ -234,7 +235,7 @@ export function FormularioPaciente() {
           </>
         }
       >
-        {internado && <p className="text-sm text-danger">Este paciente está internado. Registre a alta antes de desativar o cadastro.</p>}
+        {internado && <p className={s.avisoInternado}>Este paciente está internado. Registre a alta antes de desativar o cadastro.</p>}
       </Modal>
     </Pagina>
   )

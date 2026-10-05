@@ -1,0 +1,160 @@
+/* ───────── Cabeçalho ───────── */
+.descricao { display: block; }
+.descricao::first-letter { text-transform: uppercase; }
+
+/* ───────── Métricas e colunas ───────── */
+.metricas {
+  display: grid;
+  gap: 16px;
+}
+
+.colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+  .metricas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .colunas { grid-template-columns: minmax(0, 1fr) 380px; }
+}
+
+/* Listas dos cartões, com divisória entre itens */
+.lista > * + * { border-top: 1px solid var(--line); }
+
+/* ───────── Próximas consultas ───────── */
+.linhaConsulta,
+.linhaAlta {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  transition: background-color 150ms;
+}
+.linhaConsulta { gap: 16px; }
+.linhaAlta { gap: 12px; }
+.linhaConsulta:hover,
+.linhaAlta:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+
+.quando {
+  flex-shrink: 0;
+  width: 104px;
+}
+.quandoProxima { color: var(--brand); }
+
+/* O fim da faixa de horário, mais apagado, também em verde na próxima consulta */
+.horarioProxima > span { color: color-mix(in srgb, var(--brand) 70%, transparent); }
+
+.rotuloProxima {
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.pessoa { flex: 1; }
+
+.profissional {
+  display: none;
+  min-width: 0;
+  text-align: right;
+}
+
+@media (min-width: 768px) {
+  .profissional { display: block; }
+}
+
+.profissionalNome,
+.profissionalEspecialidade {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profissionalNome { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--ink-2); }
+.profissionalEspecialidade { font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--ink-3); }
+
+.mais {
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.verTodas {
+  font-weight: 500;
+  color: var(--brand);
+}
+.verTodas:hover { text-decoration: underline; }
+
+/* ───────── Ocupação por andar ───────── */
+.andar { padding: 14px 20px; }
+
+.andarTopo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.andarNome,
+.andarContagem {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.andarNome { font-weight: 500; }
+.andarTipos { font-weight: 400; color: var(--ink-3); }
+.andarContagem { color: var(--ink-2); }
+
+.quartos {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 8px;
+  margin-top: 10px;
+}
+
+.quarto {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 -4px;
+  padding: 0 4px;
+  border-radius: 4px;
+}
+.quarto:hover { background: var(--surface-2); }
+
+.quartoNumero {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  color: var(--ink-3);
+}
+
+/* ───────── Altas previstas ───────── */
+.semAltas {
+  padding: 24px 20px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.prazo {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+.prazoAtrasada { color: var(--danger); }
+.prazoHoje { color: var(--warn); }
+.prazoFuturo { color: var(--ink-3); }

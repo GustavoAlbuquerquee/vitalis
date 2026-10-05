@@ -16,7 +16,6 @@ import {
   Pilulas,
   PontosOcupacao,
   Selecao,
-  tons,
   usePrototipo,
 } from '@/ds'
 import { SeloQuarto } from '@/componentes/dominio'
@@ -25,6 +24,7 @@ import type { SituacaoQuarto, TipoQuarto } from '@/tipos/dominio'
 import { plural } from '@/lib/formato'
 import { situacaoQuarto, tiposQuarto } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
+import s from './MapaQuartos.module.css'
 
 type FiltroSituacao = SituacaoQuarto | 'TODOS'
 
@@ -46,9 +46,9 @@ export function MapaQuartos() {
       .filter(Boolean) as string[]
 
   const operacionais = quartos.filter((q) => !q.bloqueio)
-  const capacidade = operacionais.reduce((s, q) => s + q.capacidadeMaxima, 0)
-  const ocupadas = operacionais.reduce((s, q) => s + q.ocupacao, 0)
-  const vagas = operacionais.reduce((s, q) => s + q.vagas, 0)
+  const capacidade = operacionais.reduce((t, q) => t + q.capacidadeMaxima, 0)
+  const ocupadas = operacionais.reduce((t, q) => t + q.ocupacao, 0)
+  const vagas = operacionais.reduce((t, q) => t + q.vagas, 0)
   const lotados = quartos.filter((q) => q.situacao === 'OCUPADO').length
   const emManutencao = quartos.filter((q) => q.situacao === 'MANUTENCAO').length
   const interditados = quartos.filter((q) => q.situacao === 'INTERDITADO').length
@@ -69,17 +69,13 @@ export function MapaQuartos() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className={s.metricas}>
         <Metrica rotulo="Vagas livres" icone={<BedDouble />} valor={vagas} detalhe={`em ${plural(quartos.filter((q) => q.situacao === 'DISPONIVEL').length, 'quarto disponível', 'quartos disponíveis')}`} />
         <Metrica
           rotulo="Ocupação"
           icone={<DoorOpen />}
-          valor={
-            <>
-              {capacidade ? Math.round((ocupadas / capacidade) * 100) : 0}
-              <span className="text-lg text-ink-3">%</span>
-            </>
-          }
+          valor={capacidade ? Math.round((ocupadas / capacidade) * 100) : 0}
+          unidade="%"
           detalhe={`${ocupadas} de ${capacidade} vagas`}
         >
           <BarraProgresso valor={ocupadas} total={capacidade} />
@@ -88,17 +84,17 @@ export function MapaQuartos() {
         <Metrica rotulo="Bloqueados" icone={<Wrench />} valor={emManutencao + interditados} detalhe={`${emManutencao} em manutenção · ${plural(interditados, 'interditado')}`} />
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className={s.filtros}>
         <Pilulas
           rotulo="Filtrar por situação"
           valor={situacao}
           aoMudar={setSituacao}
           opcoes={[
             { valor: 'TODOS' as FiltroSituacao, rotulo: 'Todos', contagem: doTipo.length },
-            ...situacoes.map((s) => ({ valor: s as FiltroSituacao, rotulo: situacaoQuarto[s].rotulo, contagem: doTipo.filter((q) => q.situacao === s).length })),
+            ...situacoes.map((sit) => ({ valor: sit as FiltroSituacao, rotulo: situacaoQuarto[sit].rotulo, contagem: doTipo.filter((q) => q.situacao === sit).length })),
           ]}
         />
-        <div className="sm:w-48">
+        <div className={s.filtroTipo}>
           <Selecao aria-label="Filtrar por tipo de quarto" value={tipo} onChange={(e) => setTipo(e.target.value as TipoQuarto | '')}>
             <option value="">Todos os tipos</option>
             {tipos.map((t) => (
@@ -113,7 +109,7 @@ export function MapaQuartos() {
       <Legenda />
 
       {filtrados.length === 0 ? (
-        <Cartao className="mt-6">
+        <Cartao className={s.vazio}>
           <EstadoVazio
             icone={<SearchX />}
             titulo="Nenhum quarto com esses filtros"
@@ -131,25 +127,25 @@ export function MapaQuartos() {
           />
         </Cartao>
       ) : (
-        <div className="mt-6 flex flex-col gap-8">
+        <div className={s.andares}>
           {andares.map((andar) => {
             const doAndar = filtrados.filter((q) => q.andar === andar)
             const todosDoAndar = quartos.filter((q) => q.andar === andar && !q.bloqueio)
-            const cap = todosDoAndar.reduce((s, q) => s + q.capacidadeMaxima, 0)
-            const oc = todosDoAndar.reduce((s, q) => s + q.ocupacao, 0)
+            const cap = todosDoAndar.reduce((t, q) => t + q.capacidadeMaxima, 0)
+            const oc = todosDoAndar.reduce((t, q) => t + q.ocupacao, 0)
             return (
               <section key={andar} aria-labelledby={`andar-${andar}`}>
-                <div className="mb-3 flex items-baseline justify-between gap-3">
-                  <h2 id={`andar-${andar}`} className="text-md font-semibold">
+                <div className={s.andarTopo}>
+                  <h2 id={`andar-${andar}`} className={s.andarTitulo}>
                     {andar}º andar
                   </h2>
-                  <p className="text-sm text-ink-3 tabular">
+                  <p className={cn(s.andarResumo, 'tabular')}>
                     {oc}/{cap} vagas ocupadas · {plural(doAndar.length, 'quarto')}
                   </p>
                 </div>
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                <ul className={s.grade}>
                   {doAndar.map((q) => (
-                    <li key={q.id} className="min-w-0">
+                    <li key={q.id} className={s.celula}>
                       <BlocoQuarto quarto={q} ocupantes={ocupantes(q.id)} />
                     </li>
                   ))}
@@ -170,25 +166,25 @@ function BlocoQuarto({ quarto: q, ocupantes }: { quarto: QuartoComOcupacao; ocup
   return (
     <Link
       to={`/quartos/${q.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-surface transition-[border-color,box-shadow] hover:border-line-strong hover:shadow-pop"
+      className={s.bloco}
     >
-      <div className={cn('h-[3px] shrink-0', tons[situacaoQuarto[q.situacao].tom].ponto)} aria-hidden />
-      <div className="flex flex-1 flex-col gap-2.5 p-3.5">
-        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-          <span className="font-mono text-xl font-semibold tracking-[-0.02em] tabular">
+      <div data-tom={situacaoQuarto[q.situacao].tom} className={s.faixa} aria-hidden />
+      <div className={s.blocoCorpo}>
+        <div className={s.blocoTopo}>
+          <span className={cn(s.numero, 'tabular')}>
             <span className="sr-only">Quarto </span>
             {q.numero}
           </span>
           <Etiqueta>{tiposQuarto[q.tipo].rotulo}</Etiqueta>
         </div>
-        <div className="flex flex-col gap-1">
+        <div className={s.ocupacao}>
           <PontosOcupacao ocupacao={q.ocupacao} capacidade={q.capacidadeMaxima} situacao={q.situacao} />
-          <p className="text-xs text-ink-2 tabular">
+          <p className={cn(s.ocupacaoTexto, 'tabular')}>
             {q.ocupacao}/{q.capacidadeMaxima} · {bloqueado ? 'sem vagas' : plural(q.vagas, 'vaga')}
           </p>
         </div>
         <SeloQuarto situacao={q.situacao} />
-        <p className="mt-auto truncate text-xs text-ink-3" title={ocupantes.join(', ') || undefined}>
+        <p className={s.ocupantes} title={ocupantes.join(', ') || undefined}>
           {ocupantes.length ? ocupantes.join(', ') : bloqueado ? 'Não recebe pacientes' : 'Nenhum paciente'}
         </p>
       </div>
@@ -204,11 +200,11 @@ function Legenda() {
     { rotulo: 'Bloqueado', ocupacao: 0, situacao: 'MANUTENCAO' },
   ]
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-3">
-      <span className="font-medium text-ink-2">Legenda</span>
+    <div className={s.legenda}>
+      <span className={s.legendaTitulo}>Legenda</span>
       {itens.map((i) => (
-        <span key={i.rotulo} className="flex items-center gap-1.5">
-          <span aria-hidden className="flex">
+        <span key={i.rotulo} className={s.legendaItem}>
+          <span aria-hidden className={s.legendaPonto}>
             <PontosOcupacao ocupacao={i.ocupacao} capacidade={1} situacao={i.situacao} />
           </span>
           {i.rotulo}
@@ -259,7 +255,7 @@ function ModalNovoQuarto({ quartos, aoFechar }: { quartos: QuartoComOcupacao[]; 
         </>
       }
     >
-      <form id={idForm} onSubmit={enviar} noValidate className="grid gap-4 sm:grid-cols-2">
+      <form id={idForm} onSubmit={enviar} noValidate className={s.formulario}>
         <Campo rotulo="Número" obrigatorio erro={mostrar('numero')} ajuda="Único no hospital.">
           {(p) => <Entrada {...p} mono value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex.: 207" required />}
         </Campo>

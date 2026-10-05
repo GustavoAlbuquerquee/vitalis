@@ -2,7 +2,7 @@
 
 A linguagem visual do Vitalis: tokens, componentes e as regras de uso. A versão viva, com todos os componentes renderizados nos dois temas, fica na própria aplicação em **`/design-system`**.
 
-> **Fonte da verdade:** os tokens moram em [`frontend/src/estilos/global.css`](../frontend/src/estilos/global.css) e os componentes em [`frontend/src/ds`](../frontend/src/ds). Este documento explica o porquê; o código diz o quê.
+> **Fonte da verdade:** os tokens moram em [`frontend/src/estilos/tokens.css`](../frontend/src/estilos/tokens.css) e os componentes em [`frontend/src/ds`](../frontend/src/ds), cada um com seu CSS Module. Este documento explica o porquê; o código diz o quê.
 
 ---
 
@@ -21,7 +21,7 @@ O hospital está trocando papel por software. A interface assume isso: fundo em 
 
 ## Cores
 
-Componentes **nunca** usam hex. Usam as utilidades do Tailwind geradas a partir das variáveis CSS (`bg-surface`, `text-ink-2`, `border-line`…). O tema escuro só redefine as variáveis.
+Componentes **nunca** usam hex. O CSS de cada componente lê as variáveis (`var(--surface)`, `var(--ink-2)`, `var(--line)`…). O tema escuro só redefine as variáveis.
 
 ### Superfícies e tinta
 
@@ -47,7 +47,7 @@ Componentes **nunca** usam hex. Usam as utilidades do Tailwind geradas a partir 
 
 ### Semânticas
 
-Cada tom tem par sólido (texto, ícone, ponto) e suave (fundo).
+Cada tom tem par sólido (texto, ícone, ponto) e suave (fundo). No código, o elemento recebe `data-tom="ok"` e o CSS usa `var(--tom)`, `var(--tom-suave)` e `var(--tom-texto)`.
 
 | Tom | Significa no Vitalis |
 |---|---|
@@ -66,22 +66,24 @@ O mapeamento enum → rótulo → tom fica em [`frontend/src/lib/rotulos.ts`](..
 
 **Geist** para a interface, **Geist Mono** para dados. Base de 14px: o Vitalis é ferramenta de operação, densa por necessidade.
 
-| Classe | Tamanho/linha | Uso |
+| Variável | Tamanho/linha | Uso |
 |---|---|---|
-| `text-2xl` | 32/40 | Título de página (desktop) |
-| `text-xl` | 24/32 | Título de página (mobile), número de métrica |
-| `text-lg` | 20/28 | Destaques |
-| `text-md` | 16/24 | Título de modal |
-| `text-base` | 14/22 | Texto padrão |
-| `text-sm` | 13/20 | Apoio, botões pequenos |
-| `text-xs` | 12/16 | Rótulos, selos, ajuda de campo |
-| `text-2xs` | 11/16 | Sobretítulos em caixa-alta |
+| `--fs-2xl` | 32/40 | Título de página (desktop), número de métrica |
+| `--fs-xl` | 24/32 | Título de página (mobile) |
+| `--fs-lg` | 20/28 | Destaques |
+| `--fs-md` | 16/24 | Título de modal |
+| `--fs-base` | 14/22 | Texto padrão |
+| `--fs-sm` | 13/20 | Apoio, botões pequenos |
+| `--fs-xs` | 12/16 | Rótulos, selos, ajuda de campo |
+| `--fs-2xs` | 11/16 | Sobretítulos em caixa-alta |
+
+Cada `--fs-*` tem a altura de linha correspondente em `--lh-*`.
 
 ## Forma e espaço
 
 - Grade de **4px**.
-- Dois raios: **7px** (`rounded-control`) para controles e **12px** (`rounded-card`) para contêineres.
-- Profundidade vem de **borda**. Sombra só no que flutua: `shadow-pop` (avisos, hover de blocos) e `shadow-modal`.
+- Dois raios: **7px** (`--raio-controle`) para controles e **12px** (`--raio-cartao`) para contêineres.
+- Profundidade vem de **borda**. Sombra só no que flutua: `--sombra-pop` (avisos, hover de blocos) e `--sombra-modal`.
 
 ---
 

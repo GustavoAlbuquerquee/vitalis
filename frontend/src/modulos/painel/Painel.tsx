@@ -7,6 +7,7 @@ import { hoje, minutos, somarDias, indiceDiaSemana } from '@/lib/datas'
 import { diaDaSemana, formatarDataLonga, formatarDiaMes, plural, relativo } from '@/lib/formato'
 import { diasSemana, tiposQuarto } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
+import s from './Painel.module.css'
 
 function saudacao() {
   const h = new Date().getHours()
@@ -50,7 +51,7 @@ export function Painel() {
       <CabecalhoPagina
         titulo={`${saudacao()}, Recepção`}
         descricao={
-          <span className="block first-letter:uppercase">
+          <span className={s.descricao}>
             {diaDaSemana(dia)}, {formatarDataLonga(dia)} · {plural(restantes.length, 'consulta')} pela frente e {plural(altasHoje.length, 'alta prevista', 'altas previstas')} hoje.
           </span>
         }
@@ -66,7 +67,7 @@ export function Painel() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className={s.metricas}>
         <Metrica
           rotulo="Consultas hoje"
           icone={<CalendarDays />}
@@ -87,12 +88,8 @@ export function Painel() {
           rotulo="Ocupação"
           icone={<DoorOpen />}
           para="/quartos"
-          valor={
-            <>
-              {Math.round((ocupadas / capacidade) * 100)}
-              <span className="text-lg text-ink-3">%</span>
-            </>
-          }
+          valor={Math.round((ocupadas / capacidade) * 100)}
+          unidade="%"
           detalhe={`${ocupadas} de ${capacidade} vagas · ${plural(quartos.length - operacionais.length, 'quarto bloqueado', 'quartos bloqueados')}`}
         >
           <BarraProgresso valor={ocupadas} total={capacidade} />
@@ -101,17 +98,13 @@ export function Painel() {
           rotulo="Atendendo agora"
           icone={<Stethoscope />}
           para="/profissionais"
-          valor={
-            <>
-              {atendendoAgora.length}
-              <span className="text-lg text-ink-3"> / {escalados.length}</span>
-            </>
-          }
+          valor={atendendoAgora.length}
+          unidade={` / ${escalados.length}`}
           detalhe="profissionais escalados hoje"
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className={s.colunas}>
         <Cartao>
           <CabecalhoCartao
             titulo="Próximas consultas"
@@ -127,22 +120,22 @@ export function Painel() {
           {proximas.length === 0 ? (
             <EstadoVazio icone={<CalendarDays />} titulo="Nenhuma consulta pela frente" descricao="Não há consultas agendadas para os próximos dias." />
           ) : (
-            <ul className="divide-y divide-line">
+            <ul className={s.lista}>
               {proximas.slice(0, 8).map((c, i) => {
                 const paciente = buscarPaciente(c.pacienteId)!
                 const prof = buscarProfissional(c.profissionalId)!
                 const proxima = i === 0 && diaDaLista === dia
                 return (
                   <li key={c.id}>
-                    <Link to={`/consultas/${c.id}`} className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-surface-2/60">
-                      <div className={cn('w-[104px] shrink-0', proxima && 'text-brand')}>
-                        <Horario c={c} className={proxima ? '[&>span]:text-brand/70' : undefined} />
-                        {proxima && <p className="text-2xs font-semibold tracking-wide uppercase">Próxima</p>}
+                    <Link to={`/consultas/${c.id}`} className={s.linhaConsulta}>
+                      <div className={cn(s.quando, proxima && s.quandoProxima)}>
+                        <Horario c={c} className={proxima ? s.horarioProxima : undefined} />
+                        {proxima && <p className={s.rotuloProxima}>Próxima</p>}
                       </div>
-                      <Pessoa nome={paciente.nome} detalhe={c.motivo} className="flex-1" />
-                      <div className="hidden min-w-0 text-right md:block">
-                        <p className="truncate text-sm text-ink-2">{prof.nome}</p>
-                        <p className="truncate text-xs text-ink-3">{nomeEspecialidade(prof)}</p>
+                      <Pessoa nome={paciente.nome} detalhe={c.motivo} className={s.pessoa} />
+                      <div className={s.profissional}>
+                        <p className={s.profissionalNome}>{prof.nome}</p>
+                        <p className={s.profissionalEspecialidade}>{nomeEspecialidade(prof)}</p>
                       </div>
                       <SeloConsulta status={c.status} />
                     </Link>
@@ -152,16 +145,16 @@ export function Painel() {
             </ul>
           )}
           {proximas.length > 8 && (
-            <div className="border-t border-line px-5 py-3 text-sm text-ink-3">
+            <div className={s.mais}>
               + {plural(proximas.length - 8, 'consulta')} mais tarde.{' '}
-              <Link to={diaDaLista === dia ? '/consultas' : `/consultas?data=${diaDaLista}`} className="font-medium text-brand hover:underline">
+              <Link to={diaDaLista === dia ? '/consultas' : `/consultas?data=${diaDaLista}`} className={s.verTodas}>
                 Ver todas
               </Link>
             </div>
           )}
         </Cartao>
 
-        <div className="flex flex-col gap-6">
+        <div className={s.lateral}>
           <Cartao>
             <CabecalhoCartao
               titulo="Ocupação por andar"
@@ -171,7 +164,7 @@ export function Painel() {
                 </BotaoLink>
               }
             />
-            <ul className="divide-y divide-line">
+            <ul className={s.lista}>
               {andares.map((andar) => {
                 const qs = quartos.filter((q) => q.andar === andar)
                 const ops = qs.filter((q) => !q.bloqueio)
@@ -179,19 +172,19 @@ export function Painel() {
                 const oc = ops.reduce((s, q) => s + q.ocupacao, 0)
                 const tipos = [...new Set(qs.map((q) => tiposQuarto[q.tipo].rotulo))].join(' · ')
                 return (
-                  <li key={andar} className="px-5 py-3.5">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <p className="text-sm font-medium">
-                        {andar}º andar <span className="font-normal text-ink-3">· {tipos}</span>
+                  <li key={andar} className={s.andar}>
+                    <div className={s.andarTopo}>
+                      <p className={s.andarNome}>
+                        {andar}º andar <span className={s.andarTipos}>· {tipos}</span>
                       </p>
-                      <p className="text-sm text-ink-2 tabular">
+                      <p className={cn(s.andarContagem, 'tabular')}>
                         {oc}/{cap}
                       </p>
                     </div>
-                    <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-2">
+                    <div className={s.quartos}>
                       {qs.map((q) => (
-                        <Link key={q.id} to={`/quartos/${q.id}`} className="flex items-center gap-1.5 rounded px-1 -mx-1 hover:bg-surface-2" title={`Quarto ${q.numero}`}>
-                          <span className="font-mono text-2xs text-ink-3">{q.numero}</span>
+                        <Link key={q.id} to={`/quartos/${q.id}`} className={s.quarto} title={`Quarto ${q.numero}`}>
+                          <span className={s.quartoNumero}>{q.numero}</span>
                           <PontosOcupacao ocupacao={q.ocupacao} capacidade={q.capacidadeMaxima} situacao={q.situacao} tamanho="sm" />
                         </Link>
                       ))}
@@ -205,18 +198,18 @@ export function Painel() {
           <Cartao>
             <CabecalhoCartao titulo="Altas previstas" descricao="Até amanhã" icone={<LogOut />} />
             {altasProximas.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-ink-3">Nenhuma alta prevista até amanhã.</p>
+              <p className={s.semAltas}>Nenhuma alta prevista até amanhã.</p>
             ) : (
-              <ul className="divide-y divide-line">
+              <ul className={s.lista}>
                 {altasProximas.map((i) => {
                   const p = buscarPaciente(i.pacienteId)!
                   const q = buscarQuarto(i.quartoId)!
                   const atrasada = i.dataPrevistaAlta < dia
                   return (
                     <li key={i.id}>
-                      <Link to={`/internacoes/${i.id}`} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-2/60">
-                        <Pessoa nome={p.nome} tamanho="sm" detalhe={`Quarto ${q.numero}`} className="flex-1" />
-                        <span className={cn('text-sm font-medium', atrasada ? 'text-danger' : i.dataPrevistaAlta === dia ? 'text-warn' : 'text-ink-3')}>
+                      <Link to={`/internacoes/${i.id}`} className={s.linhaAlta}>
+                        <Pessoa nome={p.nome} tamanho="sm" detalhe={`Quarto ${q.numero}`} className={s.pessoa} />
+                        <span className={cn(s.prazo, atrasada ? s.prazoAtrasada : i.dataPrevistaAlta === dia ? s.prazoHoje : s.prazoFuturo)}>
                           {atrasada ? 'atrasada' : relativo(i.dataPrevistaAlta)}
                         </span>
                       </Link>

@@ -34,6 +34,8 @@ import {
 import { Pessoa } from '@/componentes/dominio'
 import { MarcaVitalis } from '@/app/Logo'
 import { situacaoQuarto, statusConsulta, statusInternacao, tiposRegistro, type Tom } from '@/lib/rotulos'
+import { cn } from '@/lib/cn'
+import s from './DesignSystem.module.css'
 
 const cores: { grupo: string; descricao: string; tokens: { nome: string; uso: string }[] }[] = [
   {
@@ -79,22 +81,22 @@ const semanticas: { tom: Tom; nome: string; uso: string }[] = [
 ]
 
 const escala = [
-  { classe: 'text-2xl', px: '32/40', uso: 'Título de página (desktop)', peso: 'font-semibold tracking-[-0.02em]' },
-  { classe: 'text-xl', px: '24/32', uso: 'Título de página (mobile), números de métrica', peso: 'font-semibold tracking-[-0.015em]' },
-  { classe: 'text-lg', px: '20/28', uso: 'Destaques', peso: 'font-semibold' },
-  { classe: 'text-md', px: '16/24', uso: 'Título de modal', peso: 'font-semibold' },
-  { classe: 'text-base', px: '14/22', uso: 'Texto padrão, títulos de cartão', peso: '' },
-  { classe: 'text-sm', px: '13/20', uso: 'Texto de apoio, botões pequenos', peso: '' },
-  { classe: 'text-xs', px: '12/16', uso: 'Rótulos, selos, ajuda de campo', peso: '' },
-  { classe: 'text-2xs', px: '11/16', uso: 'Sobretítulos em caixa-alta', peso: 'font-semibold uppercase tracking-[0.06em]' },
+  { classe: 'text-2xl', px: '32/40', uso: 'Título de página (desktop)', estilo: s.texto2xl },
+  { classe: 'text-xl', px: '24/32', uso: 'Título de página (mobile), números de métrica', estilo: s.textoXl },
+  { classe: 'text-lg', px: '20/28', uso: 'Destaques', estilo: s.textoLg },
+  { classe: 'text-md', px: '16/24', uso: 'Título de modal', estilo: s.textoMd },
+  { classe: 'text-base', px: '14/22', uso: 'Texto padrão, títulos de cartão', estilo: s.textoBase },
+  { classe: 'text-sm', px: '13/20', uso: 'Texto de apoio, botões pequenos', estilo: s.textoSm },
+  { classe: 'text-xs', px: '12/16', uso: 'Rótulos, selos, ajuda de campo', estilo: s.textoXs },
+  { classe: 'text-2xs', px: '11/16', uso: 'Sobretítulos em caixa-alta', estilo: s.texto2xs },
 ]
 
 function Secao({ id, titulo, descricao, children }: { id: string; titulo: string; descricao?: string; children: ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-24 border-t border-line py-10 first:border-0 first:pt-0">
-      <h2 className="text-lg font-semibold tracking-[-0.01em]">{titulo}</h2>
-      {descricao && <p className="mt-1 max-w-2xl text-base text-ink-2">{descricao}</p>}
-      <div className="mt-6">{children}</div>
+    <section id={id} className={s.secao}>
+      <h2 className={s.secaoTitulo}>{titulo}</h2>
+      {descricao && <p className={s.secaoDescricao}>{descricao}</p>}
+      <div className={s.secaoCorpo}>{children}</div>
     </section>
   )
 }
@@ -102,8 +104,8 @@ function Secao({ id, titulo, descricao, children }: { id: string; titulo: string
 function Exemplo({ titulo, children, className }: { titulo: string; children: ReactNode; className?: string }) {
   return (
     <div>
-      <p className="mb-2 text-2xs font-semibold tracking-[0.06em] text-ink-3 uppercase">{titulo}</p>
-      <div className={className ?? 'flex flex-wrap items-center gap-3 rounded-card border border-line bg-surface p-5'}>{children}</div>
+      <p className={s.exemploTitulo}>{titulo}</p>
+      <div className={className ?? s.exemplo}>{children}</div>
     </div>
   )
 }
@@ -132,17 +134,25 @@ export function DesignSystem() {
   return (
     <Pagina>
       <CabecalhoPagina
-        antes={<MarcaVitalis className="size-12" />}
+        antes={<MarcaVitalis className={s.marca} />}
         titulo="Design system"
         descricao="Os tokens e componentes que montam o Vitalis. Tudo aqui é o código real — mude o tema no topo para ver as duas versões."
       />
 
-      <div className="grid gap-10 lg:grid-cols-[180px_minmax(0,1fr)]">
-        <nav aria-label="Seções do design system" className="hidden lg:block">
-          <ul className="sticky top-24 flex flex-col gap-0.5 text-sm">
+      <div className={s.estrutura}>
+        <nav aria-label="Seções do design system" className={s.indice}>
+          <ul className={s.indiceLista}>
             {indice.map(([id, rotulo]) => (
               <li key={id}>
-                <a href={`#${id}`} className="block rounded px-2 py-1 text-ink-3 hover:bg-surface-2 hover:text-ink">
+                <a
+                  href={`#${id}`}
+                  className={s.indiceLink}
+                  onClick={(e) => {
+                    // Com rotas por hash, "#cores" viraria uma rota: rola até a seção direto
+                    e.preventDefault()
+                    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                >
                   {rotulo}
                 </a>
               </li>
@@ -150,35 +160,35 @@ export function DesignSystem() {
           </ul>
         </nav>
 
-        <div className="min-w-0">
+        <div className={s.conteudo}>
           <Secao id="principios" titulo="Princípios">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className={s.grade3}>
               {[
                 ['Do papel ao pulso', 'Fundo em tom de papel, tinta escura, um único verde vital. O sistema lembra o prontuário que substitui — só que organizado.'],
                 ['A regra aparece antes do erro', 'Conflito de horário, capacidade do quarto, paciente já internado: a interface avisa enquanto a pessoa preenche, não depois do envio.'],
                 ['Dado clínico é preciso', 'CPF, registro, horários e números de quarto usam fonte mono com algarismos tabulares. Nada "dança" numa coluna.'],
               ].map(([t, d]) => (
-                <Cartao key={t} className="p-5">
-                  <p className="font-semibold">{t}</p>
-                  <p className="mt-1.5 text-sm text-ink-2">{d}</p>
+                <Cartao key={t} className={s.cartaoRespiro}>
+                  <p className={s.forte}>{t}</p>
+                  <p className={s.principioTexto}>{d}</p>
                 </Cartao>
               ))}
             </div>
           </Secao>
 
-          <Secao id="cores" titulo="Cores" descricao="Componentes nunca usam hex: usam as utilidades geradas dos tokens (bg-surface, text-ink-2, border-line). O tema escuro só redefine as variáveis.">
-            <div className="flex flex-col gap-8">
+          <Secao id="cores" titulo="Cores" descricao="Componentes nunca usam hex: o CSS de cada um lê as variáveis de src/estilos/tokens.css (var(--surface), var(--ink-2), var(--line)). O tema escuro só redefine as variáveis.">
+            <div className={s.grupos}>
               {cores.map((g) => (
                 <div key={g.grupo}>
-                  <p className="font-semibold">{g.grupo}</p>
-                  <p className="mb-3 text-sm text-ink-3">{g.descricao}</p>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+                  <p className={s.forte}>{g.grupo}</p>
+                  <p className={s.grupoDescricao}>{g.descricao}</p>
+                  <div className={s.amostras}>
                     {g.tokens.map((t) => (
-                      <div key={t.nome} className="overflow-hidden rounded-card border border-line bg-surface">
-                        <div className="h-16 border-b border-line" style={{ background: `var(--${t.nome})` }} />
-                        <div className="p-2.5">
-                          <p className="font-mono text-xs font-medium">{t.nome}</p>
-                          <p className="mt-0.5 text-xs text-ink-3">{t.uso}</p>
+                      <div key={t.nome} className={s.amostra}>
+                        <div className={s.amostraCor} style={{ background: `var(--${t.nome})` }} />
+                        <div className={s.amostraLegenda}>
+                          <p className={s.tokenNome}>{t.nome}</p>
+                          <p className={s.tokenUso}>{t.uso}</p>
                         </div>
                       </div>
                     ))}
@@ -186,24 +196,22 @@ export function DesignSystem() {
                 </div>
               ))}
               <div>
-                <p className="font-semibold">Semânticas</p>
-                <p className="mb-3 text-sm text-ink-3">Cada uma em par: sólida para texto e ícone, suave para fundo. Cor nunca é a única pista — o texto sempre diz o estado.</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-                  {semanticas.map((s) => (
-                    <div key={s.nome} className="overflow-hidden rounded-card border border-line bg-surface">
-                      <div className="flex h-16">
-                        <div className="flex-1" style={{ background: `var(--${s.nome})` }} />
-                        <div className="flex flex-1 items-center justify-center" style={{ background: `var(--${s.nome}-soft)` }}>
-                          <span className="text-sm font-semibold" style={{ color: `var(--${s.nome === 'brand' ? 'brand-ink' : s.nome})` }}>
-                            Aa
-                          </span>
+                <p className={s.forte}>Semânticas</p>
+                <p className={s.grupoDescricao}>Cada uma em par: sólida para texto e ícone, suave para fundo. Cor nunca é a única pista — o texto sempre diz o estado.</p>
+                <div className={s.amostras}>
+                  {semanticas.map((sem) => (
+                    <div key={sem.nome} data-tom={sem.tom} className={s.amostra}>
+                      <div className={s.amostraPar}>
+                        <div className={s.amostraSolida} />
+                        <div className={s.amostraSuave}>
+                          <span className={s.amostraTexto}>Aa</span>
                         </div>
                       </div>
-                      <div className="p-2.5">
-                        <p className="font-mono text-xs font-medium">
-                          {s.nome} · {s.nome}-soft
+                      <div className={s.amostraLegenda}>
+                        <p className={s.tokenNome}>
+                          {sem.nome} · {sem.nome}-soft
                         </p>
-                        <p className="mt-0.5 text-xs text-ink-3">{s.uso}</p>
+                        <p className={s.tokenUso}>{sem.uso}</p>
                       </div>
                     </div>
                   ))}
@@ -213,49 +221,49 @@ export function DesignSystem() {
           </Secao>
 
           <Secao id="tipografia" titulo="Tipografia" descricao="Geist para a interface, Geist Mono para dados. Base de 14px — o Vitalis é ferramenta de operação, densa por necessidade.">
-            <Cartao className="divide-y divide-line">
+            <Cartao className={s.escala}>
               {escala.map((e) => (
-                <div key={e.classe} className="grid items-baseline gap-2 px-5 py-3.5 sm:grid-cols-[120px_1fr_220px]">
-                  <span className="font-mono text-xs text-ink-3">
+                <div key={e.classe} className={s.escalaLinha}>
+                  <span className={s.escalaNome}>
                     {e.classe} · {e.px}
                   </span>
-                  <span className={`${e.classe} ${e.peso} truncate`}>Internação do quarto 302</span>
-                  <span className="text-sm text-ink-3">{e.uso}</span>
+                  <span className={cn(s.escalaAmostra, e.estilo)}>Internação do quarto 302</span>
+                  <span className={s.apagado}>{e.uso}</span>
                 </div>
               ))}
-              <div className="grid items-baseline gap-2 px-5 py-3.5 sm:grid-cols-[120px_1fr_220px]">
-                <span className="font-mono text-xs text-ink-3">font-mono</span>
-                <span className="font-mono text-sm tabular">123.456.789-09 · CRM-MG 48.213 · 09:30 – 10:00</span>
-                <span className="text-sm text-ink-3">CPF, registro, horário, nº do quarto</span>
+              <div className={s.escalaLinha}>
+                <span className={s.escalaNome}>font-mono</span>
+                <span className={s.escalaMono}>123.456.789-09 · CRM-MG 48.213 · 09:30 – 10:00</span>
+                <span className={s.apagado}>CPF, registro, horário, nº do quarto</span>
               </div>
             </Cartao>
           </Secao>
 
           <Secao id="forma" titulo="Forma e espaço" descricao="Grade de 4px. Dois raios: 7px para controles, 12px para contêineres. Sombra só no que flutua (menus, modais, avisos).">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className={s.grade3Sm}>
               <Exemplo titulo="rounded-control · 7px">
-                <div className="h-12 w-full rounded-control border-2 border-brand bg-brand-soft" />
+                <div className={s.raioControle} />
               </Exemplo>
               <Exemplo titulo="rounded-card · 12px">
-                <div className="h-12 w-full rounded-card border-2 border-brand bg-brand-soft" />
+                <div className={s.raioCartao} />
               </Exemplo>
               <Exemplo titulo="shadow-pop · shadow-modal">
-                <div className="h-12 flex-1 rounded-card bg-surface shadow-pop" />
-                <div className="h-12 flex-1 rounded-card bg-surface shadow-modal" />
+                <div className={s.sombraPop} />
+                <div className={s.sombraModal} />
               </Exemplo>
             </div>
-            <div className="mt-4 flex flex-wrap items-end gap-3">
+            <div className={s.espacos}>
               {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((n) => (
-                <div key={n} className="flex flex-col items-center gap-1.5">
-                  <div className="rounded-sm bg-brand/70" style={{ width: n * 4, height: n * 4 }} />
-                  <span className="font-mono text-2xs text-ink-3">{n * 4}</span>
+                <div key={n} className={s.espaco}>
+                  <div className={s.espacoQuadrado} style={{ width: n * 4, height: n * 4 }} />
+                  <span className={s.espacoValor}>{n * 4}</span>
                 </div>
               ))}
             </div>
           </Secao>
 
           <Secao id="botoes" titulo="Botões" descricao="Um primário por tela. Perigo só para ação destrutiva confirmada em modal.">
-            <div className="flex flex-col gap-4">
+            <div className={s.pilha}>
               <Exemplo titulo="Variantes">
                 <Botao variante="primario" icone={<CalendarPlus />}>
                   Agendar consulta
@@ -286,7 +294,7 @@ export function DesignSystem() {
           </Secao>
 
           <Secao id="status" titulo="Status" descricao="Todo enum do domínio tem rótulo e tom fixos, definidos em src/lib/rotulos.ts. O mesmo status tem a mesma cor em qualquer tela.">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className={s.grade2}>
               <Exemplo titulo="StatusConsulta">
                 {Object.values(statusConsulta).map((s) => (
                   <Selo key={s.rotulo} tom={s.tom}>
@@ -321,7 +329,7 @@ export function DesignSystem() {
           </Secao>
 
           <Secao id="formularios" titulo="Formulários" descricao="Campo liga rótulo, ajuda e erro ao controle (aria-describedby, aria-invalid). Erros aparecem após a primeira tentativa de envio.">
-            <Cartao className="grid gap-5 p-5 sm:grid-cols-2">
+            <Cartao className={s.formulario}>
               <Campo rotulo="Nome completo" obrigatorio ajuda="Como consta no documento.">
                 {(p) => <Entrada {...p} placeholder="Ana Clara Ribeiro" />}
               </Campo>
@@ -337,7 +345,7 @@ export function DesignSystem() {
                 )}
               </Campo>
               <Campo rotulo="Desabilitado">{(p) => <Entrada {...p} disabled value="Derivado — não editável" readOnly />}</Campo>
-              <Campo rotulo="Observações" className="sm:col-span-2">
+              <Campo rotulo="Observações" className={s.campoLargo}>
                 {(p) => <AreaTexto {...p} placeholder="Queixa, exame físico, conduta…" />}
               </Campo>
               <Busca valor={busca} aoMudar={setBusca} placeholder="Nome ou CPF" aria-label="Exemplo de busca" />
@@ -345,20 +353,20 @@ export function DesignSystem() {
           </Secao>
 
           <Secao id="navegacao" titulo="Navegação" descricao="Abas trocam a seção da página; segmentado troca o modo de ver os mesmos dados; pílulas filtram.">
-            <div className="flex flex-col gap-4">
-              <Exemplo titulo="Abas" className="rounded-card border border-line bg-surface px-5 pt-2">
+            <div className={s.pilha}>
+              <Exemplo titulo="Abas" className={s.exemploAbas}>
                 <Abas
                   rotulo="Exemplo de abas"
                   valor={aba}
                   aoMudar={setAba}
-                  className="w-full border-0"
+                  className={s.abasSoltas}
                   opcoes={[
                     { valor: 'geral', rotulo: 'Visão geral' },
                     { valor: 'historico', rotulo: 'Histórico médico', contagem: 14 },
                   ]}
                 />
               </Exemplo>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className={s.grade2}>
                 <Exemplo titulo="Segmentado">
                   <Segmentado
                     rotulo="Exemplo segmentado"
@@ -387,7 +395,7 @@ export function DesignSystem() {
           </Secao>
 
           <Secao id="feedback" titulo="Feedback" descricao="Alerta fica preso ao contexto (regras de negócio). Aviso (toast) confirma uma ação. Modal pede confirmação do que muda estado.">
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className={s.alertas}>
               <Alerta tom="danger" titulo="Conflito de horário (RN3)">
                 Já existe consulta das 09:30 com Bruno Henrique Santos.
               </Alerta>
@@ -399,7 +407,7 @@ export function DesignSystem() {
               </Alerta>
               <Alerta tom="ok" titulo="Horário livre" />
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className={s.botoesFeedback}>
               <Botao onClick={() => avisar({ titulo: 'Consulta agendada', descricao: 'Sexta, 9 de outubro às 09:30.' })}>Mostrar aviso</Botao>
               <Botao onClick={() => avisar({ titulo: 'Não foi possível salvar', descricao: 'O quarto 302 atingiu a capacidade máxima.', tom: 'danger' })}>Aviso de erro</Botao>
               <Botao onClick={() => setModal(true)}>Abrir modal</Botao>
@@ -424,28 +432,28 @@ export function DesignSystem() {
           </Secao>
 
           <Secao id="dados" titulo="Dados" descricao="Métricas, ocupação, pessoas, tabelas e estados vazios.">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className={s.grade3}>
               <Metrica rotulo="Ocupação" valor="78%" detalhe="39 de 50 vagas">
                 <BarraProgresso valor={39} total={50} />
               </Metrica>
               <Metrica rotulo="Internações ativas" valor="21" detalhe="3 altas previstas hoje" />
               <Cartao>
                 <CabecalhoCartao titulo="Ocupação do quarto" descricao="Um ponto por vaga — RN5 visível" />
-                <CorpoCartao className="flex flex-col gap-3 text-sm">
-                  <span className="flex items-center justify-between">
+                <CorpoCartao className={s.ocupacoes}>
+                  <span className={s.ocupacao}>
                     Disponível <PontosOcupacao ocupacao={2} capacidade={4} situacao="DISPONIVEL" />
                   </span>
-                  <span className="flex items-center justify-between">
+                  <span className={s.ocupacao}>
                     Lotado <PontosOcupacao ocupacao={2} capacidade={2} situacao="OCUPADO" />
                   </span>
-                  <span className="flex items-center justify-between">
+                  <span className={s.ocupacao}>
                     Manutenção <PontosOcupacao ocupacao={0} capacidade={3} situacao="MANUTENCAO" />
                   </span>
                 </CorpoCartao>
               </Cartao>
             </div>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <Cartao className="overflow-hidden">
+            <div className={cn(s.grade2, s.acima)}>
+              <Cartao className={s.recorte}>
                 <Tabela>
                   <thead>
                     <tr>
@@ -459,7 +467,7 @@ export function DesignSystem() {
                       <Td>
                         <Pessoa nome="Ana Clara Ribeiro" detalhe="34 anos" tamanho="sm" />
                       </Td>
-                      <Td className="font-mono text-sm whitespace-nowrap tabular">123.456.789-09</Td>
+                      <Td className={cn('mono', s.semQuebra)}>123.456.789-09</Td>
                       <Td>
                         <Selo tom="brand">Internado · 202</Selo>
                       </Td>
@@ -468,20 +476,20 @@ export function DesignSystem() {
                       <Td>
                         <Pessoa nome="Bruno Henrique Santos" detalhe="51 anos" tamanho="sm" />
                       </Td>
-                      <Td className="font-mono text-sm whitespace-nowrap tabular">987.654.321-00</Td>
+                      <Td className={cn('mono', s.semQuebra)}>987.654.321-00</Td>
                       <Td>
-                        <span className="text-sm text-ink-3">Ambulatorial</span>
+                        <span className={s.apagado}>Ambulatorial</span>
                       </Td>
                     </tr>
                   </tbody>
                 </Tabela>
               </Cartao>
               <Cartao>
-                <EstadoVazio icone={<Users />} titulo="Nenhum paciente encontrado" descricao="Estados vazios dizem o que aconteceu e o próximo passo." className="py-8" />
+                <EstadoVazio icone={<Users />} titulo="Nenhum paciente encontrado" descricao="Estados vazios dizem o que aconteceu e o próximo passo." className={s.vazioCompacto} />
               </Cartao>
             </div>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <Cartao className="p-5">
+            <div className={cn(s.grade2, s.acima)}>
+              <Cartao className={s.cartaoRespiro}>
                 <ListaDefinicao
                   itens={[
                     { rotulo: 'CPF', valor: '123.456.789-09', mono: true },
@@ -491,7 +499,7 @@ export function DesignSystem() {
                   ]}
                 />
               </Cartao>
-              <Cartao className="flex items-center gap-3 p-5">
+              <Cartao className={s.avatares}>
                 {['Helena Duarte', 'Rafael Moreira', 'Camila Teixeira', 'Juliana Rocha', 'Lucas Amaral'].map((n, i) => (
                   <Avatar key={n} nome={n} tamanho={(['sm', 'md', 'lg', 'xl', 'md'] as const)[i]} />
                 ))}

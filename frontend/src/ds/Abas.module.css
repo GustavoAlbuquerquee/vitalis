@@ -1,0 +1,89 @@
+/* Abas sublinhadas */
+.abas {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.aba {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--ink-3);
+  transition: color 150ms;
+}
+.aba:hover { color: var(--ink-2); }
+.aba[aria-selected='true'] { border-bottom-color: var(--brand); color: var(--ink); }
+
+.contagem {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-size: var(--fs-2xs);
+  font-variant-numeric: tabular-nums;
+}
+.aba[aria-selected='true'] .contagem { background: var(--brand-soft); color: var(--brand-ink); }
+
+/* Controle segmentado */
+.segmentado {
+  display: inline-flex;
+  height: var(--altura-controle);
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-controle);
+  background: var(--surface-2);
+}
+
+.segmento {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 5px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--ink-3);
+  transition: color 150ms, background-color 150ms;
+}
+.segmento svg { width: 14px; height: 14px; }
+.segmento:hover { color: var(--ink-2); }
+.segmento[aria-checked='true'] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+
+/* Pílulas de filtro */
+.pilulas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pilula {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+  transition: color 150ms, border-color 150ms, background-color 150ms;
+}
+.pilula:hover { border-color: var(--ink-3); color: var(--ink); }
+.pilula[aria-checked='true'] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+
+.pilulaContagem {
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+.pilula[aria-checked='true'] .pilulaContagem { color: inherit; opacity: 0.7; }

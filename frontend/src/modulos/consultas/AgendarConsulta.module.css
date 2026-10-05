@@ -1,0 +1,232 @@
+.formulario {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .formulario { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+
+.cartaoForm { padding: 28px 20px; }
+
+@media (min-width: 640px) {
+  .cartaoForm { padding-left: 32px; padding-right: 32px; }
+}
+
+/* ───────── Horário ───────── */
+.rotuloHorario {
+  margin-bottom: 6px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+
+.obrigatorio {
+  margin-left: 2px;
+  color: var(--danger);
+}
+
+.semHorarios {
+  padding: 16px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--raio-controle);
+  text-align: center;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.semHorariosAcao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.horarios {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+@media (min-width: 640px) {
+  .horarios { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .horarios { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+}
+
+.slot {
+  height: 36px;
+  border: 1px solid;
+  border-radius: var(--raio-controle);
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-variant-numeric: tabular-nums;
+  transition: color 150ms, background-color 150ms, border-color 150ms;
+}
+
+.slotAtivo {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.slotLivre {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+.slotLivre:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.slotOcupado {
+  cursor: not-allowed;
+  border-color: var(--line);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+
+.outroHorario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.semQuebra { white-space: nowrap; }
+
+/* ───────── Coluna lateral ───────── */
+.lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .lateral {
+    position: sticky;
+    top: 96px;
+  }
+}
+
+.verificacoes > li + li { border-top: 1px solid var(--line); }
+
+.verificacao {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+}
+
+.icone {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+.pendente { color: var(--ink-3); }
+.atendida { color: var(--ok); }
+.violada { color: var(--danger); }
+
+.verificacaoTexto {
+  min-width: 0;
+  flex: 1;
+}
+
+.verificacaoTitulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+
+.regra {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.verificacaoDetalhe {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.linkConflito {
+  font-weight: 500;
+  color: var(--danger);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rodapeVerificacao {
+  padding: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.botaoCheio { width: 100%; }
+
+.resumo {
+  margin-top: 8px;
+  text-align: center;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--ink-3);
+}
+
+/* Agenda do profissional no dia */
+.corpoAgenda {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.semAtendimento {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-3);
+}
+
+.ocupadas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ocupada {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.ocupadaConflito { background: var(--danger-soft); }
+
+.ocupadaHorario {
+  flex-shrink: 0;
+  width: 112px;
+}
+
+.ocupadaPaciente {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}

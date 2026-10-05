@@ -1,0 +1,31 @@
+/* Seis pares fundo/texto, escolhidos pelo hash do nome. Cores próprias do avatar, fora da paleta semântica. */
+.avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  background: var(--av-fundo);
+  color: var(--av-texto);
+}
+
+.sm { width: 28px; height: 28px; font-size: var(--fs-2xs); }
+.md { width: 36px; height: 36px; font-size: var(--fs-xs); }
+.lg { width: 44px; height: 44px; font-size: var(--fs-sm); }
+.xl { width: 64px; height: 64px; font-size: var(--fs-lg); }
+
+.c0 { --av-fundo: #dcebe6; --av-texto: #0a4f44; }
+.c1 { --av-fundo: #e4e8f4; --av-texto: #2d4a86; }
+.c2 { --av-fundo: #f3e6dc; --av-texto: #86471f; }
+.c3 { --av-fundo: #ece3f0; --av-texto: #6a3d7d; }
+.c4 { --av-fundo: #e9ecd9; --av-texto: #545f1d; }
+.c5 { --av-fundo: #f2e1e3; --av-texto: #8a2f3b; }
+
+:global([data-theme='dark']) .c0 { --av-fundo: #12352e; --av-texto: #7fdcc6; }
+:global([data-theme='dark']) .c1 { --av-fundo: #1a2540; --av-texto: #9db7ea; }
+:global([data-theme='dark']) .c2 { --av-fundo: #33231a; --av-texto: #e3b08c; }
+:global([data-theme='dark']) .c3 { --av-fundo: #2c1f33; --av-texto: #cfa6e0; }
+:global([data-theme='dark']) .c4 { --av-fundo: #262b15; --av-texto: #c3cf86; }
+:global([data-theme='dark']) .c5 { --av-fundo: #341a1e; --av-texto: #eaa1aa; }

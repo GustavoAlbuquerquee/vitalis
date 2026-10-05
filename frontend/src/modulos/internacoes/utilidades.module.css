@@ -1,0 +1,27 @@
+/* Alta prevista: a data em cima, o prazo embaixo */
+.alta {
+  line-height: 1.25;
+}
+
+.data {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink);
+}
+
+.dataAtrasada {
+  font-weight: 500;
+  color: var(--danger);
+}
+
+.prazo {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+}
+
+/* Cor do prazo — devolvidas por prazoDaAlta().cor, valem em qualquer elemento */
+.corAtrasada { color: var(--danger); }
+.corHoje { color: var(--warn); }
+.corFutura { color: var(--ink-3); }

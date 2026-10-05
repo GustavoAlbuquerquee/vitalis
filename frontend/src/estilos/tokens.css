@@ -1,0 +1,116 @@
+/*
+ * Vitalis — tokens do design system.
+ *
+ * Toda cor, tamanho de fonte, raio e sombra da interface sai daqui.
+ * Componentes nunca usam hex direto: usam var(--surface), var(--ink-2)…
+ * O tema escuro só redefine as variáveis. Documentação em docs/design-system.md.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Superfícies — papel quente, a lembrança do prontuário que o sistema substitui */
+  --bg: #f6f5f1;
+  --bg-vidro: rgb(246 245 241 / 0.85);
+  --surface: #ffffff;
+  --surface-2: #efede7;
+  --surface-3: #e7e4dc;
+  --line: #e2dfd6;
+  --line-strong: #cfcbbf;
+
+  /* Tinta */
+  --ink: #16201e;
+  --ink-2: #56605d;
+  --ink-3: #868e8a;
+
+  /* Marca — verde-petróleo, a cor "vital" */
+  --brand: #0e6b5c;
+  --brand-hover: #0a5a4d;
+  --brand-soft: #e2f0ec;
+  --brand-ink: #0a4f44;
+  --on-brand: #ffffff;
+  --anel-foco: rgb(14 107 92 / 0.15);
+
+  /* Semânticas — sólida (texto/ícone) e suave (fundo) */
+  --ok: #1f7a4d;
+  --ok-soft: #e3f2e9;
+  --info: #2459a8;
+  --info-soft: #e6eefa;
+  --warn: #9a5806;
+  --warn-soft: #fbefd9;
+  --danger: #b4232f;
+  --danger-soft: #fbe6e7;
+  --on-danger: #ffffff;
+  --neutral: #5f6865;
+  --neutral-soft: #ebe9e3;
+
+  --focus: #0e6b5c;
+  --overlay: rgb(22 32 30 / 0.42);
+  --sombra-pop: 0 1px 2px rgb(22 32 30 / 0.06), 0 8px 24px -6px rgb(22 32 30 / 0.16);
+  --sombra-modal: 0 2px 4px rgb(22 32 30 / 0.06), 0 24px 56px -12px rgb(22 32 30 / 0.28);
+  --sombra-leve: 0 1px 2px rgb(0 0 0 / 0.06);
+
+  /* Tipografia: base 14px, pensada para telas densas de operação */
+  --fonte: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --fonte-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+
+  --fs-2xs: 11px;  --lh-2xs: 16px;
+  --fs-xs: 12px;   --lh-xs: 16px;
+  --fs-sm: 13px;   --lh-sm: 20px;
+  --fs-base: 14px; --lh-base: 22px;
+  --fs-md: 16px;   --lh-md: 24px;
+  --fs-lg: 20px;   --lh-lg: 28px;
+  --fs-xl: 24px;   --lh-xl: 32px;
+  --fs-2xl: 32px;  --lh-2xl: 40px;
+
+  /* Forma */
+  --raio-controle: 7px;
+  --raio-cartao: 12px;
+  --altura-controle: 36px;
+  --altura-controle-sm: 32px;
+
+  /* Movimento */
+  --anim-entrar: entrar 160ms ease-out;
+  --anim-subir: subir 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0d1311;
+  --bg-vidro: rgb(13 19 17 / 0.85);
+  --surface: #141b19;
+  --surface-2: #1a2220;
+  --surface-3: #212a28;
+  --line: #252f2c;
+  --line-strong: #34403c;
+
+  --ink: #e8ecea;
+  --ink-2: #a3ada9;
+  --ink-3: #737d79;
+
+  --brand: #3fbfa4;
+  --brand-hover: #5bcdb4;
+  --brand-soft: #12352e;
+  --brand-ink: #7fdcc6;
+  --on-brand: #04211b;
+  --anel-foco: rgb(63 191 164 / 0.2);
+
+  --ok: #4cc38a;
+  --ok-soft: #122d1f;
+  --info: #7ea9ef;
+  --info-soft: #16243c;
+  --warn: #e5a54b;
+  --warn-soft: #302310;
+  --danger: #f07a80;
+  --danger-soft: #3a171a;
+  --on-danger: #2a0a0c;
+  --neutral: #a3ada9;
+  --neutral-soft: #222b29;
+
+  --focus: #3fbfa4;
+  --overlay: rgb(0 0 0 / 0.6);
+  --sombra-pop: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -6px rgb(0 0 0 / 0.5);
+  --sombra-modal: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 56px -12px rgb(0 0 0 / 0.7);
+  --sombra-leve: 0 1px 2px rgb(0 0 0 / 0.3);
+}
