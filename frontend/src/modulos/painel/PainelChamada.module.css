@@ -1,0 +1,122 @@
+.placa {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 18px 18px;
+  border-radius: var(--raio-cartao);
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgb(255 255 255 / 0.05), transparent 60%),
+    var(--placa);
+  color: var(--placa-texto);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), var(--sombra-leve);
+}
+
+/* Parafusos do letreiro */
+.placa::before,
+.placa::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.6);
+}
+.placa::before { left: 10px; }
+.placa::after { right: 10px; }
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 6px;
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--placa-apagado);
+}
+
+.aoVivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--placa-destaque);
+}
+
+.led {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--placa-destaque);
+  box-shadow: 0 0 8px var(--placa-destaque);
+  animation: piscar 1.6s ease-in-out infinite;
+}
+
+@keyframes piscar {
+  50% { opacity: 0.35; }
+}
+
+.letreiro {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.legenda {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 6px 0;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.legendaTexto {
+  min-width: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+
+.legendaProf {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.legendaMotivo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--placa-apagado);
+}
+
+.posicoes {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.posicao {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.15);
+  transition: background-color 300ms;
+}
+.posicaoAtual { background: var(--placa-destaque); }
+
+.vazio {
+  margin-top: 14px;
+  padding: 0 6px;
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  color: var(--placa-apagado);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led { animation: none; }
+}

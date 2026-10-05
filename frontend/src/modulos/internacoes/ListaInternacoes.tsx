@@ -6,11 +6,12 @@ import { Pessoa, SeloInternacao, diasInternado, nomeEspecialidade } from '@/comp
 import { buscarPaciente, buscarProfissional, buscarQuarto, listarInternacoes } from '@/api'
 import type { StatusInternacao } from '@/tipos/dominio'
 import { idade } from '@/lib/datas'
-import { formatarCpf, formatarData, formatarDataHora, normalizar, plural } from '@/lib/formato'
+import { formatarData, formatarDataHora, normalizar, plural } from '@/lib/formato'
 import { statusInternacao, tiposQuarto } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
 import { AltaPrevista } from './utilidades'
 import s from './ListaInternacoes.module.css'
+import { CpfProtegido } from '@/componentes/CpfProtegido'
 
 type Aba = StatusInternacao | 'TODAS'
 
@@ -122,7 +123,7 @@ export function ListaInternacoes() {
                         para={`/pacientes/${paciente.id}`}
                         detalhe={
                           <>
-                            {idade(paciente.dataNascimento)} anos · <span className={cn(s.cpf, 'tabular')}>{formatarCpf(paciente.cpf)}</span>
+                            {idade(paciente.dataNascimento)} anos · <CpfProtegido cpf={paciente.cpf} className={s.cpf} />
                           </>
                         }
                       />

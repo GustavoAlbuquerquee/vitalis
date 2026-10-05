@@ -1,0 +1,170 @@
+/*
+ * Pulseira de identificação: a faixa colorida diz a situação (verde = internado,
+ * neutra = ambulatorial), os furos de ajuste ficam à esquerda e o fecho à direita.
+ */
+.pulseira {
+  --faixa: var(--line-strong);
+  --faixa-texto: var(--ink-2);
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  max-width: 760px;
+  padding: 8px 8px 8px 10px;
+  border-radius: 22px;
+  background: var(--faixa);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.08), var(--sombra-leve);
+}
+
+.internado {
+  --faixa: var(--brand);
+  --faixa-texto: var(--on-brand);
+}
+
+.inativo {
+  --faixa: var(--neutral);
+  --faixa-texto: var(--surface);
+}
+
+/* Furos de ajuste da pulseira */
+.furos {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 4px;
+}
+.furo {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+.etiqueta {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.dados { min-width: 0; }
+
+.cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  line-height: var(--lh-2xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.situacao {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--faixa);
+  color: var(--faixa-texto);
+  letter-spacing: 0.06em;
+}
+
+.nome {
+  margin-top: 6px;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 2px;
+  margin-top: 6px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.campo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.rotulo {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.mono {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.codigo {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding-left: 16px;
+  border-left: 1px dashed var(--line-strong);
+}
+
+.barras {
+  width: 150px;
+  height: 44px;
+  color: var(--ink);
+}
+
+.numero {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+}
+
+/* Fecho de pressão */
+.fecho {
+  display: none;
+  align-items: center;
+  padding: 0 4px;
+}
+.fecho span {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--surface) 70%, var(--faixa)), var(--faixa) 70%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), inset 0 0 0 3px rgb(0 0 0 / 0.08);
+}
+
+@media (min-width: 640px) {
+  .furos, .fecho { display: flex; }
+  .nome { font-size: var(--fs-2xl); line-height: var(--lh-2xl); }
+}
+
+@media (min-width: 768px) {
+  .etiqueta { grid-template-columns: minmax(0, 1fr) auto; }
+  .codigo { display: flex; }
+}

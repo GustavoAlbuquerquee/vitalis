@@ -10,7 +10,8 @@ interface Migalha {
 }
 
 interface CabecalhoPaginaProps {
-  titulo: ReactNode
+  /** Opcional quando `antes` já traz o título (ex.: a pulseira do paciente, que tem seu próprio h1). */
+  titulo?: ReactNode
   descricao?: ReactNode
   acoes?: ReactNode
   migalhas?: Migalha[]
@@ -40,10 +41,12 @@ export function CabecalhoPagina({ titulo, descricao, acoes, migalhas, antes, cla
       <div className={s.linha}>
         <div className={s.identidade}>
           {antes}
-          <div className={s.textos}>
-            <h1 className={s.titulo}>{titulo}</h1>
-            {descricao && <div className={s.descricao}>{descricao}</div>}
-          </div>
+          {titulo && (
+            <div className={s.textos}>
+              <h1 className={s.titulo}>{titulo}</h1>
+              {descricao && <div className={s.descricao}>{descricao}</div>}
+            </div>
+          )}
         </div>
         {acoes && <div className={s.acoes}>{acoes}</div>}
       </div>

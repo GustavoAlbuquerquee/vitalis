@@ -46,13 +46,22 @@
 
   --focus: #0e6b5c;
   --overlay: rgb(22 32 30 / 0.42);
+
+  /* Painel de chamada: placa escura em qualquer tema, como o letreiro da sala de espera */
+  --placa: #121a18;
+  --placa-tile: #1d2725;
+  --placa-texto: #f3f1ea;
+  --placa-destaque: #7fdcc6;
+  --placa-apagado: #6f7b77;
   --sombra-pop: 0 1px 2px rgb(22 32 30 / 0.06), 0 8px 24px -6px rgb(22 32 30 / 0.16);
   --sombra-modal: 0 2px 4px rgb(22 32 30 / 0.06), 0 24px 56px -12px rgb(22 32 30 / 0.28);
   --sombra-leve: 0 1px 2px rgb(0 0 0 / 0.06);
 
   /* Tipografia: base 14px, pensada para telas densas de operação */
-  --fonte: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --fonte-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+  /* Schibsted Grotesk: grotesca de jornal, firme e legível em tela densa.
+     IBM Plex Mono: a voz do dado clínico — CPF, registro, horário, número de quarto. */
+  --fonte: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  --fonte-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   --fs-2xs: 11px;  --lh-2xs: 16px;
   --fs-xs: 12px;   --lh-xs: 16px;
@@ -110,6 +119,9 @@
 
   --focus: #3fbfa4;
   --overlay: rgb(0 0 0 / 0.6);
+
+  --placa: #070b0a;
+  --placa-tile: #141c1a;
   --sombra-pop: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -6px rgb(0 0 0 / 0.5);
   --sombra-modal: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 56px -12px rgb(0 0 0 / 0.7);
   --sombra-leve: 0 1px 2px rgb(0 0 0 / 0.3);

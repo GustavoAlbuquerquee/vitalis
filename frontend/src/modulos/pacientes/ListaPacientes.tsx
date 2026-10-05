@@ -3,9 +3,10 @@ import { useSearchParams } from 'react-router'
 import { ChevronLeft, ChevronRight, UserPlus, Users } from 'lucide-react'
 import { BotaoIcone, BotaoLink, Busca, Cartao, CabecalhoPagina, EstadoVazio, Linha, Pagina, Pilulas, Selo, Tabela, Td, Th } from '@/ds'
 import { Pessoa } from '@/componentes/dominio'
+import { CpfProtegido } from '@/componentes/CpfProtegido'
 import { buscarQuarto, internacaoAtivaDoPaciente, listarConsultas, listarPacientes } from '@/api'
 import { hoje, idade } from '@/lib/datas'
-import { formatarCpf, formatarData, formatarTelefone, plural } from '@/lib/formato'
+import { formatarData, formatarTelefone, plural } from '@/lib/formato'
 import { cn } from '@/lib/cn'
 import s from './ListaPacientes.module.css'
 
@@ -103,7 +104,9 @@ export function ListaPacientes() {
                   <Td className={s.colunaPaciente}>
                     <Pessoa nome={p.nome} detalhe={p.email} para={`/pacientes/${p.id}`} />
                   </Td>
-                  <Td className={cn('mono', s.dado)}>{formatarCpf(p.cpf)}</Td>
+                  <Td className={s.dado}>
+                    <CpfProtegido cpf={p.cpf} />
+                  </Td>
                   <Td className={cn('tabular', s.direita, s.secundario)}>{idade(p.dataNascimento)}</Td>
                   <Td className={cn('tabular', s.dado)}>{formatarTelefone(p.telefone)}</Td>
                   <Td className={s.dado}>

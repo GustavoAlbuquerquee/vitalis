@@ -4,7 +4,6 @@ import { BedDouble, CalendarDays, CalendarPlus, ChevronDown, FileClock, Pencil, 
 import {
   Abas,
   Alerta,
-  Avatar,
   BotaoLink,
   CabecalhoCartao,
   CabecalhoPagina,
@@ -14,10 +13,11 @@ import {
   ListaDefinicao,
   Pagina,
   Pilulas,
-  Selo,
 } from '@/ds'
 import { Horario, RegistrosClinicos, SeloConsulta, SeloInternacao, diasInternado, nomeEspecialidade } from '@/componentes/dominio'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
+import { Pulseira } from '@/componentes/Pulseira'
+import { CpfProtegido } from '@/componentes/CpfProtegido'
 import {
   buscarPaciente,
   buscarProfissional,
@@ -31,7 +31,6 @@ import { hoje, idade } from '@/lib/datas'
 import {
   diaDaSemanaCurto,
   formatarCep,
-  formatarCpf,
   formatarData,
   formatarDataLonga,
   formatarTelefone,
@@ -57,23 +56,7 @@ export function DetalhePaciente() {
     <Pagina>
       <CabecalhoPagina
         migalhas={[{ rotulo: 'Pacientes', para: '/pacientes' }, { rotulo: paciente.nome }]}
-        antes={<Avatar nome={paciente.nome} tamanho="xl" className={s.avatarCabecalho} />}
-        titulo={
-          <span className={s.titulo}>
-            {paciente.nome}
-            {internacao && <Selo tom="brand">Internado</Selo>}
-            {!paciente.ativo && <Selo tom="neutral">Desativado</Selo>}
-          </span>
-        }
-        descricao={
-          <span className={s.descricao}>
-            <span className={s.cpf}>{formatarCpf(paciente.cpf)}</span>
-            <span className={s.separador}>·</span>
-            {idade(paciente.dataNascimento)} anos
-            <span className={s.separador}>·</span>
-            {paciente.endereco.cidade}/{paciente.endereco.uf}
-          </span>
-        }
+        antes={<Pulseira paciente={paciente} quarto={internacao && buscarQuarto(internacao.quartoId)?.numero} />}
         acoes={
           <>
             <BotaoLink to={`/pacientes/${paciente.id}/editar`} icone={<Pencil />}>
@@ -217,7 +200,7 @@ function VisaoGeral({ pacienteId }: { pacienteId: number }) {
             <ListaDefinicao
               colunas={1}
               itens={[
-                { rotulo: 'CPF', valor: formatarCpf(p.cpf), mono: true },
+                { rotulo: 'CPF', valor: <CpfProtegido cpf={p.cpf} /> },
                 { rotulo: 'Data de nascimento', valor: `${formatarDataLonga(p.dataNascimento)} · ${idade(p.dataNascimento)} anos` },
                 { rotulo: 'Telefone', valor: formatarTelefone(p.telefone) },
                 { rotulo: 'E-mail', valor: p.email },

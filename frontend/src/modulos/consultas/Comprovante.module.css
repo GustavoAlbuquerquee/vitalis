@@ -1,0 +1,106 @@
+.palco {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+/* Corpo do comprovante */
+.corpo {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px 22px;
+  text-align: left;
+}
+
+.sobretitulo {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-ink);
+}
+
+.paciente {
+  margin-top: 8px;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.profissional {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--ink-2);
+}
+
+.quando {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.rotulo {
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.valor {
+  white-space: nowrap;
+  font-family: var(--fonte-mono);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.hora {
+  font-family: var(--fonte-mono);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand);
+}
+
+/* Canhoto */
+.canhoto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.senha {
+  font-family: var(--fonte-mono);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.barras {
+  width: 100px;
+  height: 30px;
+  color: var(--ink);
+}
+
+.instrucao {
+  margin-top: 10px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  text-align: center;
+  color: var(--ink-3);
+}

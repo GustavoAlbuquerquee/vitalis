@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
-import { CircleCheck, CircleDashed, CircleX } from 'lucide-react'
-import { AreaTexto, Botao, CabecalhoCartao, CabecalhoPagina, Campo, Cartao, CorpoCartao, Entrada, Pagina, Secao, Selecao, usePrototipo } from '@/ds'
+import { AreaTexto, Botao, CabecalhoCartao, CabecalhoPagina, Campo, Cartao, CorpoCartao, Entrada, Modal, Pagina, Secao, Selecao, usePrototipo } from '@/ds'
+import StatusMark from '@/ds/react-bits/StatusMark'
 import { Horario } from '@/componentes/dominio'
 import { buscarPaciente, buscarProfissional, consultasDoProfissional, listarPacientes, listarProfissionais } from '@/api'
 import { cabeNaDisponibilidade, conflitaCom, consultaOcupaAgenda, intervaloDaConsulta } from '@/dominio/regras'
@@ -10,6 +10,7 @@ import { diaDaSemana, formatarData } from '@/lib/formato'
 import { diasSemana, especialidades } from '@/lib/rotulos'
 import type { Especialidade } from '@/tipos/dominio'
 import { cn } from '@/lib/cn'
+import { Comprovante } from './Comprovante'
 import s from './AgendarConsulta.module.css'
 
 const DURACOES = [20, 30, 45, 60]
@@ -27,6 +28,7 @@ export function AgendarConsulta() {
   const [duracao, setDuracao] = useState(30)
   const [motivo, setMotivo] = useState('')
   const [tentou, setTentou] = useState(false)
+  const [comprovante, setComprovante] = useState(false)
 
   const pacientes = listarPacientes().filter((p) => p.ativo)
   const profissionais = listarProfissionais()
@@ -114,9 +116,14 @@ export function AgendarConsulta() {
     e.preventDefault()
     setTentou(true)
     if (!completo) return
+    setComprovante(true)
+  }
+
+  const concluir = () => {
     prototipo('Consulta agendada')
     navegar(`/consultas${data !== hoje() ? `?data=${data}` : ''}`)
   }
+
 
   const porEspecialidade = Object.entries(especialidades)
     .map(([k, v]) => ({ k: k as Especialidade, rotulo: v.rotulo, lista: profissionais.filter((p) => p.especialidade === k) }))
@@ -230,13 +237,15 @@ export function AgendarConsulta() {
             <ul className={s.verificacoes}>
               {verificacoes.map((v) => (
                 <li key={v.regra} className={s.verificacao}>
-                  {v.ok === undefined ? (
-                    <CircleDashed className={cn(s.icone, s.pendente)} aria-label="Pendente" />
-                  ) : v.ok ? (
-                    <CircleCheck className={cn(s.icone, s.atendida)} aria-label="Atendida" />
-                  ) : (
-                    <CircleX className={cn(s.icone, s.violada)} aria-label="Violada" />
-                  )}
+                  <span className={s.icone} role="img" aria-label={v.ok === undefined ? 'Pendente' : v.ok ? 'Atendida' : 'Violada'}>
+                    <StatusMark
+                      status={v.ok === undefined ? 'pending' : v.ok ? 'done' : 'failed'}
+                      size={18}
+                      color="var(--ink-3)"
+                      doneColor="var(--ok)"
+                      errorColor="var(--danger)"
+                    />
+                  </span>
                   <div className={s.verificacaoTexto}>
                     <p className={cn(s.verificacaoTitulo, v.ok === false && s.violada)}>
                       {v.titulo}
@@ -280,6 +289,11 @@ export function AgendarConsulta() {
           )}
         </div>
       </form>
+      {comprovante && paciente && profissional && (
+        <Modal aberto aoFechar={() => setComprovante(false)} titulo="Consulta agendada" largura="lg" rodape={<Botao onClick={concluir}>Concluir sem destacar</Botao>}>
+          <Comprovante paciente={paciente} profissional={profissional} data={data} horario={horario} duracao={duracao} aoDestacar={() => window.setTimeout(concluir, 700)} />
+        </Modal>
+      )}
     </Pagina>
   )
 }

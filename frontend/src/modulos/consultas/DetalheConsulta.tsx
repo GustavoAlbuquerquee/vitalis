@@ -16,15 +16,17 @@ import {
   Modal,
   Pagina,
   usePrototipo,
+  BotaoSegurar,
 } from '@/ds'
 import { Horario, Pessoa, RegistrosClinicos, SeloConsulta, nomeEspecialidade } from '@/componentes/dominio'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
 import { buscarConsulta, buscarPaciente, buscarProfissional, consultasDoProfissional, listarConsultas, listarRegistros } from '@/api'
 import { cabeNaDisponibilidade, conflitaCom, consultaOcupaAgenda, intervaloDaConsulta } from '@/dominio/regras'
 import { hoje, idade } from '@/lib/datas'
-import { diaDaSemana, formatarCpf, formatarData, formatarDataLonga, formatarTelefone, relativo } from '@/lib/formato'
+import { diaDaSemana, formatarData, formatarDataLonga, formatarTelefone, relativo } from '@/lib/formato'
 import { cn } from '@/lib/cn'
 import s from './DetalheConsulta.module.css'
+import { CpfProtegido } from '@/componentes/CpfProtegido'
 
 type Acao = 'realizar' | 'reagendar' | 'cancelar' | 'faltou' | null
 
@@ -142,7 +144,7 @@ export function DetalheConsulta() {
               <ListaDefinicao
                 colunas={1}
                 itens={[
-                  { rotulo: 'CPF', valor: formatarCpf(paciente.cpf), mono: true },
+                  { rotulo: 'CPF', valor: <CpfProtegido cpf={paciente.cpf} /> },
                   { rotulo: 'Telefone', valor: formatarTelefone(paciente.telefone) },
                 ]}
               />
@@ -275,9 +277,9 @@ export function DetalheConsulta() {
             <Botao variante="fantasma" onClick={fechar}>
               Voltar
             </Botao>
-            <Botao variante="perigo" disabled={!motivoCancelamento.trim()} onClick={() => concluir('Consulta cancelada')}>
-              Cancelar consulta
-            </Botao>
+            <BotaoSegurar disabled={!motivoCancelamento.trim()} feito="Consulta cancelada" aoConfirmar={() => concluir('Consulta cancelada')}>
+              Segure para cancelar
+            </BotaoSegurar>
           </>
         }
       >

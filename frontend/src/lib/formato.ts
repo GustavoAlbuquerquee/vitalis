@@ -31,6 +31,12 @@ export function formatarCpf(cpf: string): string {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9, 11)}`.trim()
 }
 
+/** CPF para exibição pública (LGPD): só os seis dígitos do meio aparecem — •••.456.789-•• */
+export function mascararCpf(cpf: string): string {
+  const f = formatarCpf(cpf)
+  return `•••${f.slice(3, 11)}••`
+}
+
 export function formatarTelefone(tel: string): string {
   const d = tel.replace(/\D/g, '')
   if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
