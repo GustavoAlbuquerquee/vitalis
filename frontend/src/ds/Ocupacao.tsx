@@ -27,6 +27,30 @@ export function PontosOcupacao({ ocupacao, capacidade, situacao, tamanho = 'md' 
   )
 }
 
+/**
+ * A mesma informação dos pontos, desenhada como leitos vistos de cima (planta baixa):
+ * coberta cheia = ocupado, vazio = vaga, tracejado = quarto bloqueado.
+ */
+export function LeitosOcupacao({ ocupacao, capacidade, situacao }: Omit<PontosProps, 'tamanho'>) {
+  const bloqueado = situacao === 'MANUTENCAO' || situacao === 'INTERDITADO'
+  return (
+    <span className={s.leitos} role="img" aria-label={`${ocupacao} de ${capacidade} vagas ocupadas`}>
+      {Array.from({ length: capacidade }, (_, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 15 24"
+          className={cn(s.leito, bloqueado ? s.leitoBloqueado : i < ocupacao && (situacao === 'OCUPADO' ? s.leitoLotado : s.leitoOcupado))}
+          aria-hidden
+        >
+          <rect className={s.estrado} x="0.75" y="0.75" width="13.5" height="22.5" rx="2.5" />
+          <rect className={s.travesseiro} x="3" y="2.8" width="9" height="4.2" rx="1.6" />
+          <path className={s.coberta} d="M0.75 10.5h13.5v10.25a2.5 2.5 0 0 1-2.5 2.5h-8.5a2.5 2.5 0 0 1-2.5-2.5z" />
+        </svg>
+      ))}
+    </span>
+  )
+}
+
 interface BarraProps {
   valor: number
   total: number

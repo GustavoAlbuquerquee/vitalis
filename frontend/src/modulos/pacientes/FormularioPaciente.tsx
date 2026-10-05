@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { UserX } from 'lucide-react'
-import { Botao, CabecalhoPagina, Campo, Cartao, Entrada, Modal, Pagina, Secao, Selecao, usePrototipo } from '@/ds'
+import { Botao, CabecalhoPagina, Campo, Cartao, Entrada, Modal, Pagina, Secao, Selecao, usePrototipo, BotaoSegurar } from '@/ds'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
 import { buscarPaciente, internacaoAtivaDoPaciente, listarPacientes } from '@/api'
 import { hoje } from '@/lib/datas'
@@ -221,17 +221,17 @@ export function FormularioPaciente() {
             <Botao variante="fantasma" onClick={() => setDesativar(false)}>
               Cancelar
             </Botao>
-            <Botao
-              variante="perigo"
+            <BotaoSegurar
               disabled={Boolean(internado)}
-              onClick={() => {
+              feito="Paciente desativado"
+              aoConfirmar={() => {
                 setDesativar(false)
                 prototipo('Paciente desativado')
                 navegar('/pacientes')
               }}
             >
-              Desativar paciente
-            </Botao>
+              Segure para desativar
+            </BotaoSegurar>
           </>
         }
       >

@@ -20,6 +20,7 @@ import {
   PontosOcupacao,
   Selecao,
   usePrototipo,
+  BotaoSegurar,
 } from '@/ds'
 import { Pessoa, RegistrosClinicos, SeloInternacao, SeloQuarto, diasInternado, nomeEspecialidade } from '@/componentes/dominio'
 import { buscarInternacao, buscarPaciente, buscarProfissional, buscarQuarto, listarQuartos, listarRegistros, type QuartoComOcupacao } from '@/api'
@@ -27,11 +28,12 @@ import { NaoEncontrada } from '@/app/NaoEncontrada'
 import type { Internacao, TipoRegistro } from '@/tipos/dominio'
 import type { Tom } from '@/lib/rotulos'
 import { hoje, idade } from '@/lib/datas'
-import { formatarCpf, formatarData, formatarDataHora, formatarTelefone, plural } from '@/lib/formato'
+import { formatarData, formatarDataHora, formatarTelefone, plural } from '@/lib/formato'
 import { situacaoQuarto, tiposQuarto, tiposRegistro } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
 import { agora, prazoDaAlta } from './utilidades'
 import s from './DetalheInternacao.module.css'
+import { CpfProtegido } from '@/componentes/CpfProtegido'
 
 type ModalAberto = 'alta' | 'transferir' | 'registro' | null
 
@@ -144,7 +146,7 @@ export function DetalheInternacao() {
               <Pessoa nome={paciente.nome} para={`/pacientes/${paciente.id}`} detalhe={paciente.email} tamanho="lg" />
               <ListaDefinicao
                 itens={[
-                  { rotulo: 'CPF', valor: formatarCpf(paciente.cpf), mono: true },
+                  { rotulo: 'CPF', valor: <CpfProtegido cpf={paciente.cpf} /> },
                   { rotulo: 'Idade', valor: `${idade(paciente.dataNascimento)} anos` },
                   { rotulo: 'Telefone', valor: formatarTelefone(paciente.telefone), mono: true },
                   { rotulo: 'Nascimento', valor: formatarData(paciente.dataNascimento) },
@@ -225,9 +227,9 @@ function ModalAlta({ internacao, quarto, aoFechar }: { internacao: Internacao; q
   const anterior = Boolean(data) && data < internacao.dataEntrada
   const invalida = !data || anterior
 
-  const enviar = (e: FormEvent) => {
-    e.preventDefault()
-    if (invalida) return
+  // Enter no formulário não confirma: a alta só sai segurando o botão
+  const enviar = (e: FormEvent) => e.preventDefault()
+  const confirmar = () => {
     prototipo('Alta registrada')
     aoFechar()
   }
@@ -241,9 +243,9 @@ function ModalAlta({ internacao, quarto, aoFechar }: { internacao: Internacao; q
       rodape={
         <>
           <Botao onClick={aoFechar}>Cancelar</Botao>
-          <Botao type="submit" form={idForm} variante="primario" icone={<LogOut />} disabled={invalida}>
-            Registrar alta
-          </Botao>
+          <BotaoSegurar variante="primario" icone={<LogOut />} disabled={invalida} feito="Alta registrada" aoConfirmar={confirmar}>
+            Segure para dar alta
+          </BotaoSegurar>
         </>
       }
     >

@@ -12,3 +12,4 @@ export * from './Metrica'
 export * from './Ocupacao'
 export * from './Tabela'
 
+export * from './BotaoSegurar'

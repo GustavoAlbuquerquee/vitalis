@@ -19,7 +19,7 @@ import {
 } from '@/ds'
 import { nomeEspecialidade } from '@/componentes/dominio'
 import { internacaoAtivaDoPaciente, listarPacientes, listarProfissionais, listarQuartos, type QuartoComOcupacao } from '@/api'
-import { formatarCpf, formatarData, formatarDataHora, plural } from '@/lib/formato'
+import { mascararCpf, formatarData, formatarDataHora, plural } from '@/lib/formato'
 import { situacaoQuarto, tiposQuarto } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
 import { agora } from './utilidades'
@@ -95,7 +95,7 @@ export function NovaInternacao() {
                   <option value="">Selecione o paciente…</option>
                   {pacientes.map((pac) => (
                     <option key={pac.id} value={pac.id}>
-                      {pac.nome} · {formatarCpf(pac.cpf)}
+                      {pac.nome} · {mascararCpf(pac.cpf)}
                       {internacaoAtivaDoPaciente(pac.id) ? ' (internado)' : ''}
                     </option>
                   ))}

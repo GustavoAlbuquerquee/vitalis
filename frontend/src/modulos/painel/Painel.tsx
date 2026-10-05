@@ -7,6 +7,9 @@ import { hoje, minutos, somarDias, indiceDiaSemana } from '@/lib/datas'
 import { diaDaSemana, formatarDataLonga, formatarDiaMes, plural, relativo } from '@/lib/formato'
 import { diasSemana, tiposQuarto } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
+import CountUp from '@/ds/react-bits/CountUp'
+import { PainelChamada } from './PainelChamada'
+import { TracadoDoDia } from './TracadoDoDia'
 import s from './Painel.module.css'
 
 function saudacao() {
@@ -72,7 +75,7 @@ export function Painel() {
           rotulo="Consultas hoje"
           icone={<CalendarDays />}
           para="/consultas"
-          valor={consultasHoje.length}
+          valor={<CountUp to={consultasHoje.length} duration={0.9} />}
           detalhe={`${atendidas} realizadas · ${restantes.length} a seguir`}
         >
           <BarraProgresso valor={atendidas} total={consultasHoje.length} limiteAlerta={2} />
@@ -81,14 +84,14 @@ export function Painel() {
           rotulo="Internações ativas"
           icone={<BedDouble />}
           para="/internacoes"
-          valor={ativas.length}
+          valor={<CountUp to={ativas.length} duration={0.9} />}
           detalhe={altasHoje.length ? `${plural(altasHoje.length, 'alta prevista', 'altas previstas')} até hoje` : 'Nenhuma alta prevista para hoje'}
         />
         <Metrica
           rotulo="Ocupação"
           icone={<DoorOpen />}
           para="/quartos"
-          valor={Math.round((ocupadas / capacidade) * 100)}
+          valor={<CountUp to={Math.round((ocupadas / capacidade) * 100)} duration={0.9} />}
           unidade="%"
           detalhe={`${ocupadas} de ${capacidade} vagas · ${plural(quartos.length - operacionais.length, 'quarto bloqueado', 'quartos bloqueados')}`}
         >
@@ -98,13 +101,15 @@ export function Painel() {
           rotulo="Atendendo agora"
           icone={<Stethoscope />}
           para="/profissionais"
-          valor={atendendoAgora.length}
+          valor={<CountUp to={atendendoAgora.length} duration={0.9} />}
           unidade={` / ${escalados.length}`}
           detalhe="profissionais escalados hoje"
         />
       </div>
 
       <div className={s.colunas}>
+        <div className={s.principal}>
+        <TracadoDoDia consultas={consultasHoje} />
         <Cartao>
           <CabecalhoCartao
             titulo="Próximas consultas"
@@ -153,8 +158,10 @@ export function Painel() {
             </div>
           )}
         </Cartao>
+        </div>
 
         <div className={s.lateral}>
+          <PainelChamada consultas={proximas} rotulo={diaDaLista === dia ? 'Ao vivo' : `${diaDaSemana(diaDaLista).split('-')[0]} ${formatarDiaMes(diaDaLista)}`} />
           <Cartao>
             <CabecalhoCartao
               titulo="Ocupação por andar"

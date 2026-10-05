@@ -29,3 +29,37 @@
   transition: width 500ms;
 }
 .alerta { background: var(--warn); }
+
+/* ───────── Leitos em planta baixa ───────── */
+.leitos {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.leito {
+  width: 15px;
+  height: 24px;
+  overflow: visible;
+}
+
+.leito .estrado {
+  fill: transparent;
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+.leito .travesseiro {
+  fill: var(--line);
+}
+.leito .coberta { fill: transparent; }
+
+.leitoOcupado .estrado { stroke: var(--brand); }
+.leitoOcupado .travesseiro { fill: var(--surface); stroke: var(--brand); stroke-width: 1; }
+.leitoOcupado .coberta { fill: var(--brand); }
+
+.leitoLotado .estrado { stroke: var(--danger); }
+.leitoLotado .travesseiro { fill: var(--surface); stroke: var(--danger); stroke-width: 1; }
+.leitoLotado .coberta { fill: var(--danger); }
+
+.leitoBloqueado .estrado { stroke: var(--ink-3); stroke-dasharray: 2.5 2; }
+.leitoBloqueado .travesseiro { fill: transparent; }

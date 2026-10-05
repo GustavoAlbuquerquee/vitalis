@@ -14,7 +14,7 @@ import {
   Modal,
   Pagina,
   Pilulas,
-  PontosOcupacao,
+  LeitosOcupacao,
   Selecao,
   usePrototipo,
 } from '@/ds'
@@ -178,7 +178,7 @@ function BlocoQuarto({ quarto: q, ocupantes }: { quarto: QuartoComOcupacao; ocup
           <Etiqueta>{tiposQuarto[q.tipo].rotulo}</Etiqueta>
         </div>
         <div className={s.ocupacao}>
-          <PontosOcupacao ocupacao={q.ocupacao} capacidade={q.capacidadeMaxima} situacao={q.situacao} />
+          <LeitosOcupacao ocupacao={q.ocupacao} capacidade={q.capacidadeMaxima} situacao={q.situacao} />
           <p className={cn(s.ocupacaoTexto, 'tabular')}>
             {q.ocupacao}/{q.capacidadeMaxima} · {bloqueado ? 'sem vagas' : plural(q.vagas, 'vaga')}
           </p>
@@ -205,12 +205,12 @@ function Legenda() {
       {itens.map((i) => (
         <span key={i.rotulo} className={s.legendaItem}>
           <span aria-hidden className={s.legendaPonto}>
-            <PontosOcupacao ocupacao={i.ocupacao} capacidade={1} situacao={i.situacao} />
+            <LeitosOcupacao ocupacao={i.ocupacao} capacidade={1} situacao={i.situacao} />
           </span>
           {i.rotulo}
         </span>
       ))}
-      <span>Um ponto por vaga — cheio = ocupado, vazado = vaga, tracejado = bloqueado.</span>
+      <span>Um leito por vaga, visto de cima: coberto = ocupado, vazio = vaga, tracejado = quarto bloqueado.</span>
     </div>
   )
 }

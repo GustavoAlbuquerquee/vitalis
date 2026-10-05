@@ -85,6 +85,14 @@
 
 .exemploAbas { padding: 8px 20px 0; }
 
+/* Exemplo que ocupa a largura toda (a pulseira) */
+.exemploBloco {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-cartao);
+  background: var(--surface);
+}
+
 /* ───────── Grades reaproveitadas ───────── */
 .pilha {
   display: flex;
@@ -365,4 +373,13 @@
   align-items: center;
   gap: 12px;
   padding: 20px;
+}
+
+.marcas {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
 }

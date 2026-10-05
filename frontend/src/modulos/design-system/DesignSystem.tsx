@@ -22,6 +22,8 @@ import {
   Modal,
   Pagina,
   Pilulas,
+  BotaoSegurar,
+  LeitosOcupacao,
   PontosOcupacao,
   Segmentado,
   Selecao,
@@ -32,6 +34,10 @@ import {
   useAviso,
 } from '@/ds'
 import { Pessoa } from '@/componentes/dominio'
+import { Pulseira } from '@/componentes/Pulseira'
+import { CpfProtegido } from '@/componentes/CpfProtegido'
+import StatusMark from '@/ds/react-bits/StatusMark'
+import { buscarPaciente } from '@/api'
 import { MarcaVitalis } from '@/app/Logo'
 import { situacaoQuarto, statusConsulta, statusInternacao, tiposRegistro, type Tom } from '@/lib/rotulos'
 import { cn } from '@/lib/cn'
@@ -120,6 +126,7 @@ const indice = [
   ['formularios', 'Formulários'],
   ['navegacao', 'Navegação'],
   ['feedback', 'Feedback'],
+  ['assinatura', 'Elementos do Vitalis'],
   ['dados', 'Dados'],
 ]
 
@@ -220,7 +227,7 @@ export function DesignSystem() {
             </div>
           </Secao>
 
-          <Secao id="tipografia" titulo="Tipografia" descricao="Geist para a interface, Geist Mono para dados. Base de 14px — o Vitalis é ferramenta de operação, densa por necessidade.">
+          <Secao id="tipografia" titulo="Tipografia" descricao="Schibsted Grotesk para a interface — uma grotesca de jornal, firme em tela densa. IBM Plex Mono para o dado clínico: CPF, registro, horário, número de quarto. Base de 14px.">
             <Cartao className={s.escala}>
               {escala.map((e) => (
                 <div key={e.classe} className={s.escalaLinha}>
@@ -429,6 +436,48 @@ export function DesignSystem() {
                 </>
               }
             />
+          </Secao>
+
+          <Secao
+            id="assinatura"
+            titulo="Elementos do Vitalis"
+            descricao="As peças que só um sistema hospitalar teria. Cada uma vem de um objeto que a equipe já conhece — a pulseira, o painel da recepção, o monitor, a planta do andar."
+          >
+            <div className={s.pilha}>
+              <Exemplo titulo="Pulseira de identificação · cabeçalho da ficha do paciente" className={s.exemploBloco}>
+                <Pulseira paciente={buscarPaciente(3)!} quarto="201" />
+              </Exemplo>
+              <div className={s.grade3}>
+                <Exemplo titulo="CPF protegido · passe o mouse">
+                  <CpfProtegido cpf="12345678909" />
+                </Exemplo>
+                <Exemplo titulo="Segure para confirmar · alta, cancelamento">
+                  <BotaoSegurar feito="Consulta cancelada" aoConfirmar={() => avisar({ titulo: 'Confirmado segurando o botão' })}>
+                    Segure para cancelar
+                  </BotaoSegurar>
+                </Exemplo>
+                <Exemplo titulo="Verificação de regra · RN2, RN3, RF7">
+                  <span className={s.marcas}>
+                    <StatusMark status="pending" size={20} color="var(--ink-3)" />
+                    Pendente
+                    <StatusMark status="done" size={20} doneColor="var(--ok)" />
+                    Atendida
+                    <StatusMark status="failed" size={20} errorColor="var(--danger)" />
+                    Violada
+                  </span>
+                </Exemplo>
+              </div>
+              <Exemplo titulo="Leitos em planta baixa · mapa de quartos">
+                <LeitosOcupacao ocupacao={2} capacidade={4} situacao="DISPONIVEL" />
+                <LeitosOcupacao ocupacao={2} capacidade={2} situacao="OCUPADO" />
+                <LeitosOcupacao ocupacao={0} capacidade={3} situacao="MANUTENCAO" />
+              </Exemplo>
+              <p className={s.apagado}>
+                No painel ficam os outros dois: o <strong>painel de chamada</strong>, com plaquinhas que viram como o letreiro da sala de espera, e o{' '}
+                <strong>fluxo do dia</strong>, as consultas por hora traçadas como a fita de um monitor cardíaco. Ao agendar, o <strong>comprovante</strong> tem um
+                canhoto que se destaca puxando para o lado.
+              </p>
+            </div>
           </Secao>
 
           <Secao id="dados" titulo="Dados" descricao="Métricas, ocupação, pessoas, tabelas e estados vazios.">

@@ -1,34 +1,4 @@
-/* ───────── Cabeçalho ───────── */
-.avatarCabecalho { display: none; }
-
-@media (min-width: 640px) {
-  .avatarCabecalho { display: inline-flex; }
-}
-
-.titulo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: 12px;
-  row-gap: 4px;
-}
-
-.descricao {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 8px;
-  color: var(--ink-2);
-}
-
-.cpf {
-  font-family: var(--fonte-mono);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-sm);
-  font-variant-numeric: tabular-nums;
-}
-
-.separador { color: var(--ink-3); }
-
+/* ───────── Cabeçalho (a pulseira tem o próprio estilo) ───────── */
 .abas { margin-bottom: 24px; }
 
 /* ───────── Visão geral ───────── */

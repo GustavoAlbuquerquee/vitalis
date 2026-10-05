@@ -72,5 +72,5 @@
 @media (min-width: 640px) {
   .raiz { align-items: center; padding: 24px; }
   .painel { border-radius: var(--raio-cartao); }
-  .rodape { flex-direction: row; justify-content: flex-end; }
+  .rodape { flex-direction: row; align-items: flex-start; justify-content: flex-end; }
 }
