@@ -36,3 +36,4 @@ temp/
 # Diagramas renderizados localmente
 docs/diagramas/*.png
 docs/diagramas/out/
+dist/

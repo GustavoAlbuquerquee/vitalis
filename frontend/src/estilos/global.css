@@ -1,0 +1,195 @@
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+@import 'tailwindcss';
+
+/*
+ * Vitalis — tokens do design system.
+ *
+ * Toda cor da interface sai daqui. Componentes nunca usam hex direto:
+ * usam as utilidades do Tailwind geradas a partir destes tokens
+ * (bg-surface, text-ink-2, border-line…), e o tema escuro só redefine
+ * as variáveis. Documentação completa em docs/design-system.md.
+ */
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+  color-scheme: light;
+
+  /* Superfícies — papel quente, a lembrança do prontuário que o sistema substitui */
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #efede7;
+  --surface-3: #e7e4dc;
+  --line: #e2dfd6;
+  --line-strong: #cfcbbf;
+
+  /* Tinta */
+  --ink: #16201e;
+  --ink-2: #56605d;
+  --ink-3: #868e8a;
+
+  /* Marca — verde-petróleo, a cor "vital" */
+  --brand: #0e6b5c;
+  --brand-hover: #0a5a4d;
+  --brand-soft: #e2f0ec;
+  --brand-ink: #0a4f44;
+  --on-brand: #ffffff;
+
+  /* Semânticas — cada uma com versão sólida (texto/ícone) e suave (fundo) */
+  --ok: #1f7a4d;
+  --ok-soft: #e3f2e9;
+  --info: #2459a8;
+  --info-soft: #e6eefa;
+  --warn: #9a5806;
+  --warn-soft: #fbefd9;
+  --danger: #b4232f;
+  --danger-soft: #fbe6e7;
+  --neutral: #5f6865;
+  --neutral-soft: #ebe9e3;
+
+  --focus: #0e6b5c;
+  --overlay: rgb(22 32 30 / 0.42);
+  --shadow-pop: 0 1px 2px rgb(22 32 30 / 0.06), 0 8px 24px -6px rgb(22 32 30 / 0.16);
+  --shadow-modal: 0 2px 4px rgb(22 32 30 / 0.06), 0 24px 56px -12px rgb(22 32 30 / 0.28);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0d1311;
+  --surface: #141b19;
+  --surface-2: #1a2220;
+  --surface-3: #212a28;
+  --line: #252f2c;
+  --line-strong: #34403c;
+
+  --ink: #e8ecea;
+  --ink-2: #a3ada9;
+  --ink-3: #737d79;
+
+  --brand: #3fbfa4;
+  --brand-hover: #5bcdb4;
+  --brand-soft: #12352e;
+  --brand-ink: #7fdcc6;
+  --on-brand: #04211b;
+
+  --ok: #4cc38a;
+  --ok-soft: #122d1f;
+  --info: #7ea9ef;
+  --info-soft: #16243c;
+  --warn: #e5a54b;
+  --warn-soft: #302310;
+  --danger: #f07a80;
+  --danger-soft: #3a171a;
+  --neutral: #a3ada9;
+  --neutral-soft: #222b29;
+
+  --focus: #3fbfa4;
+  --overlay: rgb(0 0 0 / 0.6);
+  --shadow-pop: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -6px rgb(0 0 0 / 0.5);
+  --shadow-modal: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 56px -12px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-neutral: var(--neutral);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-focus: var(--focus);
+  --color-overlay: var(--overlay);
+
+  --shadow-pop: var(--shadow-pop);
+  --shadow-modal: var(--shadow-modal);
+
+  --radius-control: 7px;
+  --radius-card: 12px;
+
+  /* Escala tipográfica: base 14px, pensada para telas densas de operação */
+  --text-2xs: 11px;
+  --text-2xs--line-height: 16px;
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-base: 14px;
+  --text-base--line-height: 22px;
+  --text-md: 16px;
+  --text-md--line-height: 24px;
+  --text-lg: 20px;
+  --text-lg--line-height: 28px;
+  --text-xl: 24px;
+  --text-xl--line-height: 32px;
+  --text-2xl: 32px;
+  --text-2xl--line-height: 40px;
+
+  --animate-entrar: entrar 160ms ease-out;
+  --animate-subir: subir 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  @keyframes entrar {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes subir {
+    from { opacity: 0; transform: translateY(8px) scale(0.99); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 22px;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  ::selection {
+    background: var(--brand-soft);
+    color: var(--brand-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  /* Números alinhados em toda a interface: horários, CPFs e contagens não "dançam" */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
