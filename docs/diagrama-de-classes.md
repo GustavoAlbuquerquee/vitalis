@@ -595,10 +595,6 @@ classDiagram
         -LocalDateTime horario
     }
 
-    class ProfissionalIndisponivelException {
-        -Long profissionalId
-    }
-
     class QuartoIndisponivelException {
         -String numeroQuarto
     }
@@ -612,13 +608,8 @@ classDiagram
         -String cpf
     }
 
-    class AltaInvalidaException {
-        -Long internacaoId
-    }
-
-    class RegistroDuplicadoException {
-        -String campo
-        -String valor
+    class TransicaoInvalidaException {
+        +TransicaoInvalidaException(String mensagem)
     }
 
     class DadosInvalidosException {
@@ -626,7 +617,6 @@ classDiagram
     }
 
     class ErroResponse {
-        <<record>>
         +LocalDateTime timestamp
         +int status
         +String codigo
@@ -640,12 +630,10 @@ classDiagram
     HospitalException <|-- RegraDeNegocioException
     HospitalException <|-- DadosInvalidosException
     RegraDeNegocioException <|-- ConflitoDeHorarioException
-    RegraDeNegocioException <|-- ProfissionalIndisponivelException
     RegraDeNegocioException <|-- QuartoIndisponivelException
     RegraDeNegocioException <|-- CapacidadeExcedidaException
     RegraDeNegocioException <|-- PacienteJaInternadoException
-    RegraDeNegocioException <|-- AltaInvalidaException
-    RegraDeNegocioException <|-- RegistroDuplicadoException
+    RegraDeNegocioException <|-- TransicaoInvalidaException
 
     HospitalException ..> ErroResponse : convertida em
 ```
@@ -654,13 +642,12 @@ classDiagram
 |---|---|---|
 | `RecursoNaoEncontradoException` | 404 | ID inexistente de paciente, profissional, quarto, consulta ou internação |
 | `ConflitoDeHorarioException` | 409 | RN3 violada — profissional já tem atendimento no intervalo |
-| `ProfissionalIndisponivelException` | 409 | Horário fora das janelas de `Disponibilidade` |
 | `QuartoIndisponivelException` | 409 | RN4 — quarto em manutenção/interditado ou lotado |
 | `CapacidadeExcedidaException` | 409 | RN5 — ocupação atingiria `capacidadeMaxima` |
 | `PacienteJaInternadoException` | 409 | Paciente com internação `ATIVA` |
-| `AltaInvalidaException` | 422 | Data de alta anterior à entrada, ou internação já encerrada |
-| `RegistroDuplicadoException` | 409 | CPF, registro profissional ou número de quarto já cadastrado |
+| `TransicaoInvalidaException` | 422 | Operação impossível para o estado atual do recurso |
 | `DadosInvalidosException` | 400 | Falha de validação de campos (Bean Validation) |
+| Exceção não prevista | 500 | Falha não prevista — resposta sem detalhes internos |
 
 ---
 
