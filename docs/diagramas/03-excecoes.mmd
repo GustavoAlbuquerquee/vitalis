@@ -21,6 +21,10 @@ classDiagram
         <<abstract>>
     }
 
+    class DadosInvalidosException {
+        -Map~String, String~ erros
+    }
+
     class ConflitoDeHorarioException {
         -Long profissionalId
         -LocalDateTime horario
@@ -28,6 +32,22 @@ classDiagram
 
     class ProfissionalIndisponivelException {
         -Long profissionalId
+    }
+
+    class EspecialidadeIncompativelException {
+        -Especialidade solicitada
+        -Especialidade doProfissional
+    }
+
+    class CirurgiaoNaoHabilitadoException {
+        -Long cirurgiaoId
+        -TipoCirurgia tipo
+    }
+
+    class TransicaoInvalidaException {
+        -String entidade
+        -Enum estadoAtual
+        -Enum estadoDestino
     }
 
     class QuartoIndisponivelException {
@@ -52,10 +72,6 @@ classDiagram
         -String valor
     }
 
-    class DadosInvalidosException {
-        -Map~String, String~ erros
-    }
-
     class ErroResponse {
         <<record>>
         +LocalDateTime timestamp
@@ -70,8 +86,12 @@ classDiagram
     HospitalException <|-- RecursoNaoEncontradoException
     HospitalException <|-- RegraDeNegocioException
     HospitalException <|-- DadosInvalidosException
+
     RegraDeNegocioException <|-- ConflitoDeHorarioException
     RegraDeNegocioException <|-- ProfissionalIndisponivelException
+    RegraDeNegocioException <|-- EspecialidadeIncompativelException
+    RegraDeNegocioException <|-- CirurgiaoNaoHabilitadoException
+    RegraDeNegocioException <|-- TransicaoInvalidaException
     RegraDeNegocioException <|-- QuartoIndisponivelException
     RegraDeNegocioException <|-- CapacidadeExcedidaException
     RegraDeNegocioException <|-- PacienteJaInternadoException

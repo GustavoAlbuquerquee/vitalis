@@ -1,0 +1,30 @@
+stateDiagram-v2
+    direction LR
+
+    [*] --> AGENDADA : agendar()
+
+    AGENDADA --> CONFIRMADA : confirmar()
+    AGENDADA --> CANCELADA : cancelar()
+    AGENDADA --> NAO_COMPARECEU : registrarAusencia()
+
+    CONFIRMADA --> EM_ATENDIMENTO : iniciar()
+    CONFIRMADA --> CANCELADA : cancelar()
+    CONFIRMADA --> NAO_COMPARECEU : registrarAusencia()
+
+    EM_ATENDIMENTO --> CONCLUIDA : concluir(observacoes)
+    EM_ATENDIMENTO --> CANCELADA : cancelar()
+
+    CONCLUIDA --> [*]
+    CANCELADA --> [*]
+    NAO_COMPARECEU --> [*]
+
+    note right of CONCLUIDA
+        Estado final. Uma consulta concluída
+        nunca volta a ser agendada.
+    end note
+
+    note right of CANCELADA
+        Estado final. Para reatender o paciente,
+        agenda-se uma consulta nova — a cancelada
+        não é reaproveitada.
+    end note
