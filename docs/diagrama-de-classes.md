@@ -1,23 +1,40 @@
-# Sistema de Informação Hospitalar — Diagrama de Classes
+# Vitalis — Diagrama de Classes
 
-**PUC Minas — Bacharelado em Engenharia de Software — Programação Modular**
-Trabalho Prático: Sistema Hospitalar
+**PUC Minas · Engenharia de Software · Programação Modular**
+Sprint 2 — Implementação da API e Modelo
 
-Este documento apresenta a modelagem orientada a objetos completa do sistema, dividida em três visões:
+Este documento é o **contrato do domínio**: é nele que as assinaturas ficam acordadas antes de as três trilhas começarem a implementar em paralelo.
 
-1. **Modelo de domínio** — entidades, atributos, comportamentos, heranças e associações
-2. **Arquitetura em camadas** — Controller → Service → Repository → Model, DTOs e validadores
-3. **Hierarquia de exceções** — tratamento de erros da API
+- [O que mudou desde a Sprint 1](#o-que-mudou-desde-a-sprint-1)
+- [Modelo de domínio](#modelo-de-domínio)
+- [Decisões de modelagem](#decisões-de-modelagem)
+- [Máquinas de estado](#máquinas-de-estado)
+- [Hierarquia de exceções](#hierarquia-de-exceções)
+- [Rastreabilidade com o enunciado](#rastreabilidade-com-o-enunciado)
 
 ---
 
-## 1. Visão de Domínio (Model)
+## O que mudou desde a Sprint 1
+
+| Sprint 1 | Sprint 2 |
+|---|---|
+| `ProfissionalSaude` concreta, com um campo `especialidade` | `ProfissionalSaude` **abstrata** → `ClinicoGeral`, `Especialista`, `Cirurgiao` |
+| `Atendimento` → `Consulta`, `Internacao` | `Atendimento` → `Consulta` (abstrata), `ProcedimentoCirurgico`, `Internacao` |
+| — | `Consulta` → `ConsultaRotina`, `ConsultaEspecializada`, `AtendimentoEmergencia` |
+| `StatusConsulta` com 4 valores, sem regra de transição | 6 estados com máquina de transições |
+| — | `EstadoTransicionavel<E>`, `PrioridadeEmergencia`, `StatusProcedimento`, `TipoCirurgia`, `Encaminhamento` |
+| `HistoricoMedico` com listas separadas por tipo | lista única de `Atendimento`, polimórfica |
+
+**Sete classes novas**, duas abstrações novas e quatro enumerações novas.
+
+---
+
+## Modelo de domínio
 
 ```mermaid
 classDiagram
     direction TB
 
-    %% ===================== ABSTRAÇÕES =====================
     class Pessoa {
         <<abstract>>
         #Long id
@@ -25,10 +42,54 @@ classDiagram
         #String telefone
         #String email
         #boolean ativo
-        #LocalDateTime criadoEm
         +getIdentificacaoPrincipal() String
         +getTipo() String
-        +validar() void
+    }
+
+    class ProfissionalSaude {
+        <<abstract>>
+        #String registroProfissional
+        #List~Disponibilidade~ disponibilidades
+        +podeRealizar(Atendimento a) boolean
+        +getAtribuicao() String
+        +estaDisponivelEm(LocalDateTime ini, LocalDateTime fim) boolean
+        +possuiConflito(Atendimento novo) boolean
+    }
+
+    class ClinicoGeral {
+        +podeRealizar(Atendimento a) boolean
+        +realizarAvaliacaoInicial(Paciente p) ConsultaRotina
+        +encaminhar(Paciente p, Especialidade e, String motivo) Encaminhamento
+    }
+
+    class Especialista {
+        -Especialidade especialidade
+        +podeRealizar(Atendimento a) boolean
+        +atendeEspecialidade(Especialidade e) boolean
+    }
+
+    class Cirurgiao {
+        -String registroEspecializacao
+        -List~TipoCirurgia~ habilitacoes
+        +podeRealizar(Atendimento a) boolean
+        +ehHabilitadoPara(TipoCirurgia t) boolean
+        +getProcedimentos() List~ProcedimentoCirurgico~
+    }
+
+    class Paciente {
+        -String cpf
+        -LocalDate dataNascimento
+        -Endereco endereco
+        +getIdade() int
+        +estaInternado() boolean
+    }
+
+    class Encaminhamento {
+        -ClinicoGeral origem
+        -Paciente paciente
+        -Especialidade especialidadeDestino
+        -String motivo
+        -boolean atendido
     }
 
     class Atendimento {
@@ -37,64 +98,57 @@ classDiagram
         #Paciente paciente
         #ProfissionalSaude profissional
         #String observacoes
-        #LocalDateTime criadoEm
         +getInicio() LocalDateTime
         +getFim() LocalDateTime
-        +getResumo() String
+        +validarCondicoes() void
         +conflitaCom(Atendimento outro) boolean
-        +estaAtivo() boolean
-    }
-
-    %% ===================== ENTIDADES =====================
-    class Paciente {
-        -String cpf
-        -LocalDate dataNascimento
-        -Endereco endereco
-        -List~Consulta~ consultas
-        -List~Internacao~ internacoes
-        +getIdade() int
-        +estaInternado() boolean
-        +adicionarConsulta(Consulta c) void
-        +adicionarInternacao(Internacao i) void
-        +getIdentificacaoPrincipal() String
-    }
-
-    class ProfissionalSaude {
-        -String registroProfissional
-        -Especialidade especialidade
-        -List~Disponibilidade~ disponibilidades
-        -List~Atendimento~ atendimentos
-        +estaDisponivelEm(LocalDateTime ini, LocalDateTime fim) boolean
-        +possuiConflito(Atendimento novo) boolean
-        +getAgendaDoDia(LocalDate data) List~Atendimento~
-        +getIdentificacaoPrincipal() String
-    }
-
-    class Endereco {
-        <<value object>>
-        -String logradouro
-        -String numero
-        -String complemento
-        -String bairro
-        -String cidade
-        -UF uf
-        -String cep
-        +getEnderecoFormatado() String
+        +ocupaAgenda() boolean
     }
 
     class Consulta {
-        -LocalDate data
-        -LocalTime horario
-        -int duracaoMinutos
-        -String motivo
-        -String observacoesMedicas
-        -StatusConsulta status
-        +agendar() void
-        +reagendar(LocalDate d, LocalTime h) void
-        +realizar(String observacoesMedicas) void
+        <<abstract>>
+        #LocalDate data
+        #LocalTime horario
+        #int duracaoMinutos
+        #String motivo
+        #String observacoesMedicas
+        #StatusConsulta status
+        +confirmar() void
+        +iniciar() void
+        +concluir(String obs) void
         +cancelar(String motivo) void
-        +getInicio() LocalDateTime
-        +getFim() LocalDateTime
+        +registrarAusencia() void
+    }
+
+    class ConsultaRotina {
+        +validarCondicoes() void
+    }
+
+    class ConsultaEspecializada {
+        -Especialidade especialidade
+        +validarCondicoes() void
+    }
+
+    class AtendimentoEmergencia {
+        -PrioridadeEmergencia prioridade
+        -LocalDateTime chegadaEm
+        +validarCondicoes() void
+        +aguardaAvaliacao() boolean
+        +ocupaAgenda() boolean
+    }
+
+    class ProcedimentoCirurgico {
+        -String descricao
+        -TipoCirurgia tipoCirurgia
+        -String observacoesPreOperatorias
+        -String observacoesPosOperatorias
+        -LocalDateTime dataHoraPrevista
+        -LocalDateTime dataHoraEfetiva
+        -StatusProcedimento status
+        +iniciar(LocalDateTime inicio) void
+        +concluir(String obsPos) void
+        +cancelar(String motivo) void
+        +validarCondicoes() void
     }
 
     class Internacao {
@@ -102,580 +156,269 @@ classDiagram
         -LocalDateTime dataEntrada
         -LocalDate dataPrevistaAlta
         -LocalDateTime dataEfetivaAlta
-        -String motivo
         -StatusInternacao status
-        +registrarAlta(LocalDateTime data, String obs) void
+        +registrarAlta(LocalDateTime d, String obs) void
         +transferirPara(Quarto novo) void
-        +getDiasInternado() long
-        +estaAtiva() boolean
-        +getInicio() LocalDateTime
-        +getFim() LocalDateTime
+        +validarCondicoes() void
     }
 
     class Quarto {
-        -Long id
         -String numero
         -int andar
         -int capacidadeMaxima
         -TipoQuarto tipo
         -SituacaoQuarto situacao
-        -List~Internacao~ internacoesAtivas
         +getOcupacaoAtual() int
-        +getVagasDisponiveis() int
         +estaDisponivel() boolean
+        +aceita(Paciente p) boolean
         +ocupar(Internacao i) void
         +liberar(Internacao i) void
         +atualizarSituacao() void
     }
 
-    class Disponibilidade {
-        -Long id
-        -ProfissionalSaude profissional
-        -DiaSemana diaSemana
-        -LocalTime horaInicio
-        -LocalTime horaFim
-        -boolean ativo
-        +cobre(LocalDateTime momento) boolean
-        +sobrepoe(Disponibilidade outra) boolean
-    }
-
-    class RegistroClinico {
-        -Long id
-        -Atendimento atendimento
-        -ProfissionalSaude autor
-        -TipoRegistro tipo
-        -String descricao
-        -LocalDateTime dataRegistro
-    }
-
-    class HistoricoMedico {
-        <<aggregate>>
-        -Paciente paciente
-        -List~Consulta~ consultas
-        -List~Internacao~ internacoes
-        -List~RegistroClinico~ registros
-        +getTotalConsultas() int
-        +getTotalInternacoes() int
-        +getUltimoAtendimento() Atendimento
-        +filtrarPorPeriodo(LocalDate ini, LocalDate fim) List~Atendimento~
-    }
-
-    %% ===================== ENUMERAÇÕES =====================
-    class Especialidade {
-        <<enumeration>>
-        CLINICA_GERAL
-        CARDIOLOGIA
-        PEDIATRIA
-        ORTOPEDIA
-        GINECOLOGIA
-        NEUROLOGIA
-        ENFERMAGEM
-        FISIOTERAPIA
+    class EstadoTransicionavel~E~ {
+        <<interface>>
+        +getEstado() E
+        +transicoesValidasDe(E atual) Set~E~
+        +podeTransitarPara(E novo) boolean
+        +transitarPara(E novo) void
     }
 
     class StatusConsulta {
         <<enumeration>>
         AGENDADA
-        REALIZADA
+        CONFIRMADA
+        EM_ATENDIMENTO
+        CONCLUIDA
         CANCELADA
         NAO_COMPARECEU
     }
 
-    class StatusInternacao {
+    class PrioridadeEmergencia {
         <<enumeration>>
-        ATIVA
-        ALTA_CONCEDIDA
-        TRANSFERIDA
-        CANCELADA
+        BAIXA
+        MODERADA
+        ALTA
+        CRITICA
     }
 
-    class SituacaoQuarto {
+    class StatusProcedimento {
         <<enumeration>>
-        DISPONIVEL
-        OCUPADO
-        MANUTENCAO
-        INTERDITADO
+        AGENDADO
+        EM_ANDAMENTO
+        CONCLUIDO
+        CANCELADO
     }
 
-    class TipoQuarto {
+    class TipoCirurgia {
         <<enumeration>>
-        ENFERMARIA
-        APARTAMENTO
-        UTI
-        ISOLAMENTO
+        ELETIVA
+        URGENCIA
+        EMERGENCIA
+        AMBULATORIAL
     }
 
-    class DiaSemana {
+    class Especialidade {
         <<enumeration>>
-        SEGUNDA
-        TERCA
-        QUARTA
-        QUINTA
-        SEXTA
-        SABADO
-        DOMINGO
+        CARDIOLOGIA
+        NEUROLOGIA
+        ORTOPEDIA
+        PEDIATRIA
+        GINECOLOGIA
+        CIRURGIA_GERAL
     }
 
-    class TipoRegistro {
-        <<enumeration>>
-        ANAMNESE
-        DIAGNOSTICO
-        PRESCRICAO
-        EXAME
-        EVOLUCAO
-    }
-
-    class UF {
-        <<enumeration>>
-        MG
-        SP
-        RJ
-        ES
-    }
-
-    %% ===================== HERANÇA =====================
     Pessoa <|-- Paciente
     Pessoa <|-- ProfissionalSaude
+    ProfissionalSaude <|-- ClinicoGeral
+    ProfissionalSaude <|-- Especialista
+    ProfissionalSaude <|-- Cirurgiao
+
     Atendimento <|-- Consulta
+    Atendimento <|-- ProcedimentoCirurgico
     Atendimento <|-- Internacao
+    Consulta <|-- ConsultaRotina
+    Consulta <|-- ConsultaEspecializada
+    Consulta <|-- AtendimentoEmergencia
 
-    %% ===================== ASSOCIAÇÕES =====================
-    Paciente "1" *-- "1" Endereco : possui
-    Paciente "1" o-- "0..*" Consulta : realiza
-    Paciente "1" o-- "0..*" Internacao : passa por
-    ProfissionalSaude "1" o-- "0..*" Consulta : atende
-    ProfissionalSaude "1" o-- "0..*" Internacao : e responsavel
-    ProfissionalSaude "1" *-- "0..*" Disponibilidade : define
+    EstadoTransicionavel <|.. Consulta
+    EstadoTransicionavel <|.. ProcedimentoCirurgico
+    EstadoTransicionavel <|.. Internacao
+
+    Paciente "1" o-- "0..*" Atendimento : recebe
+    ProfissionalSaude "1" o-- "0..*" Atendimento : realiza
+    ClinicoGeral "1" o-- "0..*" Encaminhamento : emite
+    Cirurgiao "1" o-- "0..*" ProcedimentoCirurgico : executa
     Quarto "1" o-- "0..*" Internacao : aloja
-    Atendimento "1" *-- "0..*" RegistroClinico : gera
-    ProfissionalSaude "1" --> "0..*" RegistroClinico : registra
-    HistoricoMedico "1" --> "1" Paciente : consolida
-    HistoricoMedico "1" o-- "0..*" Consulta
-    HistoricoMedico "1" o-- "0..*" Internacao
-    HistoricoMedico "1" o-- "0..*" RegistroClinico
 
-    %% ===================== DEPENDÊNCIAS DE ENUM =====================
-    ProfissionalSaude ..> Especialidade
+    Especialista ..> Especialidade
+    Cirurgiao ..> TipoCirurgia
     Consulta ..> StatusConsulta
-    Internacao ..> StatusInternacao
-    Quarto ..> SituacaoQuarto
-    Quarto ..> TipoQuarto
-    Disponibilidade ..> DiaSemana
-    RegistroClinico ..> TipoRegistro
-    Endereco ..> UF
+    ConsultaEspecializada ..> Especialidade
+    AtendimentoEmergencia ..> PrioridadeEmergencia
+    ProcedimentoCirurgico ..> StatusProcedimento
+    ProcedimentoCirurgico ..> TipoCirurgia
 ```
 
-### 1.1 Decisões de modelagem
+> O diagrama acima omite `Endereco`, `Disponibilidade`, `RegistroClinico`, `HistoricoMedico` e as enumerações herdadas da Sprint 1, para caber na tela. A versão completa está em [`diagramas/01-dominio.mmd`](diagramas/01-dominio.mmd).
 
-| Decisão | Justificativa |
+---
+
+## Decisões de modelagem
+
+### 1. `Consulta` abstrata entre `Atendimento` e as três modalidades
+
+As três modalidades de consulta compartilham `data`, `horario`, `duracaoMinutos`, `motivo`, `observacoesMedicas` e — o que mais importa — **a máquina de seis estados**. Sem a abstrata no meio, essa máquina seria escrita três vezes.
+
+É exatamente o que o enunciado proíbe:
+
+> *"O sistema deverá representar essas características sem duplicar desnecessariamente os atributos e comportamentos comuns."*
+
+**O incômodo:** um atendimento de emergência não é agendado — o paciente chega. Colocá-lo sob `Consulta` faz ele herdar `data` e `horario`, que nele significam *quando aconteceu*, não *quando foi marcado*.
+
+Aceitamos esse incômodo porque a alternativa — emergência herdando direto de `Atendimento` — duplicaria status, observações e a máquina de estados inteira. `AtendimentoEmergencia` sobrescreve `ocupaAgenda()` devolvendo `false`, e é assim que ele escapa da verificação de conflito de horário.
+
+> **Ponto aberto para o grupo.** Se o Enzo ou o Armando discordarem, a hora de dizer é antes de a #8 começar.
+
+### 2. `validarCondicoes()` é abstrato em `Atendimento`
+
+É o método que o enunciado cobra nominalmente:
+
+> *"Cada modalidade deverá implementar sua própria lógica de validação das condições necessárias para a realização do atendimento."*
+
+| Modalidade | O que valida |
 |---|---|
-| `Pessoa` abstrata (superclasse de `Paciente` e `ProfissionalSaude`) | Elimina duplicação de `nome`, `telefone`, `email` e permite polimorfismo em `getIdentificacaoPrincipal()` (CPF para paciente, registro profissional para o profissional). |
-| `Atendimento` abstrata (superclasse de `Consulta` e `Internacao`) | A **regra 3** ("um profissional não pode ter dois atendimentos no mesmo horário") vale para consultas *e* internações. Tratar ambas como `Atendimento` permite validar conflito de agenda com um único algoritmo (`conflitaCom`), baseado em `getInicio()`/`getFim()`. Também simplifica o histórico médico. |
-| `Endereco` como *value object* (composição) | Endereço não tem identidade própria nem existe sem o paciente — mapeado como `@Embeddable` (JPA) ou documento embutido (MongoDB). |
-| `Disponibilidade` como classe separada | Atende ao requisito "controle de disponibilidade de atendimento". Permite que o profissional tenha várias janelas por dia da semana. |
-| `RegistroClinico` | Atende ao item "informações relevantes registradas durante os atendimentos" do Histórico Médico, com tipagem (anamnese, diagnóstico, prescrição, exame, evolução). |
-| `HistoricoMedico` como agregado de consulta (não persistido) | O histórico é **derivado** das consultas, internações e registros já persistidos. Montá-lo em memória evita duplicidade de dados e mantém a consistência automática (regra 6). |
-| Enums em vez de `String` livre | Garante integridade de dados (`situacao` do quarto, `status` de consulta/internação) e evita valores inválidos. |
-| `situacao` do quarto derivada da ocupação | `atualizarSituacao()` é chamado após `ocupar()`/`liberar()`, mantendo `SituacaoQuarto` coerente com `getOcupacaoAtual()` vs. `capacidadeMaxima` (regra 5). |
+| `ConsultaRotina` | Profissional livre no horário e dentro da disponibilidade |
+| `ConsultaEspecializada` | Tudo da rotina **mais** especialidade compatível |
+| `AtendimentoEmergencia` | Nada de agenda — é imediato por natureza |
+| `ProcedimentoCirurgico` | Responsável é `Cirurgiao` e está habilitado para o tipo |
+| `Internacao` | Quarto disponível, com vaga, e paciente sem internação ativa |
 
-### 1.2 Multiplicidades
+### 3. `EstadoTransicionavel<E>` em vez de três máquinas de estado
 
-| Origem | Multiplicidade | Destino | Tipo | Regra de negócio |
-|---|---|---|---|---|
-| Paciente | 1 → 0..* | Consulta | Agregação | RN1, RN2 |
-| Paciente | 1 → 0..* | Internacao | Agregação | RN1, RN4 |
-| Paciente | 1 → 1 | Endereco | Composição | Req. 1 |
-| ProfissionalSaude | 1 → 0..* | Consulta | Agregação | RN2, RN3 |
-| ProfissionalSaude | 1 → 0..* | Internacao | Agregação | Req. 4, RN3 |
-| ProfissionalSaude | 1 → 0..* | Disponibilidade | Composição | Escopo: disponibilidade |
-| Quarto | 1 → 0..* | Internacao | Agregação | RN4, RN5 |
-| Atendimento | 1 → 0..* | RegistroClinico | Composição | Req. 6 |
-| HistoricoMedico | 1 → 1 | Paciente | Associação | RN6 |
+Consulta tem 6 estados, procedimento tem 4, internação tem 4. São o mesmo padrão: um estado atual, um conjunto de transições válidas, e uma exceção quando se tenta o que não vale.
 
-### 1.3 Cobertura dos requisitos de atributos
+Uma interface genérica em `comum` resolve as três. Quem implementa declara apenas o mapa de transições permitidas; a validação e o lançamento de `TransicaoInvalidaException` acontecem num lugar só.
 
-| Requisito do enunciado | Classe | Atributos |
-|---|---|---|
-| 1. Paciente | `Paciente` + `Pessoa` + `Endereco` | `nome`, `cpf`, `dataNascimento`, `telefone`, `endereco`, `email` |
-| 2. Profissional da Saúde | `ProfissionalSaude` + `Pessoa` | `nome`, `registroProfissional`, `especialidade`, `telefone`, `email` |
-| 3. Consulta | `Consulta` + `Atendimento` | `paciente`, `profissional`, `data`, `horario`, `motivo`, `observacoesMedicas` |
-| 4. Internação | `Internacao` + `Atendimento` | `paciente`, `profissional`, `quarto`, `dataEntrada`, `dataPrevistaAlta`, `dataEfetivaAlta`, `observacoes` |
-| 5. Quarto | `Quarto` | `numero`, `andar`, `capacidadeMaxima`, `situacao` |
-| 6. Histórico Médico | `HistoricoMedico` + `RegistroClinico` | `consultas`, `internacoes`, `registros` |
+### 4. `podeRealizar(Atendimento)` polimórfico no profissional
 
-### 1.4 Onde cada regra de negócio é aplicada
+Em vez de o serviço perguntar *"este profissional é um especialista? e a especialidade bate?"*, ele pergunta `profissional.podeRealizar(atendimento)`. Cada categoria responde por si:
 
-| # | Regra | Onde é garantida |
-|---|---|---|
-| RN1 | Paciente com várias consultas/internações | Associações `Paciente → Consulta` e `Paciente → Internacao` (0..*) |
-| RN2 | Consulta associada a paciente e profissional | Atributos obrigatórios (`@NotNull`) em `Atendimento` |
-| RN3 | Profissional sem dois atendimentos no mesmo horário | `Atendimento.conflitaCom()` + `AgendaValidator.validarConflitoDeHorario()` + índice único no banco |
-| RN4 | Internação com paciente e quarto disponível | `OcupacaoValidator.validarSituacao()` + `Quarto.estaDisponivel()` |
-| RN5 | Quarto não ultrapassa capacidade máxima | `Quarto.ocupar()` + `OcupacaoValidator.validarCapacidade()` → `CapacidadeExcedidaException` |
-| RN6 | Manter histórico | Status `REALIZADA`/`ALTA_CONCEDIDA` em vez de exclusão física; `HistoricoMedico` consolida |
-| RN7 | Integridade e disponibilidade de recursos | Validadores na camada de serviço + transações (`@Transactional`) |
+- `ClinicoGeral` aceita consulta de rotina, recusa especializada e cirurgia
+- `Especialista` aceita rotina e especializada **da sua área**
+- `Cirurgiao` aceita procedimento cirúrgico do tipo para o qual está habilitado
+
+Sem `instanceof` espalhado pela camada de serviço.
+
+### 5. `Encaminhamento` como entidade
+
+> *"Pode encaminhar pacientes para atendimento especializado."*
+
+Encaminhar não é só chamar um método e esquecer — é um registro que alguém precisa consultar depois para marcar a consulta especializada. Vira entidade, com origem, paciente, especialidade de destino, motivo e se já foi atendido.
 
 ---
 
-## 2. Visão de Arquitetura em Camadas
+## Máquinas de estado
+
+### Situação da consulta
 
 ```mermaid
-classDiagram
+stateDiagram-v2
     direction LR
-
-    class PacienteController {
-        <<RestController>>
-        -PacienteService service
-        +criar(PacienteRequest dto) ResponseEntity~PacienteResponse~
-        +buscarPorId(Long id) ResponseEntity~PacienteResponse~
-        +listar(Pageable p) ResponseEntity~Page~
-        +atualizar(Long id, PacienteRequest dto) ResponseEntity~PacienteResponse~
-        +remover(Long id) ResponseEntity~Void~
-        +historico(Long id) ResponseEntity~HistoricoResponse~
-    }
-
-    class ConsultaController {
-        <<RestController>>
-        -ConsultaService service
-        +agendar(ConsultaRequest dto) ResponseEntity~ConsultaResponse~
-        +reagendar(Long id, ReagendamentoRequest dto) ResponseEntity~ConsultaResponse~
-        +realizar(Long id, ObservacaoRequest dto) ResponseEntity~ConsultaResponse~
-        +cancelar(Long id) ResponseEntity~Void~
-    }
-
-    class InternacaoController {
-        <<RestController>>
-        -InternacaoService service
-        +internar(InternacaoRequest dto) ResponseEntity~InternacaoResponse~
-        +darAlta(Long id, AltaRequest dto) ResponseEntity~InternacaoResponse~
-        +transferir(Long id, Long quartoId) ResponseEntity~InternacaoResponse~
-        +listarAtivas() ResponseEntity~List~
-    }
-
-    class GlobalExceptionHandler {
-        <<RestControllerAdvice>>
-        +tratarNaoEncontrado(RecursoNaoEncontradoException e) ResponseEntity~ErroResponse~
-        +tratarRegraNegocio(RegraDeNegocioException e) ResponseEntity~ErroResponse~
-        +tratarValidacao(MethodArgumentNotValidException e) ResponseEntity~ErroResponse~
-    }
-
-    class CrudService~T, ID, REQ, RES~ {
-        <<interface>>
-        +criar(REQ dto) RES
-        +buscarPorId(ID id) RES
-        +listar(Pageable p) Page
-        +atualizar(ID id, REQ dto) RES
-        +remover(ID id) void
-    }
-
-    class PacienteService {
-        <<interface>>
-        +buscarPorCpf(String cpf) PacienteResponse
-        +obterHistorico(Long id) HistoricoResponse
-    }
-
-    class ConsultaService {
-        <<interface>>
-        +agendar(ConsultaRequest dto) ConsultaResponse
-        +reagendar(Long id, LocalDateTime novo) ConsultaResponse
-        +realizar(Long id, String obs) ConsultaResponse
-        +cancelar(Long id) void
-    }
-
-    class InternacaoService {
-        <<interface>>
-        +internar(InternacaoRequest dto) InternacaoResponse
-        +darAlta(Long id, AltaRequest dto) InternacaoResponse
-        +transferir(Long id, Long quartoId) InternacaoResponse
-    }
-
-    class PacienteServiceImpl {
-        <<Service>>
-        -PacienteRepository repository
-        -PacienteMapper mapper
-    }
-
-    class ConsultaServiceImpl {
-        <<Service>>
-        -ConsultaRepository repository
-        -AgendaValidator agendaValidator
-        -ConsultaMapper mapper
-    }
-
-    class InternacaoServiceImpl {
-        <<Service>>
-        -InternacaoRepository repository
-        -QuartoRepository quartoRepository
-        -OcupacaoValidator ocupacaoValidator
-    }
-
-    class AgendaValidator {
-        <<Component>>
-        +validarConflitoDeHorario(Long profId, LocalDateTime ini, LocalDateTime fim) void
-        +validarDentroDaDisponibilidade(ProfissionalSaude p, LocalDateTime ini) void
-    }
-
-    class OcupacaoValidator {
-        <<Component>>
-        +validarCapacidade(Quarto q) void
-        +validarSituacao(Quarto q) void
-        +validarPacienteSemInternacaoAtiva(Paciente p) void
-    }
-
-    class JpaRepository~T, ID~ {
-        <<interface>>
-        +save(T entidade) T
-        +findById(ID id) Optional
-        +findAll(Pageable p) Page
-        +deleteById(ID id) void
-    }
-
-    class PacienteRepository {
-        <<interface>>
-        +findByCpf(String cpf) Optional
-        +existsByCpf(String cpf) boolean
-    }
-
-    class ConsultaRepository {
-        <<interface>>
-        +findByProfissionalIdAndData(Long id, LocalDate data) List
-        +existsConflitoHorario(Long profId, LocalDateTime ini, LocalDateTime fim) boolean
-        +findByPacienteIdOrderByDataDesc(Long id) List
-    }
-
-    class InternacaoRepository {
-        <<interface>>
-        +findByStatus(StatusInternacao s) List
-        +countByQuartoIdAndStatus(Long quartoId, StatusInternacao s) int
-    }
-
-    class QuartoRepository {
-        <<interface>>
-        +findBySituacao(SituacaoQuarto s) List
-    }
-
-    class PacienteRequest {
-        <<record>>
-        +String nome
-        +String cpf
-        +LocalDate dataNascimento
-        +String telefone
-        +String email
-        +EnderecoDTO endereco
-    }
-
-    class PacienteResponse {
-        <<record>>
-        +Long id
-        +String nome
-        +String cpf
-        +int idade
-        +boolean internado
-    }
-
-    class PacienteMapper {
-        <<interface>>
-        +toEntity(PacienteRequest dto) Paciente
-        +toResponse(Paciente e) PacienteResponse
-    }
-
-    PacienteController --> PacienteService : usa
-    ConsultaController --> ConsultaService : usa
-    InternacaoController --> InternacaoService : usa
-
-    CrudService <|-- PacienteService
-    CrudService <|-- ConsultaService
-    CrudService <|-- InternacaoService
-
-    PacienteService <|.. PacienteServiceImpl
-    ConsultaService <|.. ConsultaServiceImpl
-    InternacaoService <|.. InternacaoServiceImpl
-
-    PacienteServiceImpl --> PacienteRepository
-    PacienteServiceImpl --> PacienteMapper
-    ConsultaServiceImpl --> ConsultaRepository
-    ConsultaServiceImpl --> AgendaValidator
-    InternacaoServiceImpl --> InternacaoRepository
-    InternacaoServiceImpl --> QuartoRepository
-    InternacaoServiceImpl --> OcupacaoValidator
-
-    JpaRepository <|-- PacienteRepository
-    JpaRepository <|-- ConsultaRepository
-    JpaRepository <|-- InternacaoRepository
-    JpaRepository <|-- QuartoRepository
-
-    PacienteController ..> PacienteRequest
-    PacienteController ..> PacienteResponse
-    PacienteMapper ..> PacienteRequest
-    PacienteMapper ..> PacienteResponse
+    [*] --> AGENDADA : agendar()
+    AGENDADA --> CONFIRMADA : confirmar()
+    AGENDADA --> CANCELADA : cancelar()
+    AGENDADA --> NAO_COMPARECEU : registrarAusencia()
+    CONFIRMADA --> EM_ATENDIMENTO : iniciar()
+    CONFIRMADA --> CANCELADA : cancelar()
+    CONFIRMADA --> NAO_COMPARECEU : registrarAusencia()
+    EM_ATENDIMENTO --> CONCLUIDA : concluir(observacoes)
+    EM_ATENDIMENTO --> CANCELADA : cancelar()
+    CONCLUIDA --> [*]
+    CANCELADA --> [*]
+    NAO_COMPARECEU --> [*]
 ```
 
-> O diagrama mostra a fatia completa de `Paciente`, `Consulta` e `Internacao`. As fatias de `ProfissionalSaude` e `Quarto` seguem exatamente o mesmo padrão (Controller → Service (interface) → ServiceImpl → Repository → Mapper/DTOs) e foram omitidas para manter a legibilidade.
+As transições que o enunciado proíbe nominalmente:
 
-### 2.1 Responsabilidade de cada camada
+> *"Uma consulta já concluída não deverá voltar a ser considerada agendada. Da mesma forma, uma consulta cancelada não deverá ser registrada como concluída sem que exista um novo agendamento."*
 
-| Camada | Responsabilidade | O que **não** faz |
-|---|---|---|
-| **Controller** | Expor endpoints REST, validar formato de entrada (`@Valid`), converter para HTTP status | Não contém regra de negócio nem acessa repositório |
-| **Service** | Regras de negócio (RN1–RN7), orquestração, transações, conversão DTO ↔ Entidade | Não conhece HTTP (`HttpServletRequest`, `ResponseEntity`) |
-| **Repository** | Acesso a dados, consultas derivadas e `@Query` | Não contém regra de negócio |
-| **Model** | Estado e comportamento do domínio (ex.: `Quarto.ocupar()`, `Consulta.cancelar()`) | Não conhece Spring nem persistência específica |
-| **DTO/Mapper** | Contrato de entrada/saída da API, desacoplado do modelo | Não expõe entidades diretamente |
+Ambas caem na regra geral: **`CONCLUIDA`, `CANCELADA` e `NAO_COMPARECEU` são estados finais.** Para reatender o paciente, agenda-se uma consulta nova.
 
-### 2.2 Estrutura de pacotes sugerida
+> **Ponto aberto para o grupo.** O enunciado dá exemplos, não a tabela fechada. Esta tabela é uma proposta — confirmem antes de a #9 começar.
 
-```
-br.pucminas.hospital
-├── controller
-│   ├── PacienteController.java
-│   ├── ProfissionalController.java
-│   ├── ConsultaController.java
-│   ├── InternacaoController.java
-│   ├── QuartoController.java
-│   └── handler/GlobalExceptionHandler.java
-├── service
-│   ├── PacienteService.java          (interface)
-│   ├── ConsultaService.java          (interface)
-│   ├── impl/PacienteServiceImpl.java
-│   ├── impl/ConsultaServiceImpl.java
-│   └── validator/AgendaValidator.java
-├── repository
-│   ├── PacienteRepository.java
-│   ├── ConsultaRepository.java
-│   └── ...
-├── model
-│   ├── Pessoa.java                   (abstract)
-│   ├── Paciente.java
-│   ├── ProfissionalSaude.java
-│   ├── Atendimento.java              (abstract)
-│   ├── Consulta.java
-│   ├── Internacao.java
-│   ├── Quarto.java
-│   ├── Endereco.java
-│   ├── Disponibilidade.java
-│   ├── RegistroClinico.java
-│   └── enums/
-├── dto
-│   ├── request/
-│   └── response/
-├── mapper
-└── exception
-```
-
----
-
-## 3. Hierarquia de Exceções
+### Ciclo do procedimento cirúrgico
 
 ```mermaid
-classDiagram
-    direction TB
-
-    class RuntimeException {
-        <<java.lang>>
-    }
-
-    class HospitalException {
-        <<abstract>>
-        #String codigo
-        #HttpStatus status
-        +getCodigo() String
-        +getStatus() HttpStatus
-    }
-
-    class RecursoNaoEncontradoException {
-        +RecursoNaoEncontradoException(String recurso, Object id)
-    }
-
-    class RegraDeNegocioException {
-        <<abstract>>
-    }
-
-    class ConflitoDeHorarioException {
-        -Long profissionalId
-        -LocalDateTime horario
-    }
-
-    class ProfissionalIndisponivelException {
-        -Long profissionalId
-    }
-
-    class QuartoIndisponivelException {
-        -String numeroQuarto
-    }
-
-    class CapacidadeExcedidaException {
-        -String numeroQuarto
-        -int capacidadeMaxima
-    }
-
-    class PacienteJaInternadoException {
-        -String cpf
-    }
-
-    class AltaInvalidaException {
-        -Long internacaoId
-    }
-
-    class RegistroDuplicadoException {
-        -String campo
-        -String valor
-    }
-
-    class DadosInvalidosException {
-        -Map~String, String~ erros
-    }
-
-    class ErroResponse {
-        <<record>>
-        +LocalDateTime timestamp
-        +int status
-        +String codigo
-        +String mensagem
-        +String caminho
-        +List~String~ detalhes
-    }
-
-    RuntimeException <|-- HospitalException
-    HospitalException <|-- RecursoNaoEncontradoException
-    HospitalException <|-- RegraDeNegocioException
-    HospitalException <|-- DadosInvalidosException
-    RegraDeNegocioException <|-- ConflitoDeHorarioException
-    RegraDeNegocioException <|-- ProfissionalIndisponivelException
-    RegraDeNegocioException <|-- QuartoIndisponivelException
-    RegraDeNegocioException <|-- CapacidadeExcedidaException
-    RegraDeNegocioException <|-- PacienteJaInternadoException
-    RegraDeNegocioException <|-- AltaInvalidaException
-    RegraDeNegocioException <|-- RegistroDuplicadoException
-
-    HospitalException ..> ErroResponse : convertida em
+stateDiagram-v2
+    direction LR
+    [*] --> AGENDADO : agendar()
+    AGENDADO --> EM_ANDAMENTO : iniciar(dataHoraEfetiva)
+    AGENDADO --> CANCELADO : cancelar(motivo)
+    EM_ANDAMENTO --> CONCLUIDO : concluir(obsPosOperatorias)
+    EM_ANDAMENTO --> CANCELADO : cancelar(motivo)
+    CONCLUIDO --> [*]
+    CANCELADO --> [*]
 ```
 
-| Exceção | HTTP | Disparada quando |
-|---|---|---|
-| `RecursoNaoEncontradoException` | 404 | ID inexistente de paciente, profissional, quarto, consulta ou internação |
-| `ConflitoDeHorarioException` | 409 | RN3 violada — profissional já tem atendimento no intervalo |
-| `ProfissionalIndisponivelException` | 409 | Horário fora das janelas de `Disponibilidade` |
-| `QuartoIndisponivelException` | 409 | RN4 — quarto em manutenção/interditado ou lotado |
-| `CapacidadeExcedidaException` | 409 | RN5 — ocupação atingiria `capacidadeMaxima` |
-| `PacienteJaInternadoException` | 409 | Paciente com internação `ATIVA` |
-| `AltaInvalidaException` | 422 | Data de alta anterior à entrada, ou internação já encerrada |
-| `RegistroDuplicadoException` | 409 | CPF, registro profissional ou número de quarto já cadastrado |
-| `DadosInvalidosException` | 400 | Falha de validação de campos (Bean Validation) |
+**Não existe seta de `AGENDADO` para `CONCLUIDO`.** É a invariante do enunciado:
+
+> *"Não será permitido registrar um procedimento como concluído se ele não tiver sido iniciado."*
+
+Isso é invariante do objeto, não validação de tela: `concluir()` recusa quando o estado não é `EM_ANDAMENTO`, mesmo que o controller esqueça de checar. É também `iniciar()` quem grava a `dataHoraEfetiva` — sem ela, não há o que concluir.
 
 ---
 
-## 4. Arquivos deste diagrama
+## Hierarquia de exceções
+
+Fonte completa em [`diagramas/03-excecoes.mmd`](diagramas/03-excecoes.mmd).
+
+| Exceção | HTTP | Quando |
+|---|---|---|
+| `RecursoNaoEncontradoException` | 404 | ID inexistente |
+| `DadosInvalidosException` | 400 | Falha de validação de campo |
+| `ConflitoDeHorarioException` | 409 | RN3 — profissional já ocupado no intervalo |
+| `EspecialidadeIncompativelException` | 409 | Consulta especializada com profissional de outra área |
+| `CirurgiaoNaoHabilitadoException` | 409 | Cirurgião sem habilitação para o tipo de cirurgia |
+| `TransicaoInvalidaException` | 409 | Transição de estado proibida, em qualquer entidade |
+| `QuartoIndisponivelException` | 409 | RN4 — quarto em manutenção ou interditado |
+| `CapacidadeExcedidaException` | 409 | RN5 — quarto lotado |
+| `PacienteJaInternadoException` | 409 | Paciente com internação ativa |
+| `AltaInvalidaException` | 422 | Alta anterior à entrada, ou internação já encerrada |
+
+Três das novas (`EspecialidadeIncompativel`, `CirurgiaoNaoHabilitado`, `TransicaoInvalida`) nascem direto das regras da Sprint 2.
+
+---
+
+## Rastreabilidade com o enunciado
+
+| O enunciado pede | Onde está no modelo |
+|---|---|
+| Médico clínico geral com encaminhamento | `ClinicoGeral` + `Encaminhamento` |
+| Especialista com área de atuação e busca por área | `Especialista.especialidade` + `GET /profissionais?especialidade=` |
+| Cirurgião com registro de procedimentos | `Cirurgiao.getProcedimentos()` |
+| Consulta de rotina | `ConsultaRotina` |
+| Consulta especializada com profissional compatível | `ConsultaEspecializada.validarCondicoes()` |
+| Emergência com prioridade e fila | `AtendimentoEmergencia` + `PrioridadeEmergencia` |
+| Procedimento com pré e pós-operatório, previsto e efetivo | `ProcedimentoCirurgico` |
+| Sem duplicar atributos e comportamentos comuns | `Pessoa`, `ProfissionalSaude`, `Atendimento`, `Consulta` abstratas |
+| Cada modalidade valida suas condições | `validarCondicoes()` abstrato, sobrescrito em 5 classes |
+| Seis situações da consulta | `StatusConsulta` + máquina de transições |
+| Impedir alterações incompatíveis | `EstadoTransicionavel` + `TransicaoInvalidaException` |
+| Sem valores textuais livres | 11 enumerações, nenhuma `String` de estado |
+| Procedimento não conclui sem iniciar | Ausência da transição `AGENDADO → CONCLUIDO` |
+| Tipos de quarto | `TipoQuarto` + `Quarto.aceita(Paciente)` — **regra ainda indefinida, ver [#12](https://github.com/GustavoAlbuquerquee/vitalis/issues/12)** |
+
+---
+
+## Arquivos
 
 | Arquivo | Conteúdo |
 |---|---|
-| `docs/diagramas/01-dominio.mmd` | Diagrama de domínio (Mermaid) |
-| `docs/diagramas/02-camadas.mmd` | Diagrama de camadas completo, com todas as fatias (Mermaid) |
-| `docs/diagramas/03-excecoes.mmd` | Hierarquia de exceções (Mermaid) |
-| `docs/diagramas/dominio.puml` | Diagrama de domínio em PlantUML (para exportar PNG/SVG na documentação) |
-| `docs/diagramas/diagrama-classes.html` | **Versão visual renderizada** — abra no navegador: os três diagramas desenhados, com zoom e botão para baixar cada um em `.svg` |
-
-Para renderizar o PlantUML:
-
-```bash
-java -jar plantuml.jar -tpng docs/diagramas/dominio.puml
-```
+| [`diagramas/01-dominio.mmd`](diagramas/01-dominio.mmd) | Domínio completo |
+| [`diagramas/02-camadas.mmd`](diagramas/02-camadas.mmd) | Arquitetura em camadas |
+| [`diagramas/03-excecoes.mmd`](diagramas/03-excecoes.mmd) | Hierarquia de exceções |
+| [`diagramas/04-estados-consulta.mmd`](diagramas/04-estados-consulta.mmd) | Máquina de estados da consulta |
+| [`diagramas/05-estados-procedimento.mmd`](diagramas/05-estados-procedimento.mmd) | Ciclo do procedimento cirúrgico |
+| [`diagramas/dominio.puml`](diagramas/dominio.puml) | Domínio em PlantUML |
+| [`diagramas/diagrama-classes.html`](diagramas/diagrama-classes.html) | Versão renderizada, com zoom e download em `.svg` |

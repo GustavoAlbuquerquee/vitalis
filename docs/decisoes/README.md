@@ -12,6 +12,7 @@ Por que registrar: daqui a dois meses ninguém lembra por que `Atendimento` é a
 | [0002](0002-escolha-do-banco.md) | Escolha do banco de dados | **Proposta** — precisa da decisão do time |
 | [0003](0003-atendimento-como-superclasse.md) | `Atendimento` como superclasse abstrata | Aceita |
 | [0004](0004-historico-derivado.md) | Histórico médico derivado, não armazenado | Aceita |
+| [0005](0005-hierarquias-da-sprint-2.md) | Hierarquias e máquinas de estado da Sprint 2 | **Proposta** — aguarda aceite do grupo |
 
 ## Como escrever uma nova
 

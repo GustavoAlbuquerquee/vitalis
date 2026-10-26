@@ -1,6 +1,6 @@
-@startuml Sistema-Hospitalar-Diagrama-de-Classes
-' Diagrama de classes - Sistema de Informacao Hospitalar
-' PUC Minas - Engenharia de Software - Programacao Modular
+@startuml Vitalis-Diagrama-de-Classes-Sprint-2
+' Vitalis - Sistema de Informacao Hospitalar
+' Sprint 2 - PUC Minas - Engenharia de Software - Programacao Modular
 
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
@@ -14,45 +14,74 @@ package "model" {
         # telefone : String
         # email : String
         # ativo : boolean
-        # criadoEm : LocalDateTime
         + {abstract} getIdentificacaoPrincipal() : String
         + {abstract} getTipo() : String
-        + validar() : void
     }
 
     class Paciente extends Pessoa {
         - cpf : String
         - dataNascimento : LocalDate
         - endereco : Endereco
-        - consultas : List<Consulta>
-        - internacoes : List<Internacao>
         + getIdade() : int
         + estaInternado() : boolean
-        + adicionarConsulta(c : Consulta) : void
-        + adicionarInternacao(i : Internacao) : void
-        + getIdentificacaoPrincipal() : String
     }
 
-    class ProfissionalSaude extends Pessoa {
-        - registroProfissional : String
-        - especialidade : Especialidade
-        - disponibilidades : List<Disponibilidade>
-        - atendimentos : List<Atendimento>
+    abstract class ProfissionalSaude extends Pessoa {
+        # registroProfissional : String
+        # disponibilidades : List<Disponibilidade>
+        + {abstract} podeRealizar(a : Atendimento) : boolean
+        + {abstract} getAtribuicao() : String
         + estaDisponivelEm(ini : LocalDateTime, fim : LocalDateTime) : boolean
         + possuiConflito(novo : Atendimento) : boolean
-        + getAgendaDoDia(data : LocalDate) : List<Atendimento>
-        + getIdentificacaoPrincipal() : String
+    }
+
+    class ClinicoGeral extends ProfissionalSaude {
+        + podeRealizar(a : Atendimento) : boolean
+        + realizarAvaliacaoInicial(p : Paciente) : ConsultaRotina
+        + encaminhar(p : Paciente, e : Especialidade, motivo : String) : Encaminhamento
+    }
+
+    class Especialista extends ProfissionalSaude {
+        - especialidade : Especialidade
+        + podeRealizar(a : Atendimento) : boolean
+        + atendeEspecialidade(e : Especialidade) : boolean
+    }
+
+    class Cirurgiao extends ProfissionalSaude {
+        - registroEspecializacao : String
+        - habilitacoes : List<TipoCirurgia>
+        + podeRealizar(a : Atendimento) : boolean
+        + ehHabilitadoPara(t : TipoCirurgia) : boolean
+        + getProcedimentos() : List<ProcedimentoCirurgico>
+    }
+
+    class Encaminhamento {
+        - id : Long
+        - origem : ClinicoGeral
+        - paciente : Paciente
+        - especialidadeDestino : Especialidade
+        - motivo : String
+        - emitidoEm : LocalDateTime
+        - atendido : boolean
+        + marcarComoAtendido() : void
     }
 
     class Endereco <<value object>> {
         - logradouro : String
         - numero : String
-        - complemento : String
         - bairro : String
         - cidade : String
         - uf : UF
         - cep : String
-        + getEnderecoFormatado() : String
+    }
+
+    class Disponibilidade {
+        - diaSemana : DiaSemana
+        - horaInicio : LocalTime
+        - horaFim : LocalTime
+        - ativo : boolean
+        + cobre(momento : LocalDateTime) : boolean
+        + sobrepoe(outra : Disponibilidade) : boolean
     }
 
     abstract class Atendimento {
@@ -63,24 +92,54 @@ package "model" {
         # criadoEm : LocalDateTime
         + {abstract} getInicio() : LocalDateTime
         + {abstract} getFim() : LocalDateTime
-        + {abstract} getResumo() : String
+        + {abstract} validarCondicoes() : void
         + conflitaCom(outro : Atendimento) : boolean
-        + estaAtivo() : boolean
+        + ocupaAgenda() : boolean
     }
 
-    class Consulta extends Atendimento {
-        - data : LocalDate
-        - horario : LocalTime
-        - duracaoMinutos : int
-        - motivo : String
-        - observacoesMedicas : String
-        - status : StatusConsulta
-        + agendar() : void
-        + reagendar(d : LocalDate, h : LocalTime) : void
-        + realizar(obs : String) : void
+    abstract class Consulta extends Atendimento {
+        # data : LocalDate
+        # horario : LocalTime
+        # duracaoMinutos : int
+        # motivo : String
+        # observacoesMedicas : String
+        # status : StatusConsulta
+        + confirmar() : void
+        + iniciar() : void
+        + concluir(obs : String) : void
         + cancelar(motivo : String) : void
-        + getInicio() : LocalDateTime
-        + getFim() : LocalDateTime
+        + registrarAusencia() : void
+    }
+
+    class ConsultaRotina extends Consulta {
+        + validarCondicoes() : void
+    }
+
+    class ConsultaEspecializada extends Consulta {
+        - especialidade : Especialidade
+        + validarCondicoes() : void
+    }
+
+    class AtendimentoEmergencia extends Consulta {
+        - prioridade : PrioridadeEmergencia
+        - chegadaEm : LocalDateTime
+        + validarCondicoes() : void
+        + aguardaAvaliacao() : boolean
+        + ocupaAgenda() : boolean
+    }
+
+    class ProcedimentoCirurgico extends Atendimento {
+        - descricao : String
+        - tipoCirurgia : TipoCirurgia
+        - observacoesPreOperatorias : String
+        - observacoesPosOperatorias : String
+        - dataHoraPrevista : LocalDateTime
+        - dataHoraEfetiva : LocalDateTime
+        - status : StatusProcedimento
+        + iniciar(inicio : LocalDateTime) : void
+        + concluir(obsPos : String) : void
+        + cancelar(motivo : String) : void
+        + validarCondicoes() : void
     }
 
     class Internacao extends Atendimento {
@@ -88,45 +147,28 @@ package "model" {
         - dataEntrada : LocalDateTime
         - dataPrevistaAlta : LocalDate
         - dataEfetivaAlta : LocalDateTime
-        - motivo : String
         - status : StatusInternacao
-        + registrarAlta(data : LocalDateTime, obs : String) : void
+        + registrarAlta(d : LocalDateTime, obs : String) : void
         + transferirPara(novo : Quarto) : void
-        + getDiasInternado() : long
         + estaAtiva() : boolean
-        + getInicio() : LocalDateTime
-        + getFim() : LocalDateTime
+        + validarCondicoes() : void
     }
 
     class Quarto {
-        - id : Long
         - numero : String
         - andar : int
         - capacidadeMaxima : int
         - tipo : TipoQuarto
         - situacao : SituacaoQuarto
-        - internacoesAtivas : List<Internacao>
         + getOcupacaoAtual() : int
-        + getVagasDisponiveis() : int
         + estaDisponivel() : boolean
+        + aceita(p : Paciente) : boolean
         + ocupar(i : Internacao) : void
         + liberar(i : Internacao) : void
         + atualizarSituacao() : void
     }
 
-    class Disponibilidade {
-        - id : Long
-        - profissional : ProfissionalSaude
-        - diaSemana : DiaSemana
-        - horaInicio : LocalTime
-        - horaFim : LocalTime
-        - ativo : boolean
-        + cobre(momento : LocalDateTime) : boolean
-        + sobrepoe(outra : Disponibilidade) : boolean
-    }
-
     class RegistroClinico {
-        - id : Long
         - atendimento : Atendimento
         - autor : ProfissionalSaude
         - tipo : TipoRegistro
@@ -136,32 +178,56 @@ package "model" {
 
     class HistoricoMedico <<aggregate>> {
         - paciente : Paciente
-        - consultas : List<Consulta>
-        - internacoes : List<Internacao>
+        - atendimentos : List<Atendimento>
         - registros : List<RegistroClinico>
-        + getTotalConsultas() : int
-        + getTotalInternacoes() : int
         + getUltimoAtendimento() : Atendimento
         + filtrarPorPeriodo(ini : LocalDate, fim : LocalDate) : List<Atendimento>
     }
 }
 
-package "model.enums" {
-    enum Especialidade {
-        CLINICA_GERAL
-        CARDIOLOGIA
-        PEDIATRIA
-        ORTOPEDIA
-        GINECOLOGIA
-        NEUROLOGIA
-        ENFERMAGEM
-        FISIOTERAPIA
+package "comum" {
+    interface EstadoTransicionavel<E> {
+        + getEstado() : E
+        + transicoesValidasDe(atual : E) : Set<E>
+        + podeTransitarPara(novo : E) : boolean
+        + transitarPara(novo : E) : void
     }
+}
+
+package "model.enums" {
     enum StatusConsulta {
         AGENDADA
-        REALIZADA
+        CONFIRMADA
+        EM_ATENDIMENTO
+        CONCLUIDA
         CANCELADA
         NAO_COMPARECEU
+    }
+    enum PrioridadeEmergencia {
+        BAIXA
+        MODERADA
+        ALTA
+        CRITICA
+    }
+    enum StatusProcedimento {
+        AGENDADO
+        EM_ANDAMENTO
+        CONCLUIDO
+        CANCELADO
+    }
+    enum TipoCirurgia {
+        ELETIVA
+        URGENCIA
+        EMERGENCIA
+        AMBULATORIAL
+    }
+    enum Especialidade {
+        CARDIOLOGIA
+        NEUROLOGIA
+        ORTOPEDIA
+        PEDIATRIA
+        GINECOLOGIA
+        CIRURGIA_GERAL
     }
     enum StatusInternacao {
         ATIVA
@@ -181,51 +247,32 @@ package "model.enums" {
         UTI
         ISOLAMENTO
     }
-    enum DiaSemana {
-        SEGUNDA
-        TERCA
-        QUARTA
-        QUINTA
-        SEXTA
-        SABADO
-        DOMINGO
-    }
-    enum TipoRegistro {
-        ANAMNESE
-        DIAGNOSTICO
-        PRESCRICAO
-        EXAME
-        EVOLUCAO
-    }
-    enum UF {
-        MG
-        SP
-        RJ
-        ES
-    }
 }
 
+Consulta ..|> EstadoTransicionavel
+ProcedimentoCirurgico ..|> EstadoTransicionavel
+Internacao ..|> EstadoTransicionavel
+
 Paciente "1" *-- "1" Endereco : possui >
-Paciente "1" o-- "0..*" Consulta : realiza >
-Paciente "1" o-- "0..*" Internacao : passa por >
-ProfissionalSaude "1" o-- "0..*" Consulta : atende >
-ProfissionalSaude "1" o-- "0..*" Internacao : e responsavel >
+Paciente "1" o-- "0..*" Atendimento : recebe >
+ProfissionalSaude "1" o-- "0..*" Atendimento : realiza >
 ProfissionalSaude "1" *-- "0..*" Disponibilidade : define >
+ClinicoGeral "1" o-- "0..*" Encaminhamento : emite >
+Cirurgiao "1" o-- "0..*" ProcedimentoCirurgico : executa >
 Quarto "1" o-- "0..*" Internacao : aloja >
 Atendimento "1" *-- "0..*" RegistroClinico : gera >
-ProfissionalSaude "1" --> "0..*" RegistroClinico : registra >
 HistoricoMedico "1" --> "1" Paciente : consolida >
-HistoricoMedico "1" o-- "0..*" Consulta
-HistoricoMedico "1" o-- "0..*" Internacao
-HistoricoMedico "1" o-- "0..*" RegistroClinico
 
-ProfissionalSaude ..> Especialidade
+Especialista ..> Especialidade
+Cirurgiao ..> TipoCirurgia
+Encaminhamento ..> Especialidade
 Consulta ..> StatusConsulta
+ConsultaEspecializada ..> Especialidade
+AtendimentoEmergencia ..> PrioridadeEmergencia
+ProcedimentoCirurgico ..> StatusProcedimento
+ProcedimentoCirurgico ..> TipoCirurgia
 Internacao ..> StatusInternacao
 Quarto ..> SituacaoQuarto
 Quarto ..> TipoQuarto
-Disponibilidade ..> DiaSemana
-RegistroClinico ..> TipoRegistro
-Endereco ..> UF
 
 @enduml

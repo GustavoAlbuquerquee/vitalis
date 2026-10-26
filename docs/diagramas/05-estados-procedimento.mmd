@@ -1,0 +1,25 @@
+stateDiagram-v2
+    direction LR
+
+    [*] --> AGENDADO : agendar()
+
+    AGENDADO --> EM_ANDAMENTO : iniciar(dataHoraEfetiva)
+    AGENDADO --> CANCELADO : cancelar(motivo)
+
+    EM_ANDAMENTO --> CONCLUIDO : concluir(obsPosOperatorias)
+    EM_ANDAMENTO --> CANCELADO : cancelar(motivo)
+
+    CONCLUIDO --> [*]
+    CANCELADO --> [*]
+
+    note right of AGENDADO
+        Não existe transição direta para CONCLUIDO.
+        É a regra do enunciado: "não será permitido
+        registrar um procedimento como concluído
+        se ele não tiver sido iniciado."
+    end note
+
+    note right of EM_ANDAMENTO
+        iniciar() grava a dataHoraEfetiva.
+        Sem ela, não há como concluir.
+    end note
