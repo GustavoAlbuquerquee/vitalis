@@ -1,6 +1,6 @@
 # API
 
-Contrato REST previsto. Ainda não implementado — este documento é o alvo.
+Contrato REST: consultas implementadas na Sprint 2; os demais módulos continuam previstos.
 
 **Base:** `/api/v1`
 
@@ -37,44 +37,57 @@ Contrato REST previsto. Ainda não implementado — este documento é o alvo.
 | `POST` | `/profissionais/{id}/disponibilidades` | `201` · `409` se sobrepõe janela existente |
 | `GET` | `/profissionais/{id}/agenda?data=` | `200` |
 
-## Consultas
+## Consultas — implementado na Sprint 2
+
+Base: `/api/v1`. A listagem de consultas retorna um array (a paginação geral
+continua prevista para integração futura).
 
 | Método | Rota | Resposta |
 |---|---|---|
-| `POST` | `/consultas` | `201` · `409` conflito de horário |
-| `GET` | `/consultas/{id}` | `200` · `404` |
-| `GET` | `/consultas?profissionalId=&pacienteId=&data=&status=` | `200` paginado |
-| `PATCH` | `/consultas/{id}/reagendamento` | `200` · `409` |
-| `PATCH` | `/consultas/{id}/realizacao` | `200` · `422` se já realizada |
-| `DELETE` | `/consultas/{id}` | `204` — cancela, não apaga |
+| POST | /consultas | 201 + Location; 400 formato; 404 cadastro inexistente; 409 condição incompatível |
+| GET | /consultas/{id} | 200; 404 |
+| GET | /consultas?profissionalId=&pacienteId=&data=&status=&modalidade= | 200 |
+| PATCH | /consultas/{id}/confirmacao | 200; 409 transição inválida |
+| PATCH | /consultas/{id}/inicio | 200; 409 |
+| PATCH | /consultas/{id}/conclusao | 200; 409 |
+| PATCH | /consultas/{id}/nao-comparecimento | 200; 409 |
+| PATCH | /consultas/{id}/observacoes | 200; 409 se ainda não concluída |
+| DELETE | /consultas/{id} | 204; 409 se estado final — cancela sem excluir |
 
-**Exemplo — agendar:**
+Conclusão e observações recebem `{"observacoes": "Avaliação registrada"}`.
+A conclusão aceita `{}` quando não há observações.
+
+Exemplo de rotina (especializada acrescenta `especialidade`, compatível com o profissional):
 
 ```json
-POST /api/v1/consultas
 {
-  "pacienteId": 42,
-  "profissionalId": 7,
-  "data": "2026-03-14",
-  "horario": "09:30",
+  "modalidade": "ROTINA",
+  "pacienteId": 1,
+  "profissionalId": 1,
+  "data": "2030-01-07",
+  "horario": "10:00",
   "duracaoMinutos": 30,
-  "motivo": "Dor torácica há três dias"
+  "motivo": "Avaliação de rotina"
 }
 ```
 
-**Conflito de horário:**
+Modalidades: ROTINA, ESPECIALIZADA, EMERGENCIA. Os seis estados da consulta são
+AGENDADA, CONFIRMADA, EM_ATENDIMENTO, CONCLUIDA, CANCELADA e NAO_COMPARECEU.
+Datas passadas, durações fora de 1–1440 minutos e campos incompatíveis com a
+modalidade retornam 400. Disponibilidade, especialidade e conflito retornam 409.
 
-```json
-409 Conflict
-{
-  "timestamp": "2026-03-10T14:22:05",
-  "status": 409,
-  "codigo": "CONFLITO_DE_HORARIO",
-  "mensagem": "O profissional já possui atendimento marcado neste horário",
-  "caminho": "/api/v1/consultas",
-  "detalhes": ["Consulta 318 ocupa o intervalo 09:15–09:45"]
-}
-```
+### Executar sem os cadastros da Trilha A
+
+`mvn spring-boot:run -Dspring-boot.run.profiles=demo`
+
+O perfil `demo` fornece paciente 1 e cardiologista 1 fictícios, disponível todos
+os dias das 08:00 às 18:00. Use uma data futura no exemplo. Fora desse perfil,
+os módulos de cadastro devem fornecer `PacienteService` e `ProfissionalService`;
+enquanto ausentes, criação responde 503 CADASTRO_INDISPONIVEL.
+
+O repositório atual é em memória: reiniciar perde os registros. A interface permite
+integrar o banco após a decisão do grupo. Veja [ADR 0006](decisoes/0006-adaptador-temporario-de-consultas.md).
+O frontend da Sprint 1 ainda usa dados locais e requer integração posterior com esta API.
 
 ## Internações
 
