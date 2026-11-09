@@ -19,8 +19,8 @@ Gerenciar os leitos do hospital: identificação, andar, capacidade e situação
 | # | Regra | Como |
 |---|---|---|
 | **RN5** | Um quarto nunca ultrapassa sua capacidade máxima | `ocupar()` lança `CapacidadeExcedidaException` se não houver vaga |
-| — | O número do quarto é único | Índice único |
-| — | A situação é **derivada**, não digitada | `atualizarSituacao()` roda após toda ocupação e liberação |
+| — | O número do quarto é único | Serviço de cadastro |
+| — | A situação é **derivada**, não digitada | `getSituacao()` combina bloqueio administrativo e ocupação atual |
 | — | Quarto em `MANUTENCAO` ou `INTERDITADO` não recebe paciente | `estaDisponivel()` devolve `false` |
 
 ### Por que a situação é derivada
@@ -28,7 +28,7 @@ Gerenciar os leitos do hospital: identificação, andar, capacidade e situação
 `situacao` nunca é escrita à mão. Ela é recalculada a partir da ocupação real:
 
 ```
-estaDisponivel() = situacao não é MANUTENCAO nem INTERDITADO
+estaDisponivel() = bloqueio não é MANUTENCAO nem INTERDITADO
                 && getOcupacaoAtual() < capacidadeMaxima
 ```
 
@@ -37,9 +37,9 @@ Se `situacao` fosse um campo editável, mais cedo ou mais tarde ele discordaria 
 O tipo (`ENFERMARIA`, `APARTAMENTO`, `UTI` ou `ISOLAMENTO`) é informativo e
 não altera a capacidade nem os critérios de admissão. Esta decisão foi
 confirmada pelo responsável pela demanda e está registrada no
-[ADR 0005](../../docs/decisoes/0005-regra-tipo-quarto-informativo.md).
+[ADR 0008](../../docs/decisoes/0008-regra-tipo-quarto-informativo.md).
 
-## Endpoints previstos
+## Endpoints
 
 | Método | Rota | O que faz |
 |---|---|---|

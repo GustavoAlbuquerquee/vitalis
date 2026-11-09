@@ -8,6 +8,10 @@ import br.pucminas.vitalis.internacoes.dto.InternacaoRequest;
 import br.pucminas.vitalis.internacoes.model.Internacao;
 import br.pucminas.vitalis.internacoes.model.StatusInternacao;
 import br.pucminas.vitalis.internacoes.service.InternacaoService;
+import br.pucminas.vitalis.pacientes.model.Paciente;
+import br.pucminas.vitalis.pacientes.service.PacienteAtendimentoService;
+import br.pucminas.vitalis.profissionais.model.ClinicoGeral;
+import br.pucminas.vitalis.profissionais.service.ProfissionalService;
 import br.pucminas.vitalis.quartos.dto.QuartoRequest;
 import br.pucminas.vitalis.quartos.model.Quarto;
 import br.pucminas.vitalis.quartos.model.SituacaoQuarto;
@@ -27,7 +31,7 @@ class InternacaoServiceTest {
     void deveRespeitarCapacidadeLiberarLeitoEManterHistorico() {
         QuartoService quartos = new QuartoService();
         Quarto quarto = quartos.cadastrar(quarto("201", 2));
-        InternacaoService service = new InternacaoService(quartos);
+        InternacaoService service = service(quartos);
 
         Internacao primeira = service.internar(internacao(1L, quarto.getId()));
         service.internar(internacao(2L, quarto.getId()));
@@ -49,7 +53,7 @@ class InternacaoServiceTest {
         QuartoService quartos = new QuartoService();
         Quarto primeiro = quartos.cadastrar(quarto("101", 2));
         Quarto segundo = quartos.cadastrar(quarto("102", 2));
-        InternacaoService service = new InternacaoService(quartos);
+        InternacaoService service = service(quartos);
         service.internar(internacao(7L, primeiro.getId()));
 
         assertThrows(PacienteJaInternadoException.class,
@@ -62,7 +66,7 @@ class InternacaoServiceTest {
         QuartoService quartos = new QuartoService();
         Quarto quarto = quartos.cadastrar(quarto("301", 2));
         quartos.atualizarBloqueio(quarto.getId(), SituacaoQuarto.MANUTENCAO);
-        InternacaoService service = new InternacaoService(quartos);
+        InternacaoService service = service(quartos);
 
         assertThrows(QuartoIndisponivelException.class,
                 () -> service.internar(internacao(9L, quarto.getId())));
@@ -75,7 +79,7 @@ class InternacaoServiceTest {
         QuartoService quartos = new QuartoService();
         Quarto origem = quartos.cadastrar(quarto("401", 2));
         Quarto destino = quartos.cadastrar(quarto("402", 2));
-        InternacaoService service = new InternacaoService(quartos);
+        InternacaoService service = service(quartos);
         Internacao anterior = service.internar(internacao(12L, origem.getId()));
 
         Internacao atual = service.transferir(anterior.getId(), destino.getId());
@@ -92,7 +96,7 @@ class InternacaoServiceTest {
     void altaComDataAnteriorMantemInternacaoELeitoAtivos() {
         QuartoService quartos = new QuartoService();
         Quarto quarto = quartos.cadastrar(quarto("501", 1));
-        InternacaoService service = new InternacaoService(quartos);
+        InternacaoService service = service(quartos);
         Internacao ativa = service.internar(internacao(23L, quarto.getId()));
 
         assertThrows(AltaInvalidaException.class,
@@ -119,5 +123,14 @@ class InternacaoServiceTest {
         request.setDataPrevistaAlta(LocalDate.now().plusDays(2));
         request.setMotivo("Observação clínica");
         return request;
+    }
+
+    private InternacaoService service(QuartoService quartos) {
+        PacienteAtendimentoService pacientes = id ->
+                new Paciente(id, "Paciente de teste", "31999999999", "paciente@vitalis.med.br", "52998224725");
+        ProfissionalService profissionais = id ->
+                new ClinicoGeral(id, "Clínico de teste", "CRM-MG " + id,
+                        "31999999998", "clinico@vitalis.med.br", true);
+        return new InternacaoService(quartos, pacientes, profissionais);
     }
 }

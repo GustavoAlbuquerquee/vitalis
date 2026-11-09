@@ -2,29 +2,26 @@ package br.pucminas.vitalis.procedimentos.model;
 
 import br.pucminas.vitalis.comum.model.Atendimento;
 import br.pucminas.vitalis.comum.service.TransicaoInvalidaException;
+import br.pucminas.vitalis.pacientes.model.Paciente;
 import br.pucminas.vitalis.profissionais.model.Cirurgiao;
 
 import java.time.LocalDateTime;
 
-public class ProcedimentoCirurgico extends Atendimento {
+public class ProcedimentoCirurgico extends Atendimento<Paciente, Cirurgiao> {
 
-    private Long id;
     private final String descricao;
     private final String tipoCirurgia;
     private final String observacoesPreOperatorias;
     private String observacoesPosOperatorias;
     private final LocalDateTime dataHoraPrevista;
     private LocalDateTime dataHoraEfetiva;
-    private final Cirurgiao cirurgiao;
     private StatusProcedimento status;
 
-    public ProcedimentoCirurgico(Long id, Long pacienteId, Cirurgiao cirurgiao,
+    public ProcedimentoCirurgico(Long id, Paciente paciente, Cirurgiao cirurgiao,
                                  String descricao, String tipoCirurgia,
                                  String observacoesPreOperatorias,
                                  LocalDateTime dataHoraPrevista) {
-        super(pacienteId, cirurgiao == null ? null : cirurgiao.getId(), null);
-        this.id = id;
-        this.cirurgiao = cirurgiao;
+        super(id, paciente, cirurgiao, LocalDateTime.now());
         this.descricao = descricao;
         this.tipoCirurgia = tipoCirurgia;
         this.observacoesPreOperatorias = observacoesPreOperatorias;
@@ -35,7 +32,7 @@ public class ProcedimentoCirurgico extends Atendimento {
 
     @Override
     public void validarCondicoes() {
-        if (getPacienteId() == null || cirurgiao == null || descricao == null
+        if (getPaciente().getId() == null || getProfissional().getId() == null || descricao == null
                 || descricao.trim().isEmpty() || tipoCirurgia == null
                 || tipoCirurgia.trim().isEmpty() || dataHoraPrevista == null) {
             throw new IllegalArgumentException("Paciente, cirurgião, descrição, tipo e data prevista são obrigatórios");
@@ -48,19 +45,35 @@ public class ProcedimentoCirurgico extends Atendimento {
     }
 
     @Override
-    public LocalDateTime getFim() {
-        return getInicio().plusHours(1);
+    public LocalDateTime getFim() { return getInicio().plusHours(1); }
+
+    @Override
+    public boolean ocupaAgenda() {
+        return status == StatusProcedimento.AGENDADO || status == StatusProcedimento.EM_ANDAMENTO;
     }
 
     public void iniciar(LocalDateTime dataHoraInicio) {
+        validarInicio(dataHoraInicio);
+        dataHoraEfetiva = dataHoraInicio;
+        status = StatusProcedimento.EM_ANDAMENTO;
+    }
+
+    public ProcedimentoCirurgico prepararInicio(LocalDateTime dataHoraInicio) {
+        validarInicio(dataHoraInicio);
+        ProcedimentoCirurgico candidato = new ProcedimentoCirurgico(getId(), getPaciente(), getProfissional(),
+                descricao, tipoCirurgia, observacoesPreOperatorias, dataHoraPrevista);
+        candidato.dataHoraEfetiva = dataHoraInicio;
+        candidato.status = StatusProcedimento.EM_ANDAMENTO;
+        return candidato;
+    }
+
+    private void validarInicio(LocalDateTime dataHoraInicio) {
         if (status != StatusProcedimento.AGENDADO) {
             throw new TransicaoInvalidaException("Somente um procedimento agendado pode ser iniciado");
         }
         if (dataHoraInicio == null) {
             throw new IllegalArgumentException("A data e hora efetivas de início são obrigatórias");
         }
-        dataHoraEfetiva = dataHoraInicio;
-        status = StatusProcedimento.EM_ANDAMENTO;
     }
 
     public void concluir(LocalDateTime dataHoraConclusao, String observacoesPosOperatorias) {
@@ -81,44 +94,13 @@ public class ProcedimentoCirurgico extends Atendimento {
         status = StatusProcedimento.CANCELADO;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public String getTipoCirurgia() {
-        return tipoCirurgia;
-    }
-
-    public String getObservacoesPreOperatorias() {
-        return observacoesPreOperatorias;
-    }
-
-    public String getObservacoesPosOperatorias() {
-        return observacoesPosOperatorias;
-    }
-
-    public LocalDateTime getDataHoraPrevista() {
-        return dataHoraPrevista;
-    }
-
-    public LocalDateTime getDataHoraEfetiva() {
-        return dataHoraEfetiva;
-    }
-
-    public Cirurgiao getCirurgiao() {
-        return cirurgiao;
-    }
-
-    public StatusProcedimento getStatus() {
-        return status;
-    }
-
-    @Override
-    public boolean estaAtivo() {
-        return status == StatusProcedimento.AGENDADO || status == StatusProcedimento.EM_ANDAMENTO;
-    }
+    public Long getPacienteId() { return getPaciente().getId(); }
+    public String getDescricao() { return descricao; }
+    public String getTipoCirurgia() { return tipoCirurgia; }
+    public String getObservacoesPreOperatorias() { return observacoesPreOperatorias; }
+    public String getObservacoesPosOperatorias() { return observacoesPosOperatorias; }
+    public LocalDateTime getDataHoraPrevista() { return dataHoraPrevista; }
+    public LocalDateTime getDataHoraEfetiva() { return dataHoraEfetiva; }
+    public Cirurgiao getCirurgiao() { return getProfissional(); }
+    public StatusProcedimento getStatus() { return status; }
 }

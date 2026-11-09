@@ -6,6 +6,8 @@ import br.pucminas.vitalis.comum.service.TransicaoInvalidaException;
 import br.pucminas.vitalis.internacoes.dto.InternacaoRequest;
 import br.pucminas.vitalis.internacoes.model.Internacao;
 import br.pucminas.vitalis.internacoes.model.StatusInternacao;
+import br.pucminas.vitalis.pacientes.service.PacienteAtendimentoService;
+import br.pucminas.vitalis.profissionais.service.ProfissionalService;
 import br.pucminas.vitalis.quartos.model.Quarto;
 import br.pucminas.vitalis.quartos.service.QuartoService;
 import org.springframework.stereotype.Service;
@@ -24,9 +26,14 @@ public class InternacaoService {
     private final Map<Long, Internacao> internacoes = new ConcurrentHashMap<>();
     private final AtomicLong ids = new AtomicLong();
     private final QuartoService quartoService;
+    private final PacienteAtendimentoService pacientes;
+    private final ProfissionalService profissionais;
 
-    public InternacaoService(QuartoService quartoService) {
+    public InternacaoService(QuartoService quartoService, PacienteAtendimentoService pacientes,
+                             ProfissionalService profissionais) {
         this.quartoService = quartoService;
+        this.pacientes = pacientes;
+        this.profissionais = profissionais;
     }
 
     public synchronized Internacao internar(InternacaoRequest request) {
@@ -38,8 +45,8 @@ public class InternacaoService {
         }
         Quarto quarto = quartoService.buscarEntidade(request.getQuartoId());
         Long novoId = ids.incrementAndGet();
-        Internacao internacao = new Internacao(novoId, request.getPacienteId(),
-                request.getProfissionalId(), quarto.getId(), request.getDataEntrada(),
+        Internacao internacao = new Internacao(novoId, pacientes.buscarPorId(request.getPacienteId()),
+                profissionais.buscarPorId(request.getProfissionalId()), quarto.getId(), request.getDataEntrada(),
                 request.getDataPrevistaAlta(), request.getMotivo(), request.getObservacoes());
         synchronized (quarto) {
             quarto.ocupar(novoId);
@@ -93,8 +100,8 @@ public class InternacaoService {
         Quarto quartoAtual = quartoService.buscarEntidade(internacao.getQuartoId());
         LocalDateTime dataTransferencia = LocalDateTime.now();
         Long novaInternacaoId = ids.incrementAndGet();
-        Internacao novaInternacao = new Internacao(novaInternacaoId, internacao.getPacienteId(),
-                internacao.getProfissionalId(), novoQuartoId, dataTransferencia,
+        Internacao novaInternacao = new Internacao(novaInternacaoId, internacao.getPaciente(),
+                internacao.getProfissional(), novoQuartoId, dataTransferencia,
                 internacao.getDataPrevistaAlta(), internacao.getMotivo(), internacao.getObservacoes());
         synchronized (novoQuarto) {
             synchronized (quartoAtual) {

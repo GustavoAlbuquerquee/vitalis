@@ -1,7 +1,9 @@
 package br.pucminas.vitalis.profissionais.model;
 
+import br.pucminas.vitalis.comum.model.Campos;
 import br.pucminas.vitalis.comum.model.Pessoa;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,18 +15,25 @@ public abstract class ProfissionalSaude extends Pessoa {
 
     protected ProfissionalSaude(Long id, String nome, String registroProfissional,
                                 String telefone, String email, boolean ativo) {
-        super(id, nome, telefone, email, ativo);
-        this.registroProfissional = registroProfissional;
+        super(id, nome, telefone, email);
+        this.registroProfissional = Campos.texto(registroProfissional, "Registro profissional");
+        setAtivo(ativo);
     }
 
-    public abstract TipoProfissional getTipo();
-
-    public String getRegistroProfissional() {
-        return registroProfissional;
+    protected ProfissionalSaude(Long id, String nome, String telefone, String email,
+                                String registro, List<Disponibilidade> disponibilidades) {
+        this(id, nome, registro, telefone, email, true);
+        Campos.exigir(disponibilidades != null && !disponibilidades.contains(null),
+                "Lista de disponibilidades é obrigatória e não admite nulos");
+        for (Disponibilidade disponibilidade : disponibilidades) {
+            adicionarDisponibilidade(disponibilidade);
+        }
     }
+
+    public String getRegistroProfissional() { return registroProfissional; }
 
     public void setRegistroProfissional(String registroProfissional) {
-        this.registroProfissional = registroProfissional;
+        this.registroProfissional = Campos.texto(registroProfissional, "Registro profissional");
     }
 
     public List<Disponibilidade> getDisponibilidades() {
@@ -32,25 +41,17 @@ public abstract class ProfissionalSaude extends Pessoa {
     }
 
     public void adicionarDisponibilidade(Disponibilidade nova) {
-        for (Disponibilidade existente : disponibilidades) {
-            if (existente.sobrepoe(nova)) {
-                throw new IllegalArgumentException("A disponibilidade se sobrepõe a uma janela existente");
-            }
+        Campos.exigir(nova != null, "Disponibilidade é obrigatória");
+        if (disponibilidades.stream().anyMatch(existente -> existente.sobrepoe(nova))) {
+            throw new IllegalArgumentException("A disponibilidade se sobrepõe a uma janela existente");
         }
         disponibilidades.add(nova);
     }
 
-    public boolean estaDisponivelEm(java.time.LocalDateTime inicio, java.time.LocalDateTime fim) {
-        DiaSemana dia = DiaSemana.values()[inicio.getDayOfWeek().getValue() - 1];
-        if (!inicio.toLocalDate().equals(fim.toLocalDate())) {
-            return false;
-        }
-        for (Disponibilidade disponibilidade : disponibilidades) {
-            if (disponibilidade.getDiaSemana() == dia
-                    && disponibilidade.contem(inicio.toLocalTime(), fim.toLocalTime())) {
-                return true;
-            }
-        }
-        return false;
+    public boolean estaDisponivelEm(LocalDateTime inicio, LocalDateTime fim) {
+        return disponibilidades.stream().anyMatch(janela -> janela.contem(inicio, fim));
     }
+
+    @Override
+    public String getIdentificacaoPrincipal() { return registroProfissional; }
 }

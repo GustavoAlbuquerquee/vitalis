@@ -1,4 +1,4 @@
-# ADR 0005 — Tipo de quarto informativo
+# ADR 0008 — Tipo de quarto informativo
 
 **Status:** aceita
 **Data:** 2026-11-09

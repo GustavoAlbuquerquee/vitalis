@@ -14,7 +14,7 @@ Manter o cadastro dos profissionais da saúde e as janelas de horário em que ca
 | `ClinicoGeral` | Consultas de rotina e encaminhamentos |
 | `Especialista` | `especialidade`; atende apenas na própria área |
 | `Cirurgiao` | `areaCirurgica`; responsável por procedimentos cirúrgicos |
-| `Disponibilidade` | `diaSemana`, `horaInicio`, `horaFim`, `ativo` |
+| `Disponibilidade` | `diaSemana`, `horaInicio`, `horaFim` |
 | `Especialidade` *(enumeração)* | `CLINICA_GERAL`, `CARDIOLOGIA`, `PEDIATRIA`, `ORTOPEDIA`, … |
 | `DiaSemana` *(enumeração)* | `SEGUNDA` … `DOMINGO` |
 
@@ -34,9 +34,9 @@ A relação com `Disponibilidade` é de **composição**: a janela de horário n
 | — | Janelas não se sobrepõem no mesmo dia |
 | — | Clínico geral pode registrar encaminhamentos para especialidade |
 
-> A **RN3** (dois atendimentos no mesmo horário) é verificada pelos módulos [`consultas`](../consultas) e [`internacoes`](../internacoes), que perguntam a este módulo se o horário é válido. Este módulo diz *quando o profissional atende*; os outros dizem *o que já está marcado*.
+> A **RN3** (dois atendimentos agendados no mesmo horário) é verificada pelos módulos [`consultas`](../consultas) e [`procedimentos`](../procedimentos) por meio da agenda compartilhada. Este módulo diz *quando o profissional atende*; os outros dizem *o que já está marcado*.
 
-## Endpoints previstos
+## Endpoints
 
 | Método | Rota | O que faz |
 |---|---|---|

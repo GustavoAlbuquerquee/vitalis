@@ -37,12 +37,13 @@ Um paciente acumula atendimentos ao longo do tempo. Nenhum atendimento anterior 
 
 ---
 
-## RN3 — Um profissional não pode ter dois atendimentos no mesmo horário
+## RN3 — Um profissional não pode ter dois atendimentos agendados no mesmo horário
 
-**Dono:** [`consultas`](../modulos/consultas) e [`internacoes`](../modulos/internacoes)
+**Dono:** [`consultas`](../modulos/consultas) e [`procedimentos`](../modulos/procedimentos)
 
-A regra mais sensível do sistema. Consultas e internações herdam de `Atendimento`;
-procedimentos cirúrgicos também reutilizam a mesma abstração.
+A regra vale para consultas agendadas e procedimentos cirúrgicos. Ambos herdam
+de `Atendimento`; internações também reutilizam a abstração, mas não ocupam a
+agenda horária.
 
 ### O algoritmo
 
@@ -55,10 +56,10 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 
 | Garantia | Onde |
 |---|---|
-| `Atendimento.conflitaCom()` | Modelo |
-| `AgendaValidator.validarConflitoDeHorario()` antes de gravar | Serviço |
+| `Atendimento.conflitaCom()` compara profissional, intervalo e situação de agenda | Modelo |
+| `AgendaService` valida consultas e procedimentos antes de gravar ou iniciar | Serviço |
 | Verificação de que o horário cai em uma janela de `Disponibilidade` | Serviço |
-| Índice único por profissional e intervalo | Banco |
+| Operações de agenda serializadas em memória | Serviço; persistência/índice pendentes da escolha do banco |
 
 **Exceção:** `ConflitoDeHorarioException` → `409`
 
@@ -71,7 +72,7 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 | 14:00–14:30 | 13:45–14:15 | conflito |
 | 14:00–14:30 | 14:30–15:00 | **sem** conflito (fim é exclusivo) |
 | 14:00–14:30 | 13:00–14:00 | **sem** conflito |
-| consulta 14:00–14:30 | internação 14:10 | conflito — a regra cruza os dois tipos |
+| consulta 14:00–14:30 | procedimento 14:10–15:10 com o mesmo cirurgião | conflito — a agenda cruza os dois tipos |
 
 ---
 
@@ -82,7 +83,7 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 | Garantia | Onde |
 |---|---|
 | `paciente` e `quarto` obrigatórios | Modelo |
-| `OcupacaoValidator.validarSituacao()` consulta `Quarto.estaDisponivel()` | Serviço |
+| `InternacaoService` verifica `Quarto.estaDisponivel()` antes de reservar | Serviço |
 | Um paciente não pode ter duas internações `ATIVA` | Serviço |
 
 **Exceções:** `QuartoIndisponivelException` e `PacienteJaInternadoException` → `409`
@@ -98,8 +99,8 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 | Garantia | Onde |
 |---|---|
 | `Quarto.ocupar()` recusa quando `getOcupacaoAtual() == capacidadeMaxima` | Modelo |
-| `OcupacaoValidator.validarCapacidade()` antes da transação | Serviço |
-| `atualizarSituacao()` recalcula a situação após cada ocupação e liberação | Modelo |
+| `Quarto.ocupar()` recusa quando não há vaga disponível | Modelo |
+| `getSituacao()` recalcula a situação a partir de bloqueio e ocupação | Modelo |
 
 **Exceção:** `CapacidadeExcedidaException` → `409`
 
@@ -173,7 +174,7 @@ Cancelamento só é permitido em `AGENDADO` ou `EM_ANDAMENTO`.
 
 A entrada e a alta alteram juntas a internação e a ocupação do quarto. O tipo
 do quarto é apenas informativo e não altera a capacidade; decisão registrada
-no [ADR 0005](decisoes/0005-regra-tipo-quarto-informativo.md).
+no [ADR 0008](decisoes/0008-regra-tipo-quarto-informativo.md).
 
 **Cenário de teste:** capacidade 2 recusa a terceira internação; uma alta libera
 uma vaga; manutenção ou interdição recusam novas internações.
@@ -181,6 +182,51 @@ uma vaga; manutenção ou interdição recusam novas internações.
 ---
 
 ## Rastreabilidade
+
+### Modalidades da Sprint 2 (issue #8)
+
+### Estados da consulta (issue #9)
+
+| De | Para |
+|---|---|
+| AGENDADA | CONFIRMADA, CANCELADA, NAO_COMPARECEU |
+| CONFIRMADA | EM_ATENDIMENTO, CANCELADA, NAO_COMPARECEU |
+| EM_ATENDIMENTO | CONCLUIDA, CANCELADA |
+| CONCLUIDA, CANCELADA, NAO_COMPARECEU | Nenhum (finais) |
+
+Esta é a tabela proposta na issue #9, adotada nesta implementação; a issue #4
+ainda não contém confirmação do grupo. `Transicoes` valida antes da atribuição;
+tentativas inválidas retornam 409 e preservam estado e observações. Observações
+médicas são registradas na conclusão ou depois dela. Cancelamento e falta liberam
+a agenda sem excluir o registro.
+
+### Validações das modalidades
+
+- Rotina e especializada exigem que o intervalo inteiro caiba na disponibilidade.
+- Especializada também exige a mesma `Especialidade` do profissional (409).
+- Paciente e profissional precisam estar ativos em todas as modalidades.
+- Emergência é imediata: não consulta nem reserva a agenda de agendamentos.
+- `AgendaService` reúne as implementações de `FonteAgenda` de cada módulo e usa
+  exclusivamente `Atendimento.conflitaCom`. Cirurgias e internações devem publicar
+  seus intervalos por essa interface; consultas não acessam seus repositórios.
+- Intervalos adjacentes são aceitos. A comparação é por profissional, inclusive
+  quando os identificadores dos atendimentos coincidem entre módulos.
+
+### Emergência e fila (issue #10)
+
+- Prioridades são `BAIXA`, `MODERADA`, `ALTA`, `CRITICA`, com peso explícito.
+- A chegada é registrada pelo servidor; não aceita data/horário de agendamento.
+- A presença é confirmada na chegada por transição validada. A projeção na API é
+  `AGUARDANDO`; pode iniciar diretamente, concluir depois do início ou cancelar.
+- A emergência não admite confirmação repetida nem não comparecimento.
+- O filtro `modalidade=EMERGENCIA` ordena por gravidade decrescente e chegada
+  crescente, com ID crescente como último desempate. Pode filtrar `AGUARDANDO`,
+  `EM_ATENDIMENTO`, `CONCLUIDA` e `CANCELADA`.
+- `AGUARDANDO` exige o filtro explícito de emergência. Os demais estados seguem
+  os seis valores da consulta; não há valores textuais livres.
+- Início e conclusão registram seus momentos, sem permitir tempos invertidos.
+- A fila inclui apenas os registros do grupo solicitado; a conclusão e o
+  cancelamento preservam o registro para consulta.
 
 | Regra | Módulo dono | Exceção | HTTP |
 |---|---|---|---|

@@ -1,9 +1,9 @@
 # API
 
-Contrato REST do Vitalis. Os módulos profissionais, quartos, internações e
-procedimentos cirúrgicos estão implementados em memória; seus cadastros são
-reiniciados quando a aplicação reinicia. A persistência será definida junto da
-escolha de banco registrada no ADR 0002.
+Contrato REST do Vitalis. Os módulos de pacientes, profissionais, consultas,
+quartos, internações e procedimentos cirúrgicos estão implementados em memória;
+seus cadastros são reiniciados quando a aplicação reinicia. A persistência será
+definida junto da escolha de banco registrada no ADR 0002.
 
 **Base:** `/api/v1`
 
@@ -47,47 +47,87 @@ escolha de banco registrada no ADR 0002.
 `areaCirurgica`. O registro é único independentemente de pontuação ou caixa.
 As janelas usam `diaSemana`, `horaInicio` e `horaFim`, e intervalos sobrepostos
 no mesmo dia são recusados. A agenda retorna essas janelas para a data
-solicitada; consultas e internações serão agregadas quando seus módulos de API
-forem implementados.
+solicitada; consultas e procedimentos agendados também verificam conflitos de
+horário. Internações mantêm referências tipadas ao paciente e ao profissional.
 
-## Consultas
+## Consultas — implementado na Sprint 2
+
+Base: `/api/v1`. A listagem de consultas retorna um array (a paginação geral
+continua prevista para integração futura).
 
 | Método | Rota | Resposta |
 |---|---|---|
-| `POST` | `/consultas` | `201` · `409` conflito de horário |
-| `GET` | `/consultas/{id}` | `200` · `404` |
-| `GET` | `/consultas?profissionalId=&pacienteId=&data=&status=` | `200` paginado |
-| `PATCH` | `/consultas/{id}/reagendamento` | `200` · `409` |
-| `PATCH` | `/consultas/{id}/realizacao` | `200` · `422` se já realizada |
-| `DELETE` | `/consultas/{id}` | `204` — cancela, não apaga |
+| POST | /consultas | 201 + Location; 400 formato; 404 cadastro inexistente; 409 condição incompatível |
+| GET | /consultas/{id} | 200; 404 |
+| GET | /consultas?profissionalId=&pacienteId=&data=&status=&modalidade= | 200 |
+| PATCH | /consultas/{id}/confirmacao | 200; 409 transição inválida |
+| PATCH | /consultas/{id}/inicio | 200; 409 |
+| PATCH | /consultas/{id}/conclusao | 200; 409 |
+| PATCH | /consultas/{id}/nao-comparecimento | 200; 409 |
+| PATCH | /consultas/{id}/observacoes | 200; 409 se ainda não concluída |
+| DELETE | /consultas/{id} | 204; 409 se estado final — cancela sem excluir |
 
-**Exemplo — agendar:**
+Conclusão e observações recebem `{"observacoes": "Avaliação registrada"}`.
+A conclusão aceita `{}` quando não há observações.
+
+Exemplo de rotina (especializada acrescenta `especialidade`, compatível com o profissional):
 
 ```json
-POST /api/v1/consultas
 {
-  "pacienteId": 42,
-  "profissionalId": 7,
-  "data": "2026-03-14",
-  "horario": "09:30",
+  "modalidade": "ROTINA",
+  "pacienteId": 1,
+  "profissionalId": 1,
+  "data": "2030-01-07",
+  "horario": "10:00",
   "duracaoMinutos": 30,
-  "motivo": "Dor torácica há três dias"
+  "motivo": "Avaliação de rotina"
 }
 ```
 
-**Conflito de horário:**
+Modalidades: ROTINA, ESPECIALIZADA, EMERGENCIA. Os seis estados da consulta são
+AGENDADA, CONFIRMADA, EM_ATENDIMENTO, CONCLUIDA, CANCELADA e NAO_COMPARECEU.
+Datas passadas, durações fora de 1–1440 minutos e campos incompatíveis com a
+modalidade retornam 400. Disponibilidade, especialidade e conflito retornam 409.
+
+### Emergências e fila
 
 ```json
-409 Conflict
 {
-  "timestamp": "2026-03-10T14:22:05",
-  "status": 409,
-  "codigo": "CONFLITO_DE_HORARIO",
-  "mensagem": "O profissional já possui atendimento marcado neste horário",
-  "caminho": "/api/v1/consultas",
-  "detalhes": ["Consulta 318 ocupa o intervalo 09:15–09:45"]
+  "modalidade": "EMERGENCIA",
+  "pacienteId": 1,
+  "profissionalId": 1,
+  "motivo": "Avaliação imediata",
+  "prioridade": "ALTA"
 }
 ```
+
+A prioridade é obrigatória: BAIXA, MODERADA, ALTA ou CRITICA. A chegada vem do
+relógio do servidor. Não envie data, horário, duração, especialidade, status ou
+chegada. Campos desconhecidos e enums numéricos são rejeitados com 400.
+
+- `GET /consultas?modalidade=EMERGENCIA&status=AGUARDANDO`
+- `GET /consultas?modalidade=EMERGENCIA&status=EM_ATENDIMENTO`
+- `GET /consultas?modalidade=EMERGENCIA&status=CONCLUIDA`
+
+A ordenação é por prioridade decrescente, chegada crescente e ID crescente.
+A resposta inclui `prioridade`, `chegada`, `iniciadoEm` e `concluidoEm`.
+A emergência já tem presença confirmada ao chegar, representada como AGUARDANDO
+na API; inicie diretamente com PATCH /consultas/{id}/inicio. Não há confirmação
+manual nem não comparecimento. Conclusão e cancelamento usam as mesmas rotas das
+consultas. `AGUARDANDO` exige modalidade EMERGENCIA no filtro.
+
+### Executar sem os cadastros da Trilha A
+
+`mvn spring-boot:run -Dspring-boot.run.profiles=demo`
+
+O perfil `demo` fornece paciente 1 e cardiologista 1 fictícios, disponível todos
+os dias das 08:00 às 18:00. Use uma data futura no exemplo. Fora desse perfil, os módulos de cadastro reais fornecem os pacientes e
+profissionais; o erro 503 `CADASTRO_INDISPONIVEL` só é usado se a integração de
+cadastro de profissionais estiver ausente.
+
+O repositório atual é em memória: reiniciar perde os registros. A interface permite
+integrar o banco após a decisão do grupo. Veja [ADR 0007](decisoes/0007-adaptador-temporario-de-consultas.md).
+O frontend da Sprint 1 ainda usa dados locais e requer integração posterior com esta API.
 
 ## Internações
 
@@ -110,7 +150,7 @@ POST /api/v1/consultas
 | `PATCH` | `/quartos/{id}/situacao` | `200` · `409` se há paciente e tenta interditar |
 
 O `tipo` do quarto é classificatório e não altera as regras de capacidade
-(decisão registrada no ADR 0005). A resposta de quarto inclui ocupação, vagas e
+(decisão registrada no ADR 0008). A resposta de quarto inclui ocupação, vagas e
 situação calculadas a partir de internações ativas e bloqueios administrativos;
 `situacao` não é um campo de entrada editável.
 
@@ -159,5 +199,5 @@ Toda falha devolve o mesmo corpo, montado por `GlobalExceptionHandler`:
 | `400` | Campo obrigatório ausente, formato inválido |
 | `404` | Recurso não encontrado |
 | `409` | Violação de regra de negócio (RN2–RN5, RN7) |
-| `422` | Operação impossível para o estado atual do recurso |
+| `422` | Reservado para contratos futuros; transição inválida de consulta usa 409 |
 | `500` | Falha não prevista — nunca deve vazar detalhe interno |

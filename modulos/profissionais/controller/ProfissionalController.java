@@ -9,7 +9,7 @@ import br.pucminas.vitalis.profissionais.model.Encaminhamento;
 import br.pucminas.vitalis.profissionais.model.Especialidade;
 import br.pucminas.vitalis.profissionais.model.ProfissionalSaude;
 import br.pucminas.vitalis.profissionais.model.TipoProfissional;
-import br.pucminas.vitalis.profissionais.service.ProfissionalService;
+import br.pucminas.vitalis.profissionais.service.ProfissionalCadastroService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,9 +31,9 @@ import java.util.List;
 @RequestMapping("/api/v1/profissionais")
 public class ProfissionalController {
 
-    private final ProfissionalService service;
+    private final ProfissionalCadastroService service;
 
-    public ProfissionalController(ProfissionalService service) {
+    public ProfissionalController(ProfissionalCadastroService service) {
         this.service = service;
     }
 

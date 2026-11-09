@@ -1,75 +1,90 @@
 package br.pucminas.vitalis.procedimentos.service;
 
+import br.pucminas.vitalis.comum.service.AgendaService;
 import br.pucminas.vitalis.comum.service.RecursoNaoEncontradoException;
 import br.pucminas.vitalis.profissionais.model.Cirurgiao;
 import br.pucminas.vitalis.profissionais.service.ProfissionalService;
+import br.pucminas.vitalis.pacientes.service.PacienteAtendimentoService;
 import br.pucminas.vitalis.procedimentos.dto.ProcedimentoCirurgicoRequest;
 import br.pucminas.vitalis.procedimentos.model.ProcedimentoCirurgico;
+import br.pucminas.vitalis.procedimentos.repository.ProcedimentoRepositoryMemoria;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
 public class ProcedimentoCirurgicoService {
 
-    private final Map<Long, ProcedimentoCirurgico> procedimentos = new ConcurrentHashMap<>();
-    private final AtomicLong ids = new AtomicLong();
+    private final ProcedimentoRepositoryMemoria repository;
     private final ProfissionalService profissionalService;
+    private final PacienteAtendimentoService pacienteService;
+    private final AgendaService agenda;
 
-    public ProcedimentoCirurgicoService(ProfissionalService profissionalService) {
+    public ProcedimentoCirurgicoService(ProcedimentoRepositoryMemoria repository,
+                                        ProfissionalService profissionalService,
+                                        PacienteAtendimentoService pacienteService,
+                                        AgendaService agenda) {
+        this.repository = repository;
         this.profissionalService = profissionalService;
+        this.pacienteService = pacienteService;
+        this.agenda = agenda;
     }
 
-    public synchronized ProcedimentoCirurgico cadastrar(ProcedimentoCirurgicoRequest request) {
-        Cirurgiao cirurgiao = profissionalService.buscarCirurgiao(request.getCirurgiaoId());
-        ProcedimentoCirurgico procedimento = new ProcedimentoCirurgico(
-                ids.incrementAndGet(), request.getPacienteId(), cirurgiao,
-                request.getDescricao(), request.getTipoCirurgia(),
-                request.getObservacoesPreOperatorias(), request.getDataHoraPrevista());
-        procedimentos.put(procedimento.getId(), procedimento);
-        return procedimento;
+    public ProcedimentoCirurgico cadastrar(ProcedimentoCirurgicoRequest request) {
+        synchronized (agenda) {
+            Cirurgiao cirurgiao = profissionalService.buscarCirurgiao(request.getCirurgiaoId());
+            ProcedimentoCirurgico procedimento = new ProcedimentoCirurgico(repository.proximoId(),
+                    pacienteService.buscarPorId(request.getPacienteId()), cirurgiao,
+                    request.getDescricao(), request.getTipoCirurgia(),
+                    request.getObservacoesPreOperatorias(), request.getDataHoraPrevista());
+            agenda.validarAusenciaDeConflito(procedimento);
+            repository.adicionar(procedimento);
+            return procedimento;
+        }
     }
 
     public ProcedimentoCirurgico buscar(Long id) {
-        ProcedimentoCirurgico procedimento = procedimentos.get(id);
-        if (procedimento == null) {
-            throw new RecursoNaoEncontradoException("Procedimento cirúrgico", id);
-        }
-        return procedimento;
+        return repository.buscarPorId(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Procedimento cirúrgico", id));
     }
 
     public List<ProcedimentoCirurgico> listar(Long cirurgiaoId) {
         if (cirurgiaoId != null) {
             profissionalService.buscarCirurgiao(cirurgiaoId);
         }
-        return procedimentos.values().stream()
+        return repository.listar().stream()
                 .filter(p -> cirurgiaoId == null || p.getCirurgiao().getId().equals(cirurgiaoId))
                 .sorted(Comparator.comparing(ProcedimentoCirurgico::getDataHoraPrevista))
                 .collect(Collectors.toList());
     }
 
-    public synchronized ProcedimentoCirurgico iniciar(Long id, LocalDateTime dataHoraEfetiva) {
-        ProcedimentoCirurgico procedimento = buscar(id);
-        procedimento.iniciar(dataHoraEfetiva);
-        return procedimento;
+    public ProcedimentoCirurgico iniciar(Long id, LocalDateTime dataHoraEfetiva) {
+        synchronized (agenda) {
+            ProcedimentoCirurgico procedimento = buscar(id);
+            agenda.validarAusenciaDeConflito(
+                    procedimento.prepararInicio(dataHoraEfetiva), procedimento);
+            procedimento.iniciar(dataHoraEfetiva);
+            return procedimento;
+        }
     }
 
-    public synchronized ProcedimentoCirurgico concluir(Long id, LocalDateTime dataHoraEfetiva,
+    public ProcedimentoCirurgico concluir(Long id, LocalDateTime dataHoraEfetiva,
                                           String observacoesPosOperatorias) {
-        ProcedimentoCirurgico procedimento = buscar(id);
-        procedimento.concluir(dataHoraEfetiva, observacoesPosOperatorias);
-        return procedimento;
+        synchronized (agenda) {
+            ProcedimentoCirurgico procedimento = buscar(id);
+            procedimento.concluir(dataHoraEfetiva, observacoesPosOperatorias);
+            return procedimento;
+        }
     }
 
-    public synchronized ProcedimentoCirurgico cancelar(Long id) {
-        ProcedimentoCirurgico procedimento = buscar(id);
-        procedimento.cancelar();
-        return procedimento;
+    public ProcedimentoCirurgico cancelar(Long id) {
+        synchronized (agenda) {
+            ProcedimentoCirurgico procedimento = buscar(id);
+            procedimento.cancelar();
+            return procedimento;
+        }
     }
 }

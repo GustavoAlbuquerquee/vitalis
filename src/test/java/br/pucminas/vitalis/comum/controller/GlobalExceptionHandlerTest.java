@@ -69,9 +69,9 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void deveTraduzirTransicaoInvalidaPara422() throws Exception {
-        mockMvc.perform(get("/teste/422"))
-                .andExpect(status().isUnprocessableEntity())
+    public void deveTraduzirTransicaoInvalidaPara409() throws Exception {
+        mockMvc.perform(get("/teste/transicao"))
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.codigo").value("TRANSICAO_INVALIDA"));
     }
 
@@ -107,7 +107,7 @@ public class GlobalExceptionHandlerTest {
             throw new CapacidadeExcedidaException("302", 2);
         }
 
-        @GetMapping("/teste/422")
+        @GetMapping("/teste/transicao")
         public void transicaoInvalida() {
             throw new TransicaoInvalidaException("A internação já foi encerrada");
         }

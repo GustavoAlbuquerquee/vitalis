@@ -37,7 +37,7 @@
 
 O projeto é o trabalho prático da disciplina **Programação Modular** do curso de Bacharelado em Engenharia de Software da **PUC Minas**. O foco não é entregar telas bonitas — é entregar um sistema cuja estrutura interna se sustente: módulos com fronteiras claras, responsabilidades que não vazam de uma camada para outra e regras de negócio que moram em um único lugar.
 
-> **Este repositório está na fase de modelagem.** Ele contém a arquitetura, o modelo de domínio, as regras de negócio e a estrutura modular — ainda sem código de implementação. Cada pasta de módulo já existe com o contrato do que vai morar ali dentro.
+> **Sprint 2 em implementação.** A base compartilhada e a Trilha B (consultas e emergência) já têm modelo, API e testes. Os demais cadastros e a persistência durável ainda precisam ser integrados. Para executar a demonstração, veja [o contrato da API](docs/api.md#executar-sem-os-cadastros-da-trilha-a).
 
 ---
 
@@ -206,9 +206,14 @@ classDiagram
     Quarto "1" o-- "0..*" Internacao
 ```
 
-Por que `Atendimento` é abstrata? Porque a regra *"um profissional não pode ter dois atendimentos no mesmo horário"* vale tanto para consultas quanto para internações. Tratando as duas como `Atendimento`, o conflito de agenda é resolvido por **um único algoritmo** em vez de duas implementações que vão divergir na primeira manutenção.
+`Atendimento` é abstrata para compartilhar referências tipadas de paciente e
+profissional e a comparação de intervalos. Consultas e procedimentos cirúrgicos
+usam a agenda horária comum; internações também herdam a base, mas não ocupam um
+horário de agenda.
 
-O diagrama completo — 11 classes, 7 enumerações, camadas e hierarquia de exceções — está em **[docs/diagrama-de-classes.md](docs/diagrama-de-classes.md)**, com a versão renderizada em [docs/diagramas/diagrama-classes.html](docs/diagramas/diagrama-classes.html).
+O diagrama de classes e as regras de negócio estão em
+**[docs/diagrama-de-classes.md](docs/diagrama-de-classes.md)**, com a versão
+renderizada em [docs/diagramas/diagrama-classes.html](docs/diagramas/diagrama-classes.html).
 
 ---
 
@@ -218,11 +223,14 @@ O diagrama completo — 11 classes, 7 enumerações, camadas e hierarquia de exc
 |---|---|---|
 | **RN1** | Um paciente pode ter várias consultas e internações ao longo do tempo | `pacientes` |
 | **RN2** | Toda consulta tem um paciente e um profissional responsável | `consultas` |
-| **RN3** | Um profissional não pode ter dois atendimentos no mesmo horário | `consultas` · `internacoes` |
+| **RN3** | Um profissional não pode ter dois atendimentos agendados no mesmo horário | `consultas` · `procedimentos` |
 | **RN4** | Toda internação tem um paciente e um quarto disponível | `internacoes` |
 | **RN5** | Um quarto nunca ultrapassa sua capacidade máxima | `quartos` |
 | **RN6** | O histórico de consultas e internações é preservado | `historico` |
 | **RN7** | Toda operação respeita disponibilidade de recursos e integridade dos dados | todos |
+| **RN8** | A categoria do profissional define seus dados e responsabilidades | `profissionais` |
+| **RN9** | Um procedimento só pode ser concluído depois de iniciado | `procedimentos` |
+| **RN10** | Ocupação e situação do quarto refletem o estado real | `quartos` · `internacoes` |
 
 Nenhuma dessas regras é opcional e nenhuma é implementada duas vezes. Detalhamento completo em [docs/regras-de-negocio.md](docs/regras-de-negocio.md).
 

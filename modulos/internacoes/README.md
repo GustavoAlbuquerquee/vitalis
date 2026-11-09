@@ -10,7 +10,7 @@ Controlar a permanência do paciente no hospital: entrada, transferência entre 
 
 | Entidade | Atributos principais |
 |---|---|
-| `Internacao` (herda de `Atendimento`) | `quarto`, `dataEntrada`, `dataPrevistaAlta`, `dataEfetivaAlta`, `motivo`, `status` |
+| `Internacao` (herda de `Atendimento<Paciente, ProfissionalSaude>`) | `quartoId`, `dataEntrada`, `dataPrevistaAlta`, `dataEfetivaAlta`, `motivo`, `status` |
 | `StatusInternacao` *(enumeração)* | `ATIVA`, `ALTA_CONCEDIDA`, `TRANSFERIDA`, `CANCELADA` |
 
 ## Ciclo de vida
@@ -19,20 +19,21 @@ Controlar a permanência do paciente no hospital: entrada, transferência entre 
 stateDiagram-v2
     [*] --> ATIVA: internar()
     ATIVA --> TRANSFERIDA: transferirPara(outroQuarto)
-    TRANSFERIDA --> ATIVA: nova ocupação
     ATIVA --> ALTA_CONCEDIDA: registrarAlta()
     ATIVA --> CANCELADA: internação indevida
     ALTA_CONCEDIDA --> [*]
     CANCELADA --> [*]
 ```
 
+Uma transferência preserva o registro anterior como `TRANSFERIDA` e cria uma
+nova internação ativa no quarto de destino, mantendo paciente e profissional.
+
 ## Regras que este módulo garante
 
 | # | Regra | Como |
 |---|---|---|
-| **RN4** | Toda internação tem paciente e quarto disponível | `OcupacaoValidator.validarSituacao()` antes de gravar |
+| **RN4** | Toda internação tem paciente e quarto disponível | Serviço consulta paciente, profissional e `Quarto.estaDisponivel()` |
 | **RN5** | O quarto não ultrapassa a capacidade máxima | Pergunta ao módulo [`quartos`](../quartos) e chama `Quarto.ocupar()` |
-| **RN3** | O profissional responsável não pode ter conflito de horário | Mesmo `conflitaCom()` herdado de `Atendimento` |
 | — | Um paciente não pode ter duas internações ativas ao mesmo tempo | `validarPacienteSemInternacaoAtiva()` |
 | — | A data efetiva de alta nunca é anterior à data de entrada | `AltaInvalidaException` |
 | **RN6** | A internação encerrada permanece no histórico | Status `ALTA_CONCEDIDA` em vez de exclusão |
@@ -51,7 +52,7 @@ essas alterações em memória. Como os dados ainda são mantidos em memória e 
 decisão de banco está pendente, a garantia atual vale dentro do processo; ao
 adotar persistência, a operação deverá usar uma transação do banco.
 
-## Endpoints previstos
+## Endpoints
 
 | Método | Rota | O que faz |
 |---|---|---|

@@ -9,7 +9,7 @@ import br.pucminas.vitalis.profissionais.model.DiaSemana;
 import br.pucminas.vitalis.profissionais.model.Especialidade;
 import br.pucminas.vitalis.profissionais.model.Especialista;
 import br.pucminas.vitalis.profissionais.model.TipoProfissional;
-import br.pucminas.vitalis.profissionais.service.ProfissionalService;
+import br.pucminas.vitalis.profissionais.service.ProfissionalCadastroService;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProfissionalServiceTest {
 
-    private final ProfissionalService service = new ProfissionalService();
+    private final ProfissionalCadastroService service = new ProfissionalCadastroService();
 
     @Test
     void deveInstanciarCadaCategoriaEFiltrarPorEspecialidade() {

@@ -21,7 +21,9 @@ stateDiagram-v2
 `concluir()` exige estado `EM_ANDAMENTO` no próprio modelo, não apenas no
 controller. A consulta de procedimentos associados a um cirurgião é exposta
 por `GET /api/v1/profissionais/{id}/procedimentos-cirurgicos`.
+O cadastro e o início validam conflitos com consultas e procedimentos na agenda
+compartilhada, sem reservar horário para internações.
 
 ## Dependências
 
-`profissionais` · `comum`
+`pacientes` · `profissionais` · `consultas` · `comum`

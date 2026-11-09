@@ -1,5 +1,7 @@
 package br.pucminas.vitalis.profissionais.model;
 
+import java.util.List;
+
 public class ClinicoGeral extends ProfissionalSaude {
 
     public ClinicoGeral(Long id, String nome, String registroProfissional,
@@ -7,10 +9,13 @@ public class ClinicoGeral extends ProfissionalSaude {
         super(id, nome, registroProfissional, telefone, email, ativo);
     }
 
-    @Override
-    public TipoProfissional getTipo() {
-        return TipoProfissional.CLINICO_GERAL;
+    public ClinicoGeral(Long id, String nome, String telefone, String email,
+                        String registro, List<Disponibilidade> disponibilidades) {
+        super(id, nome, telefone, email, registro, disponibilidades);
     }
+
+    @Override
+    public String getTipo() { return TipoProfissional.CLINICO_GERAL.name(); }
 
     public Encaminhamento encaminhar(Long pacienteId, Especialidade especialidade, String motivo) {
         if (pacienteId == null || especialidade == null || especialidade == Especialidade.CLINICA_GERAL
