@@ -30,6 +30,12 @@ public class Paciente extends Pessoa {
         this.endereco = endereco;
     }
 
+    /** Construtor de referência usado por consultas e testes de domínio. */
+    public Paciente(Long id, String nome, String telefone, String email, String cpf) {
+        this(nome, cpf, null, telefone, email, null);
+        setId(id);
+    }
+
     /**
      * O CPF é o que identifica o paciente no mundo real — é o que a
      * superclasse pede em {@code getIdentificacaoPrincipal()}.

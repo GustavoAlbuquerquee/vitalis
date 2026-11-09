@@ -30,6 +30,12 @@ public abstract class Pessoa {
         this.email = email;
     }
 
+    /** Construtor usado por atendimentos que recebem referências do cadastro. */
+    protected Pessoa(Long id, String nome, String telefone, String email) {
+        this(nome, telefone, email);
+        this.id = id;
+    }
+
     /**
      * O identificador que a pessoa usa no mundo real: CPF para o paciente,
      * registro do conselho para o profissional.

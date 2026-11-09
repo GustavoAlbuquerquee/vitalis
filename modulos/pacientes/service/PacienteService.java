@@ -54,6 +54,11 @@ public class PacienteService {
         return PacienteResponse.de(exigirExistente(id));
     }
 
+    /** Referência tipada para módulos dependentes; sem expor o repositório. */
+    public Paciente buscarEntidadePorId(Long id) {
+        return exigirExistente(id);
+    }
+
     public PacienteResponse buscarPorCpf(String cpf) {
         Optional<Paciente> achado = repository.buscarPorCpf(cpf);
         if (!achado.isPresent()) {

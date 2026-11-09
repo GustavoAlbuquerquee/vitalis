@@ -14,6 +14,33 @@ Este documento é o **contrato do domínio**: é nele que as assinaturas ficam a
 
 ---
 
+## Estado da implementação da Trilha B
+
+A atualização da main (PR #14) foi preservada. As visões abaixo são o contrato
+proposto para o domínio completo, incluindo as trilhas ainda não implementadas.
+O código entregue nas issues #6, #8, #9 e #10 está detalhado em
+[Mermaid da Trilha B](diagramas/04-trilha-b.mmd), [PlantUML da Trilha B](diagramas/trilha-b.puml)
+e [integração da Trilha B](integracao-trilha-b.md).
+
+Diferenças explícitas entre proposta e implementação:
+
+- Atendimento usa parâmetros genéricos de Pessoa para manter comum independente
+  dos cadastros. ConsultaAgendada concentra o intervalo apenas nas modalidades agendadas.
+- EstadoTransicionavel é implementada pelos enums (método permite); Transicoes
+  centraliza a validação, e cada entidade mantém o estado privado. A proposta abaixo
+  de uma interface implementada pela entidade não é a assinatura entregue.
+- Emergência confirma a presença na chegada, projetada como AGUARDANDO na API.
+  Os seis estados internos e todas as transições da consulta são preservados.
+- Transição inválida retorna **409**, conforme o aceite da issue #9; este PR altera
+  o comportamento anterior de 422. Especialidade e disponibilidade usam
+  CondicaoAtendimentoException com códigos próprios e 409.
+- Os cadastros são mínimos: as atribuições completas de profissionais, encaminhamentos,
+  cirurgia e internação continuam nas trilhas correspondentes. A agenda compartilhada
+  recebe seus horários por FonteAgenda quando esses módulos forem integrados.
+
+As [ADRs 0006](decisoes/0006-base-compartilhada-de-atendimentos.md) e
+[0007](decisoes/0007-adaptador-temporario-de-consultas.md) registram essas escolhas.
+
 ## O que mudou desde a Sprint 1
 
 | Sprint 1 | Sprint 2 |
@@ -383,9 +410,9 @@ Fonte completa em [`diagramas/03-excecoes.mmd`](diagramas/03-excecoes.mmd).
 | `QuartoIndisponivelException` | 409 | `QUARTO_INDISPONIVEL` | RN4 — quarto em manutenção ou interditado |
 | `CapacidadeExcedidaException` | 409 | `CAPACIDADE_EXCEDIDA` | RN5 — quarto lotado |
 | `PacienteJaInternadoException` | 409 | `PACIENTE_JA_INTERNADO` | Paciente com internação ativa |
-| `TransicaoInvalidaException` | **422** | `TRANSICAO_INVALIDA` | Transição de estado proibida, em qualquer entidade |
+| `TransicaoInvalidaException` | **409** | `TRANSICAO_INVALIDA` | Transição de estado proibida, em qualquer entidade |
 
-`RegraDeNegocioException` é abstrata e define 409 como padrão. `TransicaoInvalidaException` sobrescreve para 422: o pedido é compreensível e os dados são válidos, mas o recurso não está no estado que permite aquela operação.
+`RegraDeNegocioException` é abstrata e define 409 como padrão. `TransicaoInvalidaException` também retorna 409, conforme o critério de aceite da issue #9.
 
 ### Previstas pelo modelo, ainda não implementadas
 

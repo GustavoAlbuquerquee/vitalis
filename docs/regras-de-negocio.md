@@ -137,6 +137,51 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 
 ## Rastreabilidade
 
+### Modalidades da Sprint 2 (issue #8)
+
+### Estados da consulta (issue #9)
+
+| De | Para |
+|---|---|
+| AGENDADA | CONFIRMADA, CANCELADA, NAO_COMPARECEU |
+| CONFIRMADA | EM_ATENDIMENTO, CANCELADA, NAO_COMPARECEU |
+| EM_ATENDIMENTO | CONCLUIDA, CANCELADA |
+| CONCLUIDA, CANCELADA, NAO_COMPARECEU | Nenhum (finais) |
+
+Esta é a tabela proposta na issue #9, adotada nesta implementação; a issue #4
+ainda não contém confirmação do grupo. `Transicoes` valida antes da atribuição;
+tentativas inválidas retornam 409 e preservam estado e observações. Observações
+médicas são registradas na conclusão ou depois dela. Cancelamento e falta liberam
+a agenda sem excluir o registro.
+
+### Validações das modalidades
+
+- Rotina e especializada exigem que o intervalo inteiro caiba na disponibilidade.
+- Especializada também exige a mesma `Especialidade` do profissional (409).
+- Paciente e profissional precisam estar ativos em todas as modalidades.
+- Emergência é imediata: não consulta nem reserva a agenda de agendamentos.
+- `AgendaService` reúne as implementações de `FonteAgenda` de cada módulo e usa
+  exclusivamente `Atendimento.conflitaCom`. Cirurgias e internações devem publicar
+  seus intervalos por essa interface; consultas não acessam seus repositórios.
+- Intervalos adjacentes são aceitos. A comparação é por profissional, inclusive
+  quando os identificadores dos atendimentos coincidem entre módulos.
+
+### Emergência e fila (issue #10)
+
+- Prioridades são `BAIXA`, `MODERADA`, `ALTA`, `CRITICA`, com peso explícito.
+- A chegada é registrada pelo servidor; não aceita data/horário de agendamento.
+- A presença é confirmada na chegada por transição validada. A projeção na API é
+  `AGUARDANDO`; pode iniciar diretamente, concluir depois do início ou cancelar.
+- A emergência não admite confirmação repetida nem não comparecimento.
+- O filtro `modalidade=EMERGENCIA` ordena por gravidade decrescente e chegada
+  crescente, com ID crescente como último desempate. Pode filtrar `AGUARDANDO`,
+  `EM_ATENDIMENTO`, `CONCLUIDA` e `CANCELADA`.
+- `AGUARDANDO` exige o filtro explícito de emergência. Os demais estados seguem
+  os seis valores da consulta; não há valores textuais livres.
+- Início e conclusão registram seus momentos, sem permitir tempos invertidos.
+- A fila inclui apenas os registros do grupo solicitado; a conclusão e o
+  cancelamento preservam o registro para consulta.
+
 | Regra | Módulo dono | Exceção | HTTP |
 |---|---|---|---|
 | RN1 | `pacientes` | — | — |

@@ -13,6 +13,8 @@ Por que registrar: daqui a dois meses ninguém lembra por que `Atendimento` é a
 | [0003](0003-atendimento-como-superclasse.md) | `Atendimento` como superclasse abstrata | Aceita |
 | [0004](0004-historico-derivado.md) | Histórico médico derivado, não armazenado | Aceita |
 | [0005](0005-hierarquias-da-sprint-2.md) | Hierarquias e máquinas de estado da Sprint 2 | **Proposta** — aguarda aceite do grupo |
+| [0006](0006-base-compartilhada-de-atendimentos.md) | Base compartilhada implementada na Trilha B | Implementada nesta branch; revisão do grupo pendente |
+| [0007](0007-adaptador-temporario-de-consultas.md) | Adaptador de consultas em memória e integração | Temporária |
 
 ## Como escrever uma nova
 
