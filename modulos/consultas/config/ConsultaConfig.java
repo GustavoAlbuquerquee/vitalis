@@ -1,6 +1,7 @@
 package br.pucminas.vitalis.consultas.config;
 
 import br.pucminas.vitalis.comum.service.HospitalException;
+import br.pucminas.vitalis.pacientes.service.PacienteAtendimentoService;
 import br.pucminas.vitalis.pacientes.service.PacienteService;
 import br.pucminas.vitalis.profissionais.service.ProfissionalService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -14,8 +15,10 @@ public class ConsultaConfig {
     @Bean @ConditionalOnMissingBean
     public Clock clock() { return Clock.system(ZoneId.of("America/Sao_Paulo")); }
 
-    @Bean @Profile("!demo") @ConditionalOnMissingBean(PacienteService.class)
-    public PacienteService pacientesPendentes() { return id -> { throw cadastroPendente(); }; }
+    @Bean @Profile("!demo")
+    public PacienteAtendimentoService pacientesDisponiveis(PacienteService service) {
+        return service::buscarEntidadePorId;
+    }
 
     @Bean @Profile("!demo") @ConditionalOnMissingBean(ProfissionalService.class)
     public ProfissionalService profissionaisPendentes() { return id -> { throw cadastroPendente(); }; }

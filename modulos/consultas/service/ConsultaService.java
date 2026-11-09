@@ -6,7 +6,7 @@ import br.pucminas.vitalis.consultas.dto.*;
 import br.pucminas.vitalis.consultas.model.*;
 import br.pucminas.vitalis.consultas.repository.ConsultaRepository;
 import br.pucminas.vitalis.pacientes.model.Paciente;
-import br.pucminas.vitalis.pacientes.service.PacienteService;
+import br.pucminas.vitalis.pacientes.service.PacienteAtendimentoService;
 import br.pucminas.vitalis.profissionais.model.ProfissionalSaude;
 import br.pucminas.vitalis.profissionais.service.ProfissionalService;
 import org.springframework.stereotype.Service;
@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
 @Service
 public class ConsultaService {
     private final ConsultaRepository repository;
-    private final PacienteService pacientes;
+    private final PacienteAtendimentoService pacientes;
     private final ProfissionalService profissionais;
     private final AgendaService agenda;
     private final Clock clock;
 
-    public ConsultaService(ConsultaRepository repository, PacienteService pacientes,
+    public ConsultaService(ConsultaRepository repository, PacienteAtendimentoService pacientes,
                            ProfissionalService profissionais, AgendaService agenda, Clock clock) {
         this.repository = repository;
         this.pacientes = pacientes;

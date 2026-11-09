@@ -8,4 +8,5 @@ public class Especialista extends ProfissionalSaude {
                          List<Disponibilidade> disponibilidades) {
         super(id, nome, telefone, email, registro, especialidade, disponibilidades);
     }
+    @Override public String getTipo() { return "ESPECIALISTA"; }
 }

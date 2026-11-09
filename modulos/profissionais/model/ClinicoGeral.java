@@ -7,4 +7,5 @@ public class ClinicoGeral extends ProfissionalSaude {
                         String registro, List<Disponibilidade> disponibilidades) {
         super(id, nome, telefone, email, registro, Especialidade.CLINICA_GERAL, disponibilidades);
     }
+    @Override public String getTipo() { return "CLINICO_GERAL"; }
 }

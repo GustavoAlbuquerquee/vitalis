@@ -19,6 +19,7 @@ class AtendimentoTest {
     private Atendimento<?, ?> atendimento(int inicio, int fim) {
         Pessoa pessoa = new Pessoa(1L, "Teste", null, null) {
             public String getIdentificacaoPrincipal() { return "123"; }
+            public String getTipo() { return "TESTE"; }
         };
         return new Atendimento<Pessoa, Pessoa>(1L, pessoa, pessoa, LocalDateTime.now()) {
             public LocalDateTime getInicio() { return LocalDateTime.of(2030, 1, 1, inicio, 0); }

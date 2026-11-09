@@ -2,7 +2,7 @@ package br.pucminas.vitalis.consultas.config;
 
 import br.pucminas.vitalis.comum.service.RecursoNaoEncontradoException;
 import br.pucminas.vitalis.pacientes.model.Paciente;
-import br.pucminas.vitalis.pacientes.service.PacienteService;
+import br.pucminas.vitalis.pacientes.service.PacienteAtendimentoService;
 import br.pucminas.vitalis.profissionais.model.*;
 import br.pucminas.vitalis.profissionais.service.ProfissionalService;
 import org.springframework.context.annotation.*;
@@ -11,7 +11,7 @@ import java.util.*;
 
 @Configuration @Profile("demo")
 public class DemoConsultaConfig {
-    @Bean public PacienteService pacientesDemo() {
+    @Bean public PacienteAtendimentoService pacientesDemo() {
         Paciente paciente = new Paciente(1L, "Paciente demonstração", null, null, "00000000000");
         return id -> {
             if (!paciente.getId().equals(id)) throw new RecursoNaoEncontradoException("Paciente", id);
