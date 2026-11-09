@@ -41,8 +41,7 @@ classDiagram
     RegraDeNegocioException <|-- TransicaoInvalidaException
 ```
 
-As regras de negócio retornam `409 Conflict`, exceto `TransicaoInvalidaException`,
-que retorna `422 Unprocessable Entity`. `DadosInvalidosException` retorna `400`
+As regras de negócio, incluindo `TransicaoInvalidaException`, retornam `409 Conflict`. `DadosInvalidosException` retorna `400`
 e `RecursoNaoEncontradoException` retorna `404`.
 
 ## Dependências

@@ -139,6 +139,23 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 
 ### Modalidades da Sprint 2 (issue #8)
 
+### Estados da consulta (issue #9)
+
+| De | Para |
+|---|---|
+| AGENDADA | CONFIRMADA, CANCELADA, NAO_COMPARECEU |
+| CONFIRMADA | EM_ATENDIMENTO, CANCELADA, NAO_COMPARECEU |
+| EM_ATENDIMENTO | CONCLUIDA, CANCELADA |
+| CONCLUIDA, CANCELADA, NAO_COMPARECEU | Nenhum (finais) |
+
+Esta é a tabela proposta na issue #9, adotada nesta implementação; a issue #4
+ainda não contém confirmação do grupo. `Transicoes` valida antes da atribuição;
+tentativas inválidas retornam 409 e preservam estado e observações. Observações
+médicas são registradas na conclusão ou depois dela. Cancelamento e falta liberam
+a agenda sem excluir o registro.
+
+### Validações das modalidades
+
 - Rotina e especializada exigem que o intervalo inteiro caiba na disponibilidade.
 - Especializada também exige a mesma `Especialidade` do profissional (409).
 - Paciente e profissional precisam estar ativos em todas as modalidades.

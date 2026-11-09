@@ -81,7 +81,7 @@ Toda exceção do sistema herda de `HospitalException` e é traduzida em uma ún
 |---|---|
 | `RecursoNaoEncontradoException` | 404 |
 | `ConflitoDeHorarioException`, `QuartoIndisponivelException`, `CapacidadeExcedidaException` e `PacienteJaInternadoException` | 409 |
-| `TransicaoInvalidaException` | 422 |
+| `TransicaoInvalidaException` | 409 |
 | `DadosInvalidosException` | 400 |
 | Exceção não prevista | 500, sem detalhes internos |
 

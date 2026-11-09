@@ -23,6 +23,10 @@ estendem. `AtendimentoEmergencia` estende `Consulta` diretamente e dispensa agen
 Cada modalidade sobrescreve `validarCondicoes()`. `FonteAgenda` é o contrato
 para compartilhar horários entre módulos, consumido por `AgendaService`.
 
+`StatusConsulta` implementa `EstadoTransicionavel<StatusConsulta>` com seis valores:
+AGENDADA, CONFIRMADA, EM_ATENDIMENTO, CONCLUIDA, CANCELADA e NAO_COMPARECEU.
+As transições implementadas estão na [tabela de regras](regras-de-negocio.md#estados-da-consulta-issue-9).
+
 ---
 
 ## 1. Visão de Domínio (Model)
