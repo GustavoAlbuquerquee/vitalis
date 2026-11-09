@@ -1,4 +1,4 @@
-# ADR 0005 — Base compartilhada de atendimentos
+# ADR 0006 — Base compartilhada de atendimentos
 
 Implementação da issue #6: `Pessoa`, `Atendimento`, `EstadoTransicionavel` e
 `Transicoes` ficam em `comum.model`. `Atendimento<P extends Pessoa, R extends Pessoa>`

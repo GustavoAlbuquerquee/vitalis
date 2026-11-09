@@ -1,7 +1,7 @@
 classDiagram
     direction TB
 
-    %% ===================== ABSTRAÇÕES =====================
+    %% ===================== ABSTRAÇÕES DE PESSOA =====================
     class Pessoa {
         <<abstract>>
         #Long id
@@ -12,9 +12,84 @@ classDiagram
         #LocalDateTime criadoEm
         +getIdentificacaoPrincipal() String
         +getTipo() String
-        +validar() void
     }
 
+    class ProfissionalSaude {
+        <<abstract>>
+        #String registroProfissional
+        #List~Disponibilidade~ disponibilidades
+        +podeRealizar(Atendimento a) boolean
+        +getAtribuicao() String
+        +estaDisponivelEm(LocalDateTime ini, LocalDateTime fim) boolean
+        +possuiConflito(Atendimento novo) boolean
+        +getIdentificacaoPrincipal() String
+    }
+
+    class ClinicoGeral {
+        +podeRealizar(Atendimento a) boolean
+        +realizarAvaliacaoInicial(Paciente p) ConsultaRotina
+        +encaminhar(Paciente p, Especialidade e, String motivo) Encaminhamento
+        +getAtribuicao() String
+    }
+
+    class Especialista {
+        -Especialidade especialidade
+        +podeRealizar(Atendimento a) boolean
+        +atendeEspecialidade(Especialidade e) boolean
+        +getAtribuicao() String
+    }
+
+    class Cirurgiao {
+        -String registroEspecializacao
+        -List~TipoCirurgia~ habilitacoes
+        +podeRealizar(Atendimento a) boolean
+        +ehHabilitadoPara(TipoCirurgia t) boolean
+        +getProcedimentos() List~ProcedimentoCirurgico~
+        +getAtribuicao() String
+    }
+
+    class Paciente {
+        -String cpf
+        -LocalDate dataNascimento
+        -Endereco endereco
+        +getIdade() int
+        +estaInternado() boolean
+        +getIdentificacaoPrincipal() String
+    }
+
+    class Encaminhamento {
+        -Long id
+        -ClinicoGeral origem
+        -Paciente paciente
+        -Especialidade especialidadeDestino
+        -String motivo
+        -LocalDateTime emitidoEm
+        -boolean atendido
+        +marcarComoAtendido() void
+    }
+
+    class Endereco {
+        <<value object>>
+        -String logradouro
+        -String numero
+        -String bairro
+        -String cidade
+        -UF uf
+        -String cep
+        +getEnderecoFormatado() String
+    }
+
+    class Disponibilidade {
+        -Long id
+        -DiaSemana diaSemana
+        -LocalTime horaInicio
+        -LocalTime horaFim
+        -boolean ativo
+        +cobre(LocalDateTime momento) boolean
+        +sobrepoe(Disponibilidade outra) boolean
+    }
+
+    %% ===================== ABSTRAÇÕES DE ATENDIMENTO =====================
     class Atendimento {
         <<abstract>>
         #Long id
@@ -24,59 +99,62 @@ classDiagram
         #LocalDateTime criadoEm
         +getInicio() LocalDateTime
         +getFim() LocalDateTime
+        +validarCondicoes() void
         +getResumo() String
         +conflitaCom(Atendimento outro) boolean
-        +estaAtivo() boolean
-    }
-
-    %% ===================== ENTIDADES =====================
-    class Paciente {
-        -String cpf
-        -LocalDate dataNascimento
-        -Endereco endereco
-        -List~Consulta~ consultas
-        -List~Internacao~ internacoes
-        +getIdade() int
-        +estaInternado() boolean
-        +adicionarConsulta(Consulta c) void
-        +adicionarInternacao(Internacao i) void
-        +getIdentificacaoPrincipal() String
-    }
-
-    class ProfissionalSaude {
-        -String registroProfissional
-        -Especialidade especialidade
-        -List~Disponibilidade~ disponibilidades
-        -List~Atendimento~ atendimentos
-        +estaDisponivelEm(LocalDateTime ini, LocalDateTime fim) boolean
-        +possuiConflito(Atendimento novo) boolean
-        +getAgendaDoDia(LocalDate data) List~Atendimento~
-        +getIdentificacaoPrincipal() String
-    }
-
-    class Endereco {
-        <<value object>>
-        -String logradouro
-        -String numero
-        -String complemento
-        -String bairro
-        -String cidade
-        -UF uf
-        -String cep
-        +getEnderecoFormatado() String
+        +ocupaAgenda() boolean
     }
 
     class Consulta {
-        -LocalDate data
-        -LocalTime horario
-        -int duracaoMinutos
-        -String motivo
-        -String observacoesMedicas
-        -StatusConsulta status
-        +agendar() void
-        +reagendar(LocalDate d, LocalTime h) void
-        +realizar(String observacoesMedicas) void
+        <<abstract>>
+        #LocalDate data
+        #LocalTime horario
+        #int duracaoMinutos
+        #String motivo
+        #String observacoesMedicas
+        #StatusConsulta status
+        +confirmar() void
+        +iniciar() void
+        +concluir(String observacoesMedicas) void
         +cancelar(String motivo) void
+        +registrarAusencia() void
+        +getInicio() LocalDateTime
+        +getFim() LocalDateTime
+    }
+
+    class ConsultaRotina {
+        +validarCondicoes() void
+        +getResumo() String
+    }
+
+    class ConsultaEspecializada {
+        -Especialidade especialidade
+        +validarCondicoes() void
+        +getResumo() String
+    }
+
+    class AtendimentoEmergencia {
+        -PrioridadeEmergencia prioridade
+        -LocalDateTime chegadaEm
+        +validarCondicoes() void
+        +reclassificar(PrioridadeEmergencia nova) void
+        +aguardaAvaliacao() boolean
+        +ocupaAgenda() boolean
+        +getResumo() String
+    }
+
+    class ProcedimentoCirurgico {
+        -String descricao
+        -TipoCirurgia tipoCirurgia
+        -String observacoesPreOperatorias
+        -String observacoesPosOperatorias
+        -LocalDateTime dataHoraPrevista
+        -LocalDateTime dataHoraEfetiva
+        -StatusProcedimento status
+        +iniciar(LocalDateTime inicio) void
+        +concluir(String observacoesPosOperatorias) void
+        +cancelar(String motivo) void
+        +validarCondicoes() void
         +getInicio() LocalDateTime
         +getFim() LocalDateTime
     }
@@ -86,16 +164,17 @@ classDiagram
         -LocalDateTime dataEntrada
         -LocalDate dataPrevistaAlta
         -LocalDateTime dataEfetivaAlta
-        -String motivo
         -StatusInternacao status
-        +registrarAlta(LocalDateTime data, String obs) void
+        +registrarAlta(LocalDateTime d, String obs) void
         +transferirPara(Quarto novo) void
         +getDiasInternado() long
         +estaAtiva() boolean
+        +validarCondicoes() void
         +getInicio() LocalDateTime
         +getFim() LocalDateTime
     }
 
+    %% ===================== RECURSOS =====================
     class Quarto {
         -Long id
         -String numero
@@ -103,24 +182,13 @@ classDiagram
         -int capacidadeMaxima
         -TipoQuarto tipo
         -SituacaoQuarto situacao
-        -List~Internacao~ internacoesAtivas
         +getOcupacaoAtual() int
         +getVagasDisponiveis() int
         +estaDisponivel() boolean
+        +aceita(Paciente p) boolean
         +ocupar(Internacao i) void
         +liberar(Internacao i) void
         +atualizarSituacao() void
-    }
-
-    class Disponibilidade {
-        -Long id
-        -ProfissionalSaude profissional
-        -DiaSemana diaSemana
-        -LocalTime horaInicio
-        -LocalTime horaFim
-        -boolean ativo
-        +cobre(LocalDateTime momento) boolean
-        +sobrepoe(Disponibilidade outra) boolean
     }
 
     class RegistroClinico {
@@ -135,34 +203,65 @@ classDiagram
     class HistoricoMedico {
         <<aggregate>>
         -Paciente paciente
-        -List~Consulta~ consultas
-        -List~Internacao~ internacoes
+        -List~Atendimento~ atendimentos
         -List~RegistroClinico~ registros
-        +getTotalConsultas() int
-        +getTotalInternacoes() int
+        +getTotalPorModalidade() Map~String, Integer~
         +getUltimoAtendimento() Atendimento
         +filtrarPorPeriodo(LocalDate ini, LocalDate fim) List~Atendimento~
     }
 
-    %% ===================== ENUMERAÇÕES =====================
-    class Especialidade {
-        <<enumeration>>
-        CLINICA_GERAL
-        CARDIOLOGIA
-        PEDIATRIA
-        ORTOPEDIA
-        GINECOLOGIA
-        NEUROLOGIA
-        ENFERMAGEM
-        FISIOTERAPIA
+    %% ===================== TRANSIÇÃO DE ESTADO (comum) =====================
+    class EstadoTransicionavel~E~ {
+        <<interface>>
+        +getEstado() E
+        +transicoesValidasDe(E atual) Set~E~
+        +podeTransitarPara(E novo) boolean
+        +transitarPara(E novo) void
     }
 
+    %% ===================== ENUMERAÇÕES =====================
     class StatusConsulta {
         <<enumeration>>
         AGENDADA
-        REALIZADA
+        CONFIRMADA
+        EM_ATENDIMENTO
+        CONCLUIDA
         CANCELADA
         NAO_COMPARECEU
+    }
+
+    class PrioridadeEmergencia {
+        <<enumeration>>
+        BAIXA
+        MODERADA
+        ALTA
+        CRITICA
+    }
+
+    class StatusProcedimento {
+        <<enumeration>>
+        AGENDADO
+        EM_ANDAMENTO
+        CONCLUIDO
+        CANCELADO
+    }
+
+    class TipoCirurgia {
+        <<enumeration>>
+        ELETIVA
+        URGENCIA
+        EMERGENCIA
+        AMBULATORIAL
+    }
+
+    class Especialidade {
+        <<enumeration>>
+        CARDIOLOGIA
+        NEUROLOGIA
+        ORTOPEDIA
+        PEDIATRIA
+        GINECOLOGIA
+        CIRURGIA_GERAL
     }
 
     class StatusInternacao {
@@ -220,27 +319,44 @@ classDiagram
     %% ===================== HERANÇA =====================
     Pessoa <|-- Paciente
     Pessoa <|-- ProfissionalSaude
+    ProfissionalSaude <|-- ClinicoGeral
+    ProfissionalSaude <|-- Especialista
+    ProfissionalSaude <|-- Cirurgiao
+
     Atendimento <|-- Consulta
+    Atendimento <|-- ProcedimentoCirurgico
     Atendimento <|-- Internacao
+    Consulta <|-- ConsultaRotina
+    Consulta <|-- ConsultaEspecializada
+    Consulta <|-- AtendimentoEmergencia
+
+    %% ===================== REALIZAÇÃO =====================
+    EstadoTransicionavel <|.. Consulta
+    EstadoTransicionavel <|.. ProcedimentoCirurgico
+    EstadoTransicionavel <|.. Internacao
 
     %% ===================== ASSOCIAÇÕES =====================
     Paciente "1" *-- "1" Endereco : possui
-    Paciente "1" o-- "0..*" Consulta : realiza
-    Paciente "1" o-- "0..*" Internacao : passa por
-    ProfissionalSaude "1" o-- "0..*" Consulta : atende
-    ProfissionalSaude "1" o-- "0..*" Internacao : e responsavel
+    Paciente "1" o-- "0..*" Atendimento : recebe
+    ProfissionalSaude "1" o-- "0..*" Atendimento : realiza
     ProfissionalSaude "1" *-- "0..*" Disponibilidade : define
+    ClinicoGeral "1" o-- "0..*" Encaminhamento : emite
+    Cirurgiao "1" o-- "0..*" ProcedimentoCirurgico : executa
     Quarto "1" o-- "0..*" Internacao : aloja
     Atendimento "1" *-- "0..*" RegistroClinico : gera
     ProfissionalSaude "1" --> "0..*" RegistroClinico : registra
     HistoricoMedico "1" --> "1" Paciente : consolida
-    HistoricoMedico "1" o-- "0..*" Consulta
-    HistoricoMedico "1" o-- "0..*" Internacao
-    HistoricoMedico "1" o-- "0..*" RegistroClinico
+    HistoricoMedico "1" o-- "0..*" Atendimento
 
     %% ===================== DEPENDÊNCIAS DE ENUM =====================
-    ProfissionalSaude ..> Especialidade
+    Especialista ..> Especialidade
+    Cirurgiao ..> TipoCirurgia
+    Encaminhamento ..> Especialidade
     Consulta ..> StatusConsulta
+    ConsultaEspecializada ..> Especialidade
+    AtendimentoEmergencia ..> PrioridadeEmergencia
+    ProcedimentoCirurgico ..> StatusProcedimento
+    ProcedimentoCirurgico ..> TipoCirurgia
     Internacao ..> StatusInternacao
     Quarto ..> SituacaoQuarto
     Quarto ..> TipoQuarto

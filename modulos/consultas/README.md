@@ -38,7 +38,7 @@ precisam fornecer essa interface para que seus horários entrem na comparação.
 
 O adaptador atual é em memória e perde os registros no reinício. O perfil demo
 fornece cadastros fictícios para experimentação; não é uma entrega de persistência.
-Veja a [ADR 0006](../../docs/decisoes/0006-adaptador-temporario-de-consultas.md).
+Veja a [ADR 0007](../../docs/decisoes/0007-adaptador-temporario-de-consultas.md).
 
 ## Testes
 

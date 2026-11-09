@@ -1,4 +1,4 @@
-# ADR 0006 — Adaptador temporário de consultas
+# ADR 0007 — Adaptador temporário de consultas
 
 **Status:** temporária, para desenvolvimento da Trilha B.
 

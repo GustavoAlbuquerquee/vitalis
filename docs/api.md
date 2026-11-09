@@ -113,7 +113,7 @@ os módulos de cadastro devem fornecer `PacienteService` e `ProfissionalService`
 enquanto ausentes, criação responde 503 CADASTRO_INDISPONIVEL.
 
 O repositório atual é em memória: reiniciar perde os registros. A interface permite
-integrar o banco após a decisão do grupo. Veja [ADR 0006](decisoes/0006-adaptador-temporario-de-consultas.md).
+integrar o banco após a decisão do grupo. Veja [ADR 0007](decisoes/0007-adaptador-temporario-de-consultas.md).
 O frontend da Sprint 1 ainda usa dados locais e requer integração posterior com esta API.
 
 ## Internações
