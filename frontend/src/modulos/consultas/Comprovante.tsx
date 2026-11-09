@@ -20,7 +20,7 @@ interface ComprovanteProps {
  */
 export function Comprovante({ paciente, profissional, data, horario, duracao, aoDestacar }: ComprovanteProps) {
   // Senha de atendimento: letra da especialidade + dia + horário. Ex.: C-0614 (cardiologia, dia 06, 14h)
-  const senha = `${profissional.especialidade[0]}-${data.slice(8)}${horario.slice(0, 2)}`
+  const senha = `${nomeEspecialidade(profissional)[0].toLocaleUpperCase('pt-BR')}-${data.slice(8)}${horario.slice(0, 2)}`
   return (
     <>
       <div className={s.palco}>

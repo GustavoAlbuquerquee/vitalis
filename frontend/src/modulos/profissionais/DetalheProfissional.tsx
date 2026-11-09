@@ -21,18 +21,25 @@ import {
   usePrototipo,
 } from '@/ds'
 import { Horario, Pessoa, SeloConsulta, diasInternado, nomeEspecialidade } from '@/componentes/dominio'
-import { buscarPaciente, buscarProfissional, buscarQuarto, listarConsultas, listarInternacoes } from '@/api'
+import { especialidadeDoProfissional } from '@/dominio/profissionais'
+import { buscarPaciente, buscarProfissional, buscarQuarto, listarConsultas, listarInternacoes, listarProcedimentosDoCirurgiao } from '@/api'
 import { conflitaCom } from '@/dominio/regras'
 import { hoje, indiceDiaSemana, minutos, somarDias } from '@/lib/datas'
-import { diaDaSemana, formatarDataLonga, formatarTelefone, plural, relativo } from '@/lib/formato'
+import { diaDaSemana, formatarDataHora, formatarDataLonga, formatarTelefone, plural, relativo } from '@/lib/formato'
 import { diasSemana, especialidades } from '@/lib/rotulos'
-import type { DiaSemana, Disponibilidade, ProfissionalSaude } from '@/tipos/dominio'
+import type { DiaSemana, Disponibilidade, ProfissionalSaude, StatusProcedimento } from '@/tipos/dominio'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
 import { cn } from '@/lib/cn'
 import s from './DetalheProfissional.module.css'
 
 /** "às segundas", "aos sábados" */
 const nosDias = (d: (typeof diasSemana)[number]) => `${d.valor === 'SABADO' || d.valor === 'DOMINGO' ? 'aos' : 'às'} ${d.rotulo.toLowerCase()}s`
+const statusProcedimento: Record<StatusProcedimento, string> = {
+  AGENDADO: 'Agendado',
+  EM_ANDAMENTO: 'Em andamento',
+  CONCLUIDO: 'Concluído',
+  CANCELADO: 'Cancelado',
+}
 
 const janelasDoDia = (p: ProfissionalSaude, dia: DiaSemana) =>
   p.disponibilidades.filter((j) => j.diaSemana === dia).sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
@@ -50,12 +57,19 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
   const realizadas30 = listarConsultas({ profissionalId: p.id, status: 'REALIZADA' }).filter((c) => c.data >= somarDias(dia, -30) && c.data <= dia).length
   const agendadas7 = listarConsultas({ profissionalId: p.id, status: 'AGENDADA' }).filter((c) => c.data >= dia && c.data <= somarDias(dia, 7)).length
   const internacoes = listarInternacoes({ status: 'ATIVA' }).filter((i) => i.profissionalId === p.id)
+  const procedimentos = p.tipo === 'CIRURGIAO' ? listarProcedimentosDoCirurgiao(p.id) : []
 
-  const numeros = [
-    { rotulo: 'Consultas realizadas', detalhe: 'Últimos 30 dias', valor: realizadas30 },
-    { rotulo: 'Consultas agendadas', detalhe: 'Próximos 7 dias', valor: agendadas7 },
-    { rotulo: 'Internações ativas', detalhe: 'Sob responsabilidade', valor: internacoes.length },
-  ]
+  const numeros = p.tipo === 'CIRURGIAO'
+    ? [
+        { rotulo: 'Procedimentos realizados', detalhe: 'Registrados', valor: procedimentos.filter((x) => x.status === 'CONCLUIDO').length },
+        { rotulo: 'Procedimentos agendados', detalhe: 'Próximos registros', valor: procedimentos.filter((x) => x.status === 'AGENDADO').length },
+        { rotulo: 'Em andamento', detalhe: 'Procedimentos', valor: procedimentos.filter((x) => x.status === 'EM_ANDAMENTO').length },
+      ]
+    : [
+        { rotulo: 'Consultas realizadas', detalhe: 'Últimos 30 dias', valor: realizadas30 },
+        { rotulo: 'Consultas agendadas', detalhe: 'Próximos 7 dias', valor: agendadas7 },
+        { rotulo: 'Internações ativas', detalhe: 'Sob responsabilidade', valor: internacoes.length },
+      ]
 
   return (
     <Pagina>
@@ -75,16 +89,18 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
             <BotaoLink to={`/profissionais/${p.id}/editar`} icone={<Pencil />}>
               Editar
             </BotaoLink>
-            <BotaoLink to={`/consultas/nova?profissionalId=${p.id}`} variante="primario" icone={<CalendarPlus />}>
-              Agendar consulta
-            </BotaoLink>
+            {p.tipo !== 'CIRURGIAO' && (
+              <BotaoLink to={`/consultas/nova?profissionalId=${p.id}`} variante="primario" icone={<CalendarPlus />}>
+                Agendar consulta
+              </BotaoLink>
+            )}
           </>
         }
       />
 
       <div className={s.colunas}>
         <div className={s.coluna}>
-          <AgendaDoDia p={p} />
+          {p.tipo !== 'CIRURGIAO' && <AgendaDoDia p={p} />}
           <DisponibilidadeSemanal p={p} />
         </div>
 
@@ -111,11 +127,31 @@ function Ficha({ p }: { p: ProfissionalSaude }) {
                       </a>
                     ),
                   },
-                  { rotulo: `Registro profissional (${especialidades[p.especialidade].conselho})`, valor: p.registroProfissional, mono: true },
+                  { rotulo: `Registro profissional (${especialidades[especialidadeDoProfissional(p) ?? 'CLINICA_GERAL'].conselho})`, valor: p.registroProfissional, mono: true },
                 ]}
               />
             </CorpoCartao>
           </Cartao>
+
+          {p.tipo === 'CIRURGIAO' && (
+            <Cartao>
+              <CabecalhoCartao titulo="Procedimentos cirúrgicos" descricao="Registro dos procedimentos associados ao cirurgião." />
+              {procedimentos.length === 0 ? (
+                <p className={s.semInternacoes}>Nenhum procedimento registrado.</p>
+              ) : (
+                <ul className={s.procedimentos}>
+                  {procedimentos.map((procedimento) => (
+                    <li key={procedimento.id} className={s.procedimento}>
+                      <strong>{procedimento.descricao}</strong>
+                      <span>{buscarPaciente(procedimento.pacienteId)?.nome ?? `Paciente #${procedimento.pacienteId}`}</span>
+                      <span>{procedimento.tipoCirurgia} · {formatarDataHora(procedimento.dataHoraEfetiva ?? procedimento.dataHoraPrevista)}</span>
+                      <span>{statusProcedimento[procedimento.status]}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Cartao>
+          )}
 
           <Cartao>
             <CabecalhoCartao titulo="Números" />

@@ -4,7 +4,7 @@
 
 O Vitalis é organizado em duas dimensões que se cruzam:
 
-- **Horizontalmente, por domínio** — sete módulos, cada um dono de um pedaço do hospital
+- **Horizontalmente, por domínio** — módulos, cada um dono de um pedaço do hospital
 - **Verticalmente, por camada** — dentro de cada módulo, quatro camadas com responsabilidades fixas
 
 ```mermaid

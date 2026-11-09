@@ -69,6 +69,13 @@ public class GlobalExceptionHandler {
                 "A requisição contém dados inválidos", request, Collections.<String>emptyList());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErroResponse> tratarArgumentoInvalido(
+            IllegalArgumentException exception, HttpServletRequest request) {
+        return resposta(HttpStatus.BAD_REQUEST, CODIGO_DADOS_INVALIDOS,
+                exception.getMessage(), request, Collections.<String>emptyList());
+    }
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ErroResponse> tratarRotaNaoEncontrada(
             NoHandlerFoundException exception, HttpServletRequest request) {

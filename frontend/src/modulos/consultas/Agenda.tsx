@@ -19,6 +19,7 @@ import {
   Th,
 } from '@/ds'
 import { Horario, Pessoa, SeloConsulta, nomeEspecialidade } from '@/componentes/dominio'
+import { especialidadeDoProfissional } from '@/dominio/profissionais'
 import { buscarPaciente, buscarProfissional, listarConsultas, listarProfissionais } from '@/api'
 import { hhmm, hoje, indiceDiaSemana, minutos, somarDias } from '@/lib/datas'
 import { diaDaSemana, formatarDataLonga, plural, relativo } from '@/lib/formato'
@@ -46,7 +47,10 @@ export function Agenda() {
   }
   const irPara = (d: string) => atualizar({ data: d === hoje() ? null : d })
 
-  const consultas = listarConsultas({ data }).filter((c) => !especialidade || buscarProfissional(c.profissionalId)?.especialidade === especialidade)
+  const consultas = listarConsultas({ data }).filter((c) => {
+    const profissional = buscarProfissional(c.profissionalId)
+    return !especialidade || (profissional && especialidadeDoProfissional(profissional) === especialidade)
+  })
   const agendadas = consultas.filter((c) => c.status === 'AGENDADA').length
 
   return (
@@ -133,7 +137,7 @@ function GradeDoDia({ data, consultas, especialidade }: { data: string; consulta
     () =>
       listarProfissionais().filter(
         (p) =>
-          (!especialidade || p.especialidade === especialidade) &&
+          (!especialidade || especialidadeDoProfissional(p) === especialidade) &&
           (p.disponibilidades.some((j) => j.diaSemana === dia) || consultas.some((c) => c.profissionalId === p.id)),
       ),
     [dia, consultas, especialidade],

@@ -131,6 +131,22 @@
   color: var(--ink-3);
 }
 
+.procedimentos {
+  padding-bottom: 4px;
+}
+.procedimento {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 20px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.procedimento + .procedimento { border-top: 1px solid var(--line); }
+.procedimento > span {
+  color: var(--ink-3);
+}
+
 .internacoes {
   padding-bottom: 4px;
 }

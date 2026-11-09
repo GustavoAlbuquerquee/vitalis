@@ -10,9 +10,11 @@ import type {
   DiaSemana,
   Disponibilidade,
   Especialidade,
+  Encaminhamento,
   Internacao,
   Paciente,
   ProfissionalSaude,
+  ProcedimentoCirurgico,
   Quarto,
   RegistroClinico,
   StatusConsulta,
@@ -61,16 +63,30 @@ export const profissionais: ProfissionalSaude[] = baseProfissionais.map(([nome, 
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .split(' ')
-  return {
+  const comum = {
     id: i + 1,
     nome,
-    especialidade,
     registroProfissional,
     disponibilidades,
     telefone: `3132${String(100000 + i * 7919).slice(-6)}`,
     email: `${usuario[0]}.${usuario[usuario.length - 1]}@vitalis.med.br`,
     ativo: true,
   }
+  return especialidade === 'CLINICA_GERAL'
+    ? { ...comum, tipo: 'CLINICO_GERAL' as const }
+    : { ...comum, tipo: 'ESPECIALISTA' as const, especialidade }
+})
+
+profissionais.push({
+  id: 13,
+  nome: 'Dr. Eduardo Faria',
+  tipo: 'CIRURGIAO',
+  areaCirurgica: 'Cirurgia geral',
+  registroProfissional: 'CRM-MG 71.284',
+  disponibilidades: janela(13, UTEIS, '08:00', '16:00'),
+  telefone: '3132123456',
+  email: 'eduardo.faria@vitalis.med.br',
+  ativo: true,
 })
 
 /* ───────────────────────── Pacientes ───────────────────────── */
@@ -142,6 +158,15 @@ export const pacientes: Paciente[] = nomesPacientes.map((nome, i) => {
     ativo: i !== 30,
   }
 })
+
+export const encaminhamentos: Encaminhamento[] = [
+  {
+    pacienteId: 1,
+    clinicoGeralId: 2,
+    especialidade: 'CARDIOLOGIA',
+    motivo: 'Avaliação especializada de palpitações recorrentes.',
+  },
+]
 
 /* ───────────────────────── Quartos ───────────────────────── */
 
@@ -234,6 +259,31 @@ encerradas.forEach(([numero, pacienteId, profissionalId, entrouHa, duracao, moti
   })
 })
 
+export const procedimentosCirurgicos: ProcedimentoCirurgico[] = [
+  {
+    id: 1,
+    pacienteId: 3,
+    cirurgiaoId: 13,
+    descricao: 'Herniorrafia inguinal',
+    tipoCirurgia: 'Eletiva',
+    observacoesPreOperatorias: 'Avaliação pré-operatória concluída.',
+    observacoesPosOperatorias: 'Procedimento sem intercorrências.',
+    dataHoraPrevista: `${somarDias(HOJE, -10)}T08:00`,
+    dataHoraEfetiva: `${somarDias(HOJE, -10)}T08:12`,
+    status: 'CONCLUIDO',
+  },
+  {
+    id: 2,
+    pacienteId: 18,
+    cirurgiaoId: 13,
+    descricao: 'Colecistectomia videolaparoscópica',
+    tipoCirurgia: 'Eletiva',
+    observacoesPreOperatorias: 'Jejum e exames pré-operatórios conferidos.',
+    dataHoraPrevista: `${somarDias(HOJE, 2)}T09:30`,
+    status: 'AGENDADO',
+  },
+]
+
 /* ───────────────────────── Consultas ───────────────────────── */
 
 const motivosConsulta: Record<Especialidade, string[]> = {
@@ -261,11 +311,13 @@ export const consultas: Consulta[] = []
 function preencherDia(data: string, densidade: number) {
   const dia = diasSemana[indiceDiaSemana(data)].valor
   for (const p of profissionais) {
+    if (p.tipo === 'CIRURGIAO') continue
     for (const j of p.disponibilidades.filter((d) => d.diaSemana === dia)) {
       let t = minutos(j.horaInicio)
       const fim = minutos(j.horaFim)
       while (t + 30 <= fim) {
-        const duracao = p.especialidade === 'FISIOTERAPIA' ? 45 : p.especialidade === 'ENFERMAGEM' ? 20 : aleatorio() > 0.8 ? 60 : 30
+        const especialidade = p.tipo === 'ESPECIALISTA' ? p.especialidade : 'CLINICA_GERAL'
+        const duracao = especialidade === 'FISIOTERAPIA' ? 45 : especialidade === 'ENFERMAGEM' ? 20 : aleatorio() > 0.8 ? 60 : 30
         if (t + duracao > fim) break
         if (aleatorio() < densidade) {
           const passado = data < HOJE
@@ -286,7 +338,7 @@ function preencherDia(data: string, densidade: number) {
             data,
             horario: hhmm(t),
             duracaoMinutos: duracao,
-            motivo: escolher(motivosConsulta[p.especialidade]),
+            motivo: escolher(motivosConsulta[especialidade]),
             observacoesMedicas: status === 'REALIZADA' ? escolher(obsRealizada) : undefined,
             status,
           })

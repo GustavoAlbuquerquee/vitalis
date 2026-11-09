@@ -12,6 +12,7 @@ Por que registrar: daqui a dois meses ninguém lembra por que `Atendimento` é a
 | [0002](0002-escolha-do-banco.md) | Escolha do banco de dados | **Proposta** — precisa da decisão do time |
 | [0003](0003-atendimento-como-superclasse.md) | `Atendimento` como superclasse abstrata | Aceita |
 | [0004](0004-historico-derivado.md) | Histórico médico derivado, não armazenado | Aceita |
+| [0005](0005-regra-tipo-quarto-informativo.md) | Tipo de quarto informativo | Aceita |
 
 ## Como escrever uma nova
 

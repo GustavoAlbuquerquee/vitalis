@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { LayoutGrid, List, SearchX, UserPlus } from 'lucide-react'
 import { Botao, BotaoLink, Busca, CabecalhoPagina, Cartao, EstadoVazio, Etiqueta, Linha, Pagina, Pilulas, Segmentado, Selo, Tabela, Td, Th, Avatar } from '@/ds'
 import { Pessoa, nomeEspecialidade } from '@/componentes/dominio'
+import { especialidadeDoProfissional } from '@/dominio/profissionais'
 import { listarConsultas, listarProfissionais } from '@/api'
 import { hoje, indiceDiaSemana, minutos } from '@/lib/datas'
 import { formatarTelefone, normalizar, plural } from '@/lib/formato'
@@ -71,13 +72,13 @@ export function ListaProfissionais() {
       normalizar(p.registroProfissional).includes(q) ||
       (digitos.length >= 2 && p.registroProfissional.replace(/\D/g, '').includes(digitos)),
   )
-  const visiveis = encontrados.filter((p) => filtro === 'TODAS' || p.especialidade === filtro)
+  const visiveis = encontrados.filter((p) => filtro === 'TODAS' || especialidadeDoProfissional(p) === filtro)
 
   // Só as especialidades que existem no cadastro, na ordem do enum
-  const presentes = (Object.keys(especialidades) as Especialidade[]).filter((e) => todos.some((p) => p.especialidade === e))
+  const presentes = (Object.keys(especialidades) as Especialidade[]).filter((e) => todos.some((p) => especialidadeDoProfissional(p) === e))
   const opcoesFiltro = [
     { valor: 'TODAS' as Filtro, rotulo: 'Todas', contagem: encontrados.length },
-    ...presentes.map((e) => ({ valor: e as Filtro, rotulo: especialidades[e].rotulo, contagem: encontrados.filter((p) => p.especialidade === e).length })),
+    ...presentes.map((e) => ({ valor: e as Filtro, rotulo: especialidades[e].rotulo, contagem: encontrados.filter((p) => especialidadeDoProfissional(p) === e).length })),
   ]
 
   const limpar = () => {

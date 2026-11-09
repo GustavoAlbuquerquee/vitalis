@@ -1,6 +1,9 @@
 # API
 
-Contrato REST previsto. Ainda não implementado — este documento é o alvo.
+Contrato REST do Vitalis. Os módulos profissionais, quartos, internações e
+procedimentos cirúrgicos estão implementados em memória; seus cadastros são
+reiniciados quando a aplicação reinicia. A persistência será definida junto da
+escolha de banco registrada no ADR 0002.
 
 **Base:** `/api/v1`
 
@@ -32,10 +35,20 @@ Contrato REST previsto. Ainda não implementado — este documento é o alvo.
 |---|---|---|
 | `POST` | `/profissionais` | `201` · `409` se registro duplicado |
 | `GET` | `/profissionais/{id}` | `200` · `404` |
-| `GET` | `/profissionais?especialidade=` | `200` paginado |
+| `GET` | `/profissionais?especialidade=&tipo=` | `200` |
 | `PUT` | `/profissionais/{id}` | `200` · `404` |
 | `POST` | `/profissionais/{id}/disponibilidades` | `201` · `409` se sobrepõe janela existente |
-| `GET` | `/profissionais/{id}/agenda?data=` | `200` |
+| `POST` | `/profissionais/{id}/encaminhamentos` | `201` · clínico geral encaminha paciente |
+| `GET` | `/profissionais/{id}/encaminhamentos` | `200` |
+| `GET` | `/profissionais/{id}/agenda?data=` | `200` · janelas disponíveis na data |
+
+`POST /profissionais` recebe `tipo` como `CLINICO_GERAL`, `ESPECIALISTA` ou
+`CIRURGIAO`. Especialistas informam `especialidade`; cirurgiões informam
+`areaCirurgica`. O registro é único independentemente de pontuação ou caixa.
+As janelas usam `diaSemana`, `horaInicio` e `horaFim`, e intervalos sobrepostos
+no mesmo dia são recusados. A agenda retorna essas janelas para a data
+solicitada; consultas e internações serão agregadas quando seus módulos de API
+forem implementados.
 
 ## Consultas
 
@@ -95,6 +108,28 @@ POST /api/v1/consultas
 | `GET` | `/quartos?situacao=&andar=&tipo=` | `200` paginado |
 | `GET` | `/quartos/{id}/ocupacao` | `200` — ocupação atual e vagas |
 | `PATCH` | `/quartos/{id}/situacao` | `200` · `409` se há paciente e tenta interditar |
+
+O `tipo` do quarto é classificatório e não altera as regras de capacidade
+(decisão registrada no ADR 0005). A resposta de quarto inclui ocupação, vagas e
+situação calculadas a partir de internações ativas e bloqueios administrativos;
+`situacao` não é um campo de entrada editável.
+
+## Procedimentos cirúrgicos
+
+| Método | Rota | Resposta |
+|---|---|---|
+| `POST` | `/procedimentos-cirurgicos` | `201` · `400` se o responsável não for cirurgião |
+| `GET` | `/procedimentos-cirurgicos?cirurgiaoId=` | `200` |
+| `GET` | `/procedimentos-cirurgicos/{id}` | `200` · `404` |
+| `GET` | `/profissionais/{id}/procedimentos-cirurgicos` | `200` · procedimentos do cirurgião |
+| `PATCH` | `/procedimentos-cirurgicos/{id}/inicio` | `200` |
+| `PATCH` | `/procedimentos-cirurgicos/{id}/conclusao` | `200` · recebe `dataHoraConclusao`; `422` se não foi iniciado |
+| `PATCH` | `/procedimentos-cirurgicos/{id}/cancelamento` | `200` · `422` se já concluído/cancelado |
+
+O procedimento conserva as observações pré e pós-operatórias separadas. A data
+efetiva fica nula até o início efetivo e o estado só pode seguir
+`AGENDADO → EM_ANDAMENTO → CONCLUIDO`; pode ser cancelado enquanto agendado ou
+em andamento.
 
 ## Histórico e registros clínicos
 

@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { AreaTexto, Botao, CabecalhoCartao, CabecalhoPagina, Campo, Cartao, CorpoCartao, Entrada, Modal, Pagina, Secao, Selecao, usePrototipo } from '@/ds'
 import StatusMark from '@/ds/react-bits/StatusMark'
 import { Horario } from '@/componentes/dominio'
+import { especialidadeDoProfissional } from '@/dominio/profissionais'
 import { buscarPaciente, buscarProfissional, consultasDoProfissional, listarPacientes, listarProfissionais } from '@/api'
 import { cabeNaDisponibilidade, conflitaCom, consultaOcupaAgenda, intervaloDaConsulta } from '@/dominio/regras'
 import { hhmm, hoje, indiceDiaSemana, minutos, somarDias } from '@/lib/datas'
@@ -31,7 +32,7 @@ export function AgendarConsulta() {
   const [comprovante, setComprovante] = useState(false)
 
   const pacientes = listarPacientes().filter((p) => p.ativo)
-  const profissionais = listarProfissionais()
+  const profissionais = listarProfissionais().filter((p) => p.tipo !== 'CIRURGIAO')
   const profissional = profissionalId ? buscarProfissional(Number(profissionalId)) : undefined
   const paciente = pacienteId ? buscarPaciente(Number(pacienteId)) : undefined
 
@@ -126,7 +127,7 @@ export function AgendarConsulta() {
 
 
   const porEspecialidade = Object.entries(especialidades)
-    .map(([k, v]) => ({ k: k as Especialidade, rotulo: v.rotulo, lista: profissionais.filter((p) => p.especialidade === k) }))
+    .map(([k, v]) => ({ k: k as Especialidade, rotulo: v.rotulo, lista: profissionais.filter((p) => especialidadeDoProfissional(p) === k) }))
     .filter((g) => g.lista.length)
 
   return (

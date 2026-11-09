@@ -14,11 +14,14 @@ export type Especialidade =
   | 'NEUROLOGIA'
   | 'ENFERMAGEM'
   | 'FISIOTERAPIA'
+export type EspecialidadeClinica = Exclude<Especialidade, 'CLINICA_GERAL'>
 
+export type TipoProfissional = 'CLINICO_GERAL' | 'ESPECIALISTA' | 'CIRURGIAO'
 export type StatusConsulta = 'AGENDADA' | 'REALIZADA' | 'CANCELADA' | 'NAO_COMPARECEU'
 export type StatusInternacao = 'ATIVA' | 'ALTA_CONCEDIDA' | 'TRANSFERIDA' | 'CANCELADA'
 export type SituacaoQuarto = 'DISPONIVEL' | 'OCUPADO' | 'MANUTENCAO' | 'INTERDITADO'
 export type TipoQuarto = 'ENFERMARIA' | 'APARTAMENTO' | 'UTI' | 'ISOLAMENTO'
+export type StatusProcedimento = 'AGENDADO' | 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
 export type DiaSemana = 'SEGUNDA' | 'TERCA' | 'QUARTA' | 'QUINTA' | 'SEXTA' | 'SABADO' | 'DOMINGO'
 export type TipoRegistro = 'ANAMNESE' | 'DIAGNOSTICO' | 'PRESCRICAO' | 'EXAME' | 'EVOLUCAO'
 
@@ -55,10 +58,47 @@ export interface Disponibilidade {
   horaFim: string
 }
 
-export interface ProfissionalSaude extends Pessoa {
+interface ProfissionalBase extends Pessoa {
   registroProfissional: string
-  especialidade: Especialidade
   disponibilidades: Disponibilidade[]
+}
+
+export interface ClinicoGeral extends ProfissionalBase {
+  tipo: 'CLINICO_GERAL'
+}
+
+export interface Especialista extends ProfissionalBase {
+  tipo: 'ESPECIALISTA'
+  especialidade: EspecialidadeClinica
+}
+
+export interface Cirurgiao extends ProfissionalBase {
+  tipo: 'CIRURGIAO'
+  areaCirurgica: string
+}
+
+export type ProfissionalSaude = ClinicoGeral | Especialista | Cirurgiao
+
+export interface Encaminhamento {
+  pacienteId: number
+  clinicoGeralId: number
+  especialidade: Especialidade
+  motivo: string
+}
+
+export interface ProcedimentoCirurgico {
+  id: number
+  pacienteId: number
+  cirurgiaoId: number
+  descricao: string
+  tipoCirurgia: string
+  observacoesPreOperatorias?: string
+  observacoesPosOperatorias?: string
+  /** ISO yyyy-mm-ddTHH:mm */
+  dataHoraPrevista: string
+  /** ISO yyyy-mm-ddTHH:mm; ausente até o início efetivo. */
+  dataHoraEfetiva?: string
+  status: StatusProcedimento
 }
 
 export interface Consulta {

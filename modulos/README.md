@@ -8,6 +8,7 @@ O Vitalis é dividido por **domínio**, não por tipo de arquivo. Cada diretóri
 flowchart LR
     PAC["pacientes"]
     PRO["profissionais"]
+    PROC["procedimentos"]
     CON["consultas"]
     INT["internacoes"]
     QUA["quartos"]
@@ -19,12 +20,14 @@ flowchart LR
     INT --> PAC
     INT --> PRO
     INT --> QUA
+    PROC --> PRO
     HIS --> PAC
     HIS --> CON
     HIS --> INT
 
     PAC --> COM
     PRO --> COM
+    PROC --> COM
     CON --> COM
     INT --> COM
     QUA --> COM
@@ -36,6 +39,7 @@ flowchart LR
 | [`comum`](comum) | Exceções, respostas de erro, validações e tipos compartilhados | — |
 | [`pacientes`](pacientes) | Cadastro de pacientes | `comum` |
 | [`profissionais`](profissionais) | Cadastro de profissionais e disponibilidade | `comum` |
+| [`procedimentos`](procedimentos) | Procedimentos cirúrgicos e seu ciclo de vida | `profissionais`, `comum` |
 | [`quartos`](quartos) | Leitos, capacidade e ocupação | `comum` |
 | [`consultas`](consultas) | Agendamento e ciclo de vida das consultas | `pacientes`, `profissionais`, `comum` |
 | [`internacoes`](internacoes) | Entrada, transferência e alta | `pacientes`, `profissionais`, `quartos`, `comum` |

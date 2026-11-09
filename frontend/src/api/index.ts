@@ -5,10 +5,11 @@
  * do endpoint correspondente em docs/api.md — quando o back-end existir,
  * troca-se o corpo por fetch('/api/v1/...') e as telas não mudam.
  */
-import { consultas, internacoes, pacientes, profissionais, quartos, registros } from '@/dados/semente'
-import type { Consulta, Internacao, Paciente, ProfissionalSaude, Quarto, RegistroClinico } from '@/tipos/dominio'
+import { consultas, encaminhamentos, internacoes, pacientes, profissionais, procedimentosCirurgicos, quartos, registros } from '@/dados/semente'
+import type { Consulta, Encaminhamento, Especialidade, Internacao, Paciente, ProfissionalSaude, ProcedimentoCirurgico, Quarto, RegistroClinico, TipoProfissional } from '@/tipos/dominio'
 import { normalizar } from '@/lib/formato'
 import { ocupacaoAtual, situacaoDoQuarto } from '@/dominio/regras'
+import { especialidadeDoProfissional } from '@/dominio/profissionais'
 
 const porId = <T extends { id: number }>(lista: T[], id: number) => lista.find((x) => x.id === id)
 
@@ -23,9 +24,16 @@ export const listarPacientes = (busca = ''): Paciente[] => {
 export const buscarPaciente = (id: number) => porId(pacientes, id)
 
 /* GET /profissionais · /profissionais/{id} */
-export const listarProfissionais = (): ProfissionalSaude[] =>
-  [...profissionais].sort((a, b) => a.nome.replace(/^\S+\s/, '').localeCompare(b.nome.replace(/^\S+\s/, ''), 'pt-BR'))
+export const listarProfissionais = (filtro: { especialidade?: Especialidade; tipo?: TipoProfissional } = {}): ProfissionalSaude[] =>
+  profissionais
+    .filter((p) => filtro.tipo === undefined || p.tipo === filtro.tipo)
+    .filter((p) => filtro.especialidade === undefined || especialidadeDoProfissional(p) === filtro.especialidade)
+    .sort((a, b) => a.nome.replace(/^\S+\s/, '').localeCompare(b.nome.replace(/^\S+\s/, ''), 'pt-BR'))
 export const buscarProfissional = (id: number) => porId(profissionais, id)
+export const listarEncaminhamentosDoClinico = (clinicoGeralId: number): Encaminhamento[] =>
+  encaminhamentos.filter((e) => e.clinicoGeralId === clinicoGeralId)
+export const listarProcedimentosDoCirurgiao = (cirurgiaoId: number): ProcedimentoCirurgico[] =>
+  procedimentosCirurgicos.filter((p) => p.cirurgiaoId === cirurgiaoId)
 
 /* GET /consultas?profissionalId=&pacienteId=&data=&status= */
 export function listarConsultas(filtro: Partial<Pick<Consulta, 'profissionalId' | 'pacienteId' | 'data' | 'status'>> = {}): Consulta[] {

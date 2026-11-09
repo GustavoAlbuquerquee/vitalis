@@ -3,15 +3,18 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { CalendarClock } from 'lucide-react'
 import { Botao, CabecalhoPagina, Campo, Cartao, Entrada, Pagina, Secao, Selecao, usePrototipo } from '@/ds'
 import { buscarProfissional, listarProfissionais } from '@/api'
+import { especialidadeDoProfissional } from '@/dominio/profissionais'
 import { mascaraTelefone } from '@/lib/formato'
 import { especialidades } from '@/lib/rotulos'
-import type { Especialidade } from '@/tipos/dominio'
+import type { Especialidade, TipoProfissional } from '@/tipos/dominio'
 import { NaoEncontrada } from '@/app/NaoEncontrada'
 import s from './FormularioProfissional.module.css'
 
 interface Dados {
   nome: string
+  tipo: TipoProfissional
   especialidade: Especialidade | ''
+  areaCirurgica: string
   registro: string
   telefone: string
   email: string
@@ -35,7 +38,8 @@ function validar(d: Dados, idAtual?: number): Erros {
   const erros: Erros = {}
   if (!d.nome.trim()) erros.nome = 'Informe o nome do profissional'
   else if (d.nome.trim().length < 3) erros.nome = 'Nome muito curto'
-  if (!d.especialidade) erros.especialidade = 'Escolha a especialidade'
+  if (d.tipo === 'ESPECIALISTA' && !d.especialidade) erros.especialidade = 'Escolha a especialidade'
+  if (d.tipo === 'CIRURGIAO' && !d.areaCirurgica.trim()) erros.areaCirurgica = 'Informe a área cirúrgica'
   if (!d.registro.trim()) erros.registro = 'Informe o registro profissional'
   else {
     const repetido = listarProfissionais().find((p) => p.id !== idAtual && chaveRegistro(p.registroProfissional) === chaveRegistro(d.registro))
@@ -58,12 +62,14 @@ export function FormularioProfissional() {
   const inicial: Dados = profissional
     ? {
         nome: profissional.nome,
-        especialidade: profissional.especialidade,
-        registro: profissional.registroProfissional,
+      tipo: profissional.tipo,
+      especialidade: especialidadeDoProfissional(profissional) ?? '',
+      areaCirurgica: profissional.tipo === 'CIRURGIAO' ? profissional.areaCirurgica : '',
+      registro: profissional.registroProfissional,
         telefone: mascaraTelefone(profissional.telefone),
         email: profissional.email,
       }
-    : { nome: '', especialidade: '', registro: '', telefone: '', email: '' }
+    : { nome: '', tipo: 'ESPECIALISTA', especialidade: '', areaCirurgica: '', registro: '', telefone: '', email: '' }
 
   return <Formulario key={id ?? 'novo'} inicial={inicial} idAtual={profissional?.id} nomeAtual={profissional?.nome} />
 }
@@ -76,7 +82,7 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
   const [erros, setErros] = useState<Erros>({})
   const edicao = idAtual !== undefined
 
-  const conselho = dados.especialidade ? especialidades[dados.especialidade].conselho : undefined
+  const conselho = dados.tipo === 'CIRURGIAO' ? 'CRM' : dados.especialidade ? especialidades[dados.especialidade].conselho : undefined
   const infoConselho = conselho ? conselhos[conselho] : undefined
 
   const mudar = <K extends keyof Dados>(campo: K, valor: Dados[K]) => {
@@ -115,20 +121,38 @@ function Formulario({ inicial, idAtual, nomeAtual }: { inicial: Dados; idAtual?:
             <Campo rotulo="Nome" obrigatorio erro={erros.nome} ajuda="Inclua o tratamento usado na agenda: Dr., Dra., Enf., Ft.">
               {(p) => <Entrada {...p} value={dados.nome} onChange={(e) => mudar('nome', e.target.value)} autoComplete="name" placeholder="Dra. Maria Souza" />}
             </Campo>
-            <Campo rotulo="Especialidade" obrigatorio erro={erros.especialidade} colunas={3}>
+            <Campo rotulo="Categoria profissional" obrigatorio colunas={3}>
               {(p) => (
-                <Selecao {...p} value={dados.especialidade} onChange={(e) => mudar('especialidade', e.target.value as Especialidade)}>
-                  <option value="" disabled>
-                    Escolha…
-                  </option>
-                  {(Object.keys(especialidades) as Especialidade[]).map((e) => (
-                    <option key={e} value={e}>
-                      {especialidades[e].rotulo}
-                    </option>
-                  ))}
+                <Selecao {...p} value={dados.tipo} onChange={(e) => mudar('tipo', e.target.value as TipoProfissional)}>
+                  <option value="CLINICO_GERAL">Clínico geral</option>
+                  <option value="ESPECIALISTA">Especialista</option>
+                  <option value="CIRURGIAO">Cirurgião</option>
                 </Selecao>
               )}
             </Campo>
+            {dados.tipo === 'ESPECIALISTA' && (
+              <Campo rotulo="Especialidade" obrigatorio erro={erros.especialidade} colunas={3}>
+                {(p) => (
+                  <Selecao {...p} value={dados.especialidade} onChange={(e) => mudar('especialidade', e.target.value as Especialidade)}>
+                    <option value="" disabled>
+                      Escolha…
+                    </option>
+                    {(Object.keys(especialidades) as Especialidade[])
+                      .filter((e) => e !== 'CLINICA_GERAL')
+                      .map((e) => (
+                        <option key={e} value={e}>
+                          {especialidades[e].rotulo}
+                        </option>
+                      ))}
+                  </Selecao>
+                )}
+              </Campo>
+            )}
+            {dados.tipo === 'CIRURGIAO' && (
+              <Campo rotulo="Área cirúrgica" obrigatorio erro={erros.areaCirurgica} colunas={3}>
+                {(p) => <Entrada {...p} value={dados.areaCirurgica} onChange={(e) => mudar('areaCirurgica', e.target.value)} placeholder="Cirurgia geral" />}
+              </Campo>
+            )}
             <Campo
               rotulo="Registro profissional"
               obrigatorio

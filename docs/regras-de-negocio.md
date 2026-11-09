@@ -1,6 +1,7 @@
 # Regras de negócio
 
-As sete regras do enunciado, cada uma com dono, mecanismo de garantia e cenário de teste.
+As regras de negócio do enunciado e da fatia implementada, cada uma com dono,
+mecanismo de garantia e cenário de teste.
 
 > **Regra do repositório:** alterou uma regra? Este arquivo é atualizado no mesmo pull request.
 
@@ -40,7 +41,8 @@ Um paciente acumula atendimentos ao longo do tempo. Nenhum atendimento anterior 
 
 **Dono:** [`consultas`](../modulos/consultas) e [`internacoes`](../modulos/internacoes)
 
-A regra mais sensível do sistema. Vale para consultas **e** internações — por isso as duas herdam de `Atendimento`.
+A regra mais sensível do sistema. Consultas e internações herdam de `Atendimento`;
+procedimentos cirúrgicos também reutilizam a mesma abstração.
 
 ### O algoritmo
 
@@ -49,7 +51,7 @@ conflitaCom(outro) = this.getInicio() < outro.getFim()
                   && outro.getInicio() < this.getFim()
 ```
 
-Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um único método, herdado, cobre as duas subclasses.
+Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um único método, herdado, cobre as modalidades de atendimento.
 
 | Garantia | Onde |
 |---|---|
@@ -127,11 +129,54 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 
 | Garantia | Onde |
 |---|---|
-| Operações compostas rodam em transação — tudo ou nada | Serviço |
+| Operações compostas são serializadas no estado em memória; com banco, devem usar transação | Serviço |
 | Validação em quatro níveis: DTO, serviço, modelo e banco | Todas as camadas |
 | Nenhuma regra implementada duas vezes | Fronteira de módulo |
 
 **Cenário de teste:** se a atualização do quarto falhar durante uma internação, a internação não é criada.
+
+---
+
+## RN8 — A categoria do profissional define seus dados e responsabilidades
+
+**Dono:** [`profissionais`](../modulos/profissionais)
+
+`ProfissionalSaude` é abstrata e compartilha identidade e contato. Clínicos
+gerais, especialistas e cirurgiões são tipos distintos; somente especialistas
+possuem especialidade e somente cirurgiões podem responder por um procedimento
+cirúrgico. O registro profissional é único, mesmo com diferenças de pontuação
+ou caixa. Janelas do mesmo dia não podem se sobrepor.
+
+**Cenário de teste:** um registro repetido com formatação diferente é recusado;
+uma janela sobreposta no mesmo dia é recusada; clínico geral registra
+encaminhamento e profissional de outra categoria não consegue fazê-lo.
+
+---
+
+## RN9 — Um procedimento só pode ser concluído depois de iniciado
+
+**Dono:** [`procedimentos`](../modulos/procedimentos)
+
+`ProcedimentoCirurgico` exige `Cirurgiao`, mantém observações pré e
+pós-operatórias separadas, e guarda horários previsto e efetivo em campos
+distintos. A transição `AGENDADO → CONCLUIDO` é proibida no próprio modelo.
+Cancelamento só é permitido em `AGENDADO` ou `EM_ANDAMENTO`.
+
+**Cenário de teste:** tentar concluir um procedimento agendado lança
+`TransicaoInvalidaException` e não altera seu estado.
+
+---
+
+## RN10 — Ocupação e situação do quarto refletem o estado real
+
+**Dono:** [`quartos`](../modulos/quartos) e [`internacoes`](../modulos/internacoes)
+
+A entrada e a alta alteram juntas a internação e a ocupação do quarto. O tipo
+do quarto é apenas informativo e não altera a capacidade; decisão registrada
+no [ADR 0005](decisoes/0005-regra-tipo-quarto-informativo.md).
+
+**Cenário de teste:** capacidade 2 recusa a terceira internação; uma alta libera
+uma vaga; manutenção ou interdição recusam novas internações.
 
 ---
 
@@ -146,3 +191,6 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 | RN5 | `quartos` | `CapacidadeExcedidaException` | 409 |
 | RN6 | `historico` | — | — |
 | RN7 | todos | `RegraDeNegocioException` | 409 |
+| RN8 | `profissionais` | `RegistroProfissionalDuplicadoException`, `ConflitoDisponibilidadeException` | 409 |
+| RN9 | `procedimentos` | `TransicaoInvalidaException` | 422 |
+| RN10 | `quartos`, `internacoes` | `QuartoIndisponivelException`, `CapacidadeExcedidaException` | 409 |

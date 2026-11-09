@@ -9,6 +9,7 @@ import { Avatar, Selo } from '@/ds'
 import { especialidades, situacaoQuarto, statusConsulta, statusInternacao, tiposRegistro } from '@/lib/rotulos'
 import { formatarDataHora } from '@/lib/formato'
 import { buscarProfissional } from '@/api'
+import { especialidadeDoProfissional } from '@/dominio/profissionais'
 import { cn } from '@/lib/cn'
 import s from './dominio.module.css'
 
@@ -43,7 +44,11 @@ export function Pessoa({ nome, detalhe, para, tamanho = 'md', className }: Pesso
   )
 }
 
-export const nomeEspecialidade = (p: ProfissionalSaude) => especialidades[p.especialidade].rotulo
+export function nomeEspecialidade(p: ProfissionalSaude) {
+  if (p.tipo === 'CIRURGIAO') return `Cirurgia · ${p.areaCirurgica}`
+  const especialidade = especialidadeDoProfissional(p)
+  return especialidade ? especialidades[especialidade].rotulo : 'Profissional da saúde'
+}
 
 /** Linha do tempo dos registros clínicos de um atendimento. */
 export function RegistrosClinicos({ registros, compacto }: { registros: RegistroClinico[]; compacto?: boolean }) {

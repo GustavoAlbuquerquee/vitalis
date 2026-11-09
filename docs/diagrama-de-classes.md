@@ -60,14 +60,41 @@ classDiagram
     }
 
     class ProfissionalSaude {
+        <<abstract>>
         -String registroProfissional
-        -Especialidade especialidade
         -List~Disponibilidade~ disponibilidades
         -List~Atendimento~ atendimentos
         +estaDisponivelEm(LocalDateTime ini, LocalDateTime fim) boolean
         +possuiConflito(Atendimento novo) boolean
         +getAgendaDoDia(LocalDate data) List~Atendimento~
         +getIdentificacaoPrincipal() String
+    }
+
+    class ClinicoGeral {
+        +encaminhar(Paciente p, Especialidade e, String motivo) Encaminhamento
+    }
+
+    class Especialista {
+        -Especialidade especialidade
+        +atendeNaEspecialidade(Especialidade e) boolean
+    }
+
+    class Cirurgiao {
+        -String areaCirurgica
+    }
+
+    class ProcedimentoCirurgico {
+        -String descricao
+        -String tipoCirurgia
+        -String observacoesPreOperatorias
+        -String observacoesPosOperatorias
+        -LocalDateTime dataHoraPrevista
+        -LocalDateTime dataHoraEfetiva
+        -StatusProcedimento status
+        +iniciar(LocalDateTime dataHora) void
+        +concluir(LocalDateTime dataHora, String observacoes) void
+        +cancelar() void
+        +validarCondicoes() void
     }
 
     class Endereco {
@@ -189,6 +216,14 @@ classDiagram
         CANCELADA
     }
 
+    class StatusProcedimento {
+        <<enumeration>>
+        AGENDADO
+        EM_ANDAMENTO
+        CONCLUIDO
+        CANCELADO
+    }
+
     class SituacaoQuarto {
         <<enumeration>>
         DISPONIVEL
@@ -236,8 +271,12 @@ classDiagram
     %% ===================== HERANÇA =====================
     Pessoa <|-- Paciente
     Pessoa <|-- ProfissionalSaude
+    ProfissionalSaude <|-- ClinicoGeral
+    ProfissionalSaude <|-- Especialista
+    ProfissionalSaude <|-- Cirurgiao
     Atendimento <|-- Consulta
     Atendimento <|-- Internacao
+    Atendimento <|-- ProcedimentoCirurgico
 
     %% ===================== ASSOCIAÇÕES =====================
     Paciente "1" *-- "1" Endereco : possui
@@ -245,6 +284,7 @@ classDiagram
     Paciente "1" o-- "0..*" Internacao : passa por
     ProfissionalSaude "1" o-- "0..*" Consulta : atende
     ProfissionalSaude "1" o-- "0..*" Internacao : e responsavel
+    Cirurgiao "1" o-- "0..*" ProcedimentoCirurgico : responsavel
     ProfissionalSaude "1" *-- "0..*" Disponibilidade : define
     Quarto "1" o-- "0..*" Internacao : aloja
     Atendimento "1" *-- "0..*" RegistroClinico : gera
@@ -255,9 +295,10 @@ classDiagram
     HistoricoMedico "1" o-- "0..*" RegistroClinico
 
     %% ===================== DEPENDÊNCIAS DE ENUM =====================
-    ProfissionalSaude ..> Especialidade
+    Especialista ..> Especialidade
     Consulta ..> StatusConsulta
     Internacao ..> StatusInternacao
+    ProcedimentoCirurgico ..> StatusProcedimento
     Quarto ..> SituacaoQuarto
     Quarto ..> TipoQuarto
     Disponibilidade ..> DiaSemana
@@ -270,13 +311,14 @@ classDiagram
 | Decisão | Justificativa |
 |---|---|
 | `Pessoa` abstrata (superclasse de `Paciente` e `ProfissionalSaude`) | Elimina duplicação de `nome`, `telefone`, `email` e permite polimorfismo em `getIdentificacaoPrincipal()` (CPF para paciente, registro profissional para o profissional). |
-| `Atendimento` abstrata (superclasse de `Consulta` e `Internacao`) | A **regra 3** ("um profissional não pode ter dois atendimentos no mesmo horário") vale para consultas *e* internações. Tratar ambas como `Atendimento` permite validar conflito de agenda com um único algoritmo (`conflitaCom`), baseado em `getInicio()`/`getFim()`. Também simplifica o histórico médico. |
+| `ProfissionalSaude` abstrata com três subtipos | Compartilha identidade e contato sem duplicação; especialidade existe apenas em `Especialista`, e área cirúrgica em `Cirurgiao`. |
+| `Atendimento` abstrata | Consultas, internações e procedimentos compartilham paciente, profissional e comparação de intervalos por `conflitaCom()`. |
 | `Endereco` como *value object* (composição) | Endereço não tem identidade própria nem existe sem o paciente — mapeado como `@Embeddable` (JPA) ou documento embutido (MongoDB). |
 | `Disponibilidade` como classe separada | Atende ao requisito "controle de disponibilidade de atendimento". Permite que o profissional tenha várias janelas por dia da semana. |
 | `RegistroClinico` | Atende ao item "informações relevantes registradas durante os atendimentos" do Histórico Médico, com tipagem (anamnese, diagnóstico, prescrição, exame, evolução). |
 | `HistoricoMedico` como agregado de consulta (não persistido) | O histórico é **derivado** das consultas, internações e registros já persistidos. Montá-lo em memória evita duplicidade de dados e mantém a consistência automática (regra 6). |
 | Enums em vez de `String` livre | Garante integridade de dados (`situacao` do quarto, `status` de consulta/internação) e evita valores inválidos. |
-| `situacao` do quarto derivada da ocupação | `atualizarSituacao()` é chamado após `ocupar()`/`liberar()`, mantendo `SituacaoQuarto` coerente com `getOcupacaoAtual()` vs. `capacidadeMaxima` (regra 5). |
+| `situacao` do quarto derivada da ocupação | A resposta calcula a situação a partir de bloqueio e ocupação; apenas manutenção e interdição são decisões administrativas (regra 5). O tipo é informativo (ADR 0005). |
 
 ### 1.2 Multiplicidades
 
@@ -297,11 +339,12 @@ classDiagram
 | Requisito do enunciado | Classe | Atributos |
 |---|---|---|
 | 1. Paciente | `Paciente` + `Pessoa` + `Endereco` | `nome`, `cpf`, `dataNascimento`, `telefone`, `endereco`, `email` |
-| 2. Profissional da Saúde | `ProfissionalSaude` + `Pessoa` | `nome`, `registroProfissional`, `especialidade`, `telefone`, `email` |
+| 2. Profissional da Saúde | `ProfissionalSaude` + subclasses + `Pessoa` | `nome`, `registroProfissional`, `telefone`, `email`; especialidade somente em `Especialista` |
 | 3. Consulta | `Consulta` + `Atendimento` | `paciente`, `profissional`, `data`, `horario`, `motivo`, `observacoesMedicas` |
 | 4. Internação | `Internacao` + `Atendimento` | `paciente`, `profissional`, `quarto`, `dataEntrada`, `dataPrevistaAlta`, `dataEfetivaAlta`, `observacoes` |
 | 5. Quarto | `Quarto` | `numero`, `andar`, `capacidadeMaxima`, `situacao` |
 | 6. Histórico Médico | `HistoricoMedico` + `RegistroClinico` | `consultas`, `internacoes`, `registros` |
+| 7. Procedimento cirúrgico | `ProcedimentoCirurgico` + `Atendimento` | `descricao`, `tipoCirurgia`, observações pré/pós, data/hora prevista e efetiva, `Cirurgiao` responsável |
 
 ### 1.4 Onde cada regra de negócio é aplicada
 

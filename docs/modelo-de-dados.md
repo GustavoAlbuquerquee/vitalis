@@ -11,6 +11,8 @@ Como o domínio descrito no [diagrama de classes](diagrama-de-classes.md) vira a
 | `paciente` | `id` | `cpf` | — |
 | `profissional` | `id` | `registro_profissional` | — |
 | `disponibilidade` | `id` | (`profissional_id`, `dia_semana`, `hora_inicio`) | `profissional_id` |
+| `encaminhamento` | `id` | — | `paciente_id`, `clinico_geral_id` |
+| `procedimento_cirurgico` | `id` | — | `paciente_id`, `cirurgiao_id` |
 | `consulta` | `id` | (`profissional_id`, `data`, `horario`) | `paciente_id`, `profissional_id` |
 | `internacao` | `id` | — | `paciente_id`, `profissional_id`, `quarto_id` |
 | `quarto` | `id` | `numero` | — |
@@ -31,7 +33,9 @@ Estratégia: **uma tabela por subclasse** (`paciente` e `profissional` separadas
 
 ### Herança de `Atendimento`
 
-Mesma estratégia: `consulta` e `internacao` são tabelas independentes.
+Mesma estratégia: `consulta`, `internacao` e `procedimento_cirurgico` são
+tabelas independentes. As últimas compartilham a abstração no domínio, mas
+mantêm os próprios atributos e estados.
 
 A verificação de conflito da **RN3** precisa varrer as duas — resolvida por uma consulta que une os intervalos das duas tabelas para o mesmo profissional.
 
@@ -58,7 +62,9 @@ Se a escolha for MongoDB:
 | Coleção | Contém |
 |---|---|
 | `pacientes` | Paciente com `endereco` embutido |
-| `profissionais` | Profissional com `disponibilidades` embutidas |
+| `profissionais` | Categoria discriminadora, atributos por subtipo e `disponibilidades` embutidas |
+| `encaminhamentos` | Encaminhamento com referência a paciente e clínico geral |
+| `procedimentos_cirurgicos` | Procedimento com referência a paciente e cirurgião |
 | `consultas` | Documento próprio, com referência a paciente e profissional |
 | `internacoes` | Documento próprio, com referência a paciente, profissional e quarto |
 | `quartos` | Documento próprio |

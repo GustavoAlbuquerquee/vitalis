@@ -39,13 +39,17 @@ stateDiagram-v2
 
 ### A transação da internação
 
-Internar não é gravar um registro — são três coisas que precisam acontecer juntas ou nenhuma:
+Internar não é gravar um registro — são três coisas que precisam permanecer
+consistentes:
 
 1. A internação é criada com status `ATIVA`
 2. O quarto registra a ocupação
 3. A situação do quarto é recalculada (`DISPONIVEL` → `OCUPADO` se lotou)
 
-Se qualquer passo falhar, tudo volta atrás. Por isso a operação vive na camada de serviço, sob transação — não no controller.
+O serviço valida as condições antes de alterar quarto e internação e serializa
+essas alterações em memória. Como os dados ainda são mantidos em memória e a
+decisão de banco está pendente, a garantia atual vale dentro do processo; ao
+adotar persistência, a operação deverá usar uma transação do banco.
 
 ## Endpoints previstos
 

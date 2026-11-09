@@ -34,6 +34,11 @@ estaDisponivel() = situacao não é MANUTENCAO nem INTERDITADO
 
 Se `situacao` fosse um campo editável, mais cedo ou mais tarde ele discordaria da realidade — um quarto marcado como disponível e cheio de pacientes. Campo derivado não mente.
 
+O tipo (`ENFERMARIA`, `APARTAMENTO`, `UTI` ou `ISOLAMENTO`) é informativo e
+não altera a capacidade nem os critérios de admissão. Esta decisão foi
+confirmada pelo responsável pela demanda e está registrada no
+[ADR 0005](../../docs/decisoes/0005-regra-tipo-quarto-informativo.md).
+
 ## Endpoints previstos
 
 | Método | Rota | O que faz |
