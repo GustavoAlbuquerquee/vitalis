@@ -17,6 +17,12 @@ da base compartilhada está em [ADR 0005](decisoes/0005-base-compartilhada-de-at
 `getInicio()`, `getFim()` e `validarCondicoes()`, e implementa `conflitaCom()` uma vez.
 `EstadoTransicionavel<E>` e `Transicoes.validar(atual, destino)` ficam em `comum.model`.
 
+`Consulta` é a base das modalidades. `ConsultaAgendada` reúne data, horário,
+duração e validação de agenda; `ConsultaRotina` e `ConsultaEspecializada` a
+estendem. `AtendimentoEmergencia` estende `Consulta` diretamente e dispensa agenda.
+Cada modalidade sobrescreve `validarCondicoes()`. `FonteAgenda` é o contrato
+para compartilhar horários entre módulos, consumido por `AgendaService`.
+
 ---
 
 ## 1. Visão de Domínio (Model)

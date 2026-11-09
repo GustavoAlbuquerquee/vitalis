@@ -137,6 +137,18 @@ Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. Um
 
 ## Rastreabilidade
 
+### Modalidades da Sprint 2 (issue #8)
+
+- Rotina e especializada exigem que o intervalo inteiro caiba na disponibilidade.
+- Especializada também exige a mesma `Especialidade` do profissional (409).
+- Paciente e profissional precisam estar ativos em todas as modalidades.
+- Emergência é imediata: não consulta nem reserva a agenda de agendamentos.
+- `AgendaService` reúne as implementações de `FonteAgenda` de cada módulo e usa
+  exclusivamente `Atendimento.conflitaCom`. Cirurgias e internações devem publicar
+  seus intervalos por essa interface; consultas não acessam seus repositórios.
+- Intervalos adjacentes são aceitos. A comparação é por profissional, inclusive
+  quando os identificadores dos atendimentos coincidem entre módulos.
+
 | Regra | Módulo dono | Exceção | HTTP |
 |---|---|---|---|
 | RN1 | `pacientes` | — | — |
