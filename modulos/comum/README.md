@@ -38,9 +38,12 @@ classDiagram
     RegraDeNegocioException <|-- QuartoIndisponivelException
     RegraDeNegocioException <|-- CapacidadeExcedidaException
     RegraDeNegocioException <|-- PacienteJaInternadoException
-    RegraDeNegocioException <|-- AltaInvalidaException
-    RegraDeNegocioException <|-- RegistroDuplicadoException
+    RegraDeNegocioException <|-- TransicaoInvalidaException
 ```
+
+As regras de negócio retornam `409 Conflict`, exceto `TransicaoInvalidaException`,
+que retorna `422 Unprocessable Entity`. `DadosInvalidosException` retorna `400`
+e `RecursoNaoEncontradoException` retorna `404`.
 
 ## Dependências
 

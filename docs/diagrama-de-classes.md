@@ -373,20 +373,31 @@ Isso é invariante do objeto, não validação de tela: `concluir()` recusa quan
 
 Fonte completa em [`diagramas/03-excecoes.mmd`](diagramas/03-excecoes.mmd).
 
-| Exceção | HTTP | Quando |
-|---|---|---|
-| `RecursoNaoEncontradoException` | 404 | ID inexistente |
-| `DadosInvalidosException` | 400 | Falha de validação de campo |
-| `ConflitoDeHorarioException` | 409 | RN3 — profissional já ocupado no intervalo |
-| `EspecialidadeIncompativelException` | 409 | Consulta especializada com profissional de outra área |
-| `CirurgiaoNaoHabilitadoException` | 409 | Cirurgião sem habilitação para o tipo de cirurgia |
-| `TransicaoInvalidaException` | 409 | Transição de estado proibida, em qualquer entidade |
-| `QuartoIndisponivelException` | 409 | RN4 — quarto em manutenção ou interditado |
-| `CapacidadeExcedidaException` | 409 | RN5 — quarto lotado |
-| `PacienteJaInternadoException` | 409 | Paciente com internação ativa |
-| `AltaInvalidaException` | 422 | Alta anterior à entrada, ou internação já encerrada |
+### Implementadas — `modulos/comum/service/` ([#5](https://github.com/GustavoAlbuquerquee/vitalis/issues/5))
 
-Três das novas (`EspecialidadeIncompativel`, `CirurgiaoNaoHabilitado`, `TransicaoInvalida`) nascem direto das regras da Sprint 2.
+| Exceção | HTTP | Código | Quando |
+|---|---|---|---|
+| `RecursoNaoEncontradoException` | 404 | `RECURSO_NAO_ENCONTRADO` | ID inexistente |
+| `DadosInvalidosException` | 400 | `DADOS_INVALIDOS` | Falha de validação de campo |
+| `ConflitoDeHorarioException` | 409 | `CONFLITO_DE_HORARIO` | RN3 — profissional já ocupado no intervalo |
+| `QuartoIndisponivelException` | 409 | `QUARTO_INDISPONIVEL` | RN4 — quarto em manutenção ou interditado |
+| `CapacidadeExcedidaException` | 409 | `CAPACIDADE_EXCEDIDA` | RN5 — quarto lotado |
+| `PacienteJaInternadoException` | 409 | `PACIENTE_JA_INTERNADO` | Paciente com internação ativa |
+| `TransicaoInvalidaException` | **422** | `TRANSICAO_INVALIDA` | Transição de estado proibida, em qualquer entidade |
+
+`RegraDeNegocioException` é abstrata e define 409 como padrão. `TransicaoInvalidaException` sobrescreve para 422: o pedido é compreensível e os dados são válidos, mas o recurso não está no estado que permite aquela operação.
+
+### Previstas pelo modelo, ainda não implementadas
+
+Nascem das regras que as trilhas B e C ainda vão escrever:
+
+| Exceção | HTTP | Quando | Issue |
+|---|---|---|---|
+| `EspecialidadeIncompativelException` | 409 | Consulta especializada com profissional de outra área | [#8](https://github.com/GustavoAlbuquerquee/vitalis/issues/8) |
+| `CirurgiaoNaoHabilitadoException` | 409 | Cirurgião sem habilitação para o tipo de cirurgia | [#13](https://github.com/GustavoAlbuquerquee/vitalis/issues/13) |
+| `AltaInvalidaException` | 422 | Alta anterior à entrada, ou internação já encerrada | [#12](https://github.com/GustavoAlbuquerquee/vitalis/issues/12) |
+| `ProfissionalIndisponivelException` | 409 | Horário fora das janelas de disponibilidade | [#8](https://github.com/GustavoAlbuquerquee/vitalis/issues/8) |
+| `RegistroDuplicadoException` | 409 | CPF ou registro profissional já cadastrado | [#7](https://github.com/GustavoAlbuquerquee/vitalis/issues/7) · [#11](https://github.com/GustavoAlbuquerquee/vitalis/issues/11) |
 
 ---
 

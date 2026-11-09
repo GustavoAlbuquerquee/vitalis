@@ -80,9 +80,10 @@ Toda exceção do sistema herda de `HospitalException` e é traduzida em uma ún
 | Exceção | HTTP |
 |---|---|
 | `RecursoNaoEncontradoException` | 404 |
-| `RegraDeNegocioException` e derivadas | 409 |
-| `AltaInvalidaException` | 422 |
+| `ConflitoDeHorarioException`, `QuartoIndisponivelException`, `CapacidadeExcedidaException` e `PacienteJaInternadoException` | 409 |
+| `TransicaoInvalidaException` | 422 |
 | `DadosInvalidosException` | 400 |
+| Exceção não prevista | 500, sem detalhes internos |
 
 Detalhamento em [diagrama-de-classes.md](diagrama-de-classes.md#3-hierarquia-de-exceções).
 
