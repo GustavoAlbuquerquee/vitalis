@@ -76,6 +76,33 @@ AGENDADA, CONFIRMADA, EM_ATENDIMENTO, CONCLUIDA, CANCELADA e NAO_COMPARECEU.
 Datas passadas, durações fora de 1–1440 minutos e campos incompatíveis com a
 modalidade retornam 400. Disponibilidade, especialidade e conflito retornam 409.
 
+### Emergências e fila
+
+```json
+{
+  "modalidade": "EMERGENCIA",
+  "pacienteId": 1,
+  "profissionalId": 1,
+  "motivo": "Avaliação imediata",
+  "prioridade": "ALTA"
+}
+```
+
+A prioridade é obrigatória: BAIXA, MODERADA, ALTA ou CRITICA. A chegada vem do
+relógio do servidor. Não envie data, horário, duração, especialidade, status ou
+chegada. Campos desconhecidos e enums numéricos são rejeitados com 400.
+
+- `GET /consultas?modalidade=EMERGENCIA&status=AGUARDANDO`
+- `GET /consultas?modalidade=EMERGENCIA&status=EM_ATENDIMENTO`
+- `GET /consultas?modalidade=EMERGENCIA&status=CONCLUIDA`
+
+A ordenação é por prioridade decrescente, chegada crescente e ID crescente.
+A resposta inclui `prioridade`, `chegada`, `iniciadoEm` e `concluidoEm`.
+A emergência já tem presença confirmada ao chegar, representada como AGUARDANDO
+na API; inicie diretamente com PATCH /consultas/{id}/inicio. Não há confirmação
+manual nem não comparecimento. Conclusão e cancelamento usam as mesmas rotas das
+consultas. `AGUARDANDO` exige modalidade EMERGENCIA no filtro.
+
 ### Executar sem os cadastros da Trilha A
 
 `mvn spring-boot:run -Dspring-boot.run.profiles=demo`
@@ -137,5 +164,5 @@ Toda falha devolve o mesmo corpo, montado por `GlobalExceptionHandler`:
 | `400` | Campo obrigatório ausente, formato inválido |
 | `404` | Recurso não encontrado |
 | `409` | Violação de regra de negócio (RN2–RN5, RN7) |
-| `422` | Operação impossível para o estado atual do recurso |
+| `422` | Reservado para contratos futuros; transição inválida de consulta usa 409 |
 | `500` | Falha não prevista — nunca deve vazar detalhe interno |

@@ -37,7 +37,7 @@
 
 O projeto é o trabalho prático da disciplina **Programação Modular** do curso de Bacharelado em Engenharia de Software da **PUC Minas**. O foco não é entregar telas bonitas — é entregar um sistema cuja estrutura interna se sustente: módulos com fronteiras claras, responsabilidades que não vazam de uma camada para outra e regras de negócio que moram em um único lugar.
 
-> **Este repositório está na fase de modelagem.** Ele contém a arquitetura, o modelo de domínio, as regras de negócio e a estrutura modular — ainda sem código de implementação. Cada pasta de módulo já existe com o contrato do que vai morar ali dentro.
+> **Sprint 2 em implementação.** A base compartilhada e a Trilha B (consultas e emergência) já têm modelo, API e testes. Os demais cadastros e a persistência durável ainda precisam ser integrados. Para executar a demonstração, veja [o contrato da API](docs/api.md#executar-sem-os-cadastros-da-trilha-a).
 
 ---
 

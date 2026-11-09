@@ -1,6 +1,7 @@
 package br.pucminas.vitalis.consultas.dto;
 
 import br.pucminas.vitalis.consultas.model.ModalidadeConsulta;
+import br.pucminas.vitalis.consultas.model.PrioridadeEmergencia;
 import br.pucminas.vitalis.profissionais.model.Especialidade;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
@@ -15,4 +16,5 @@ public class CriarConsultaRequest {
     public LocalTime horario;
     @Min(1) @Max(1440) public Integer duracaoMinutos;
     public Especialidade especialidade;
+    public PrioridadeEmergencia prioridade;
 }

@@ -30,7 +30,7 @@ public class ConsultaController {
     public List<ConsultaResponse> listar(@RequestParam(required = false) Long profissionalId,
             @RequestParam(required = false) Long pacienteId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
-            @RequestParam(required = false) StatusConsulta status,
+            @RequestParam(required = false) SituacaoConsulta status,
             @RequestParam(required = false) ModalidadeConsulta modalidade) {
         return service.listar(profissionalId, pacienteId, data, status, modalidade);
     }

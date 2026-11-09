@@ -43,8 +43,9 @@ public class ConsultaService {
             if (dados.modalidade == ModalidadeConsulta.EMERGENCIA) {
                 Campos.exigir(dados.data == null && dados.horario == null && dados.duracaoMinutos == null
                         && dados.especialidade == null, "Emergência não recebe agendamento ou especialidade");
-                consulta = new AtendimentoEmergencia(id, paciente, profissional, dados.motivo, agora);
+                consulta = new AtendimentoEmergencia(id, paciente, profissional, dados.motivo, agora, dados.prioridade);
             } else {
+                Campos.exigir(dados.prioridade == null, "Prioridade é exclusiva de emergência");
                 Campos.exigir(dados.data != null && dados.horario != null && dados.duracaoMinutos != null,
                         "Data, horário e duração são obrigatórios para agendamento");
                 LocalDateTime inicio = LocalDateTime.of(dados.data, dados.horario);
@@ -69,22 +70,40 @@ public class ConsultaService {
     }
 
     public List<ConsultaResponse> listar(Long profissionalId, Long pacienteId, LocalDate data,
-                                         StatusConsulta status, ModalidadeConsulta modalidade) {
+                                         SituacaoConsulta status, ModalidadeConsulta modalidade) {
         synchronized (agenda) {
+            Campos.exigir(status != SituacaoConsulta.AGUARDANDO || modalidade == ModalidadeConsulta.EMERGENCIA,
+                    "O filtro AGUARDANDO exige modalidade EMERGENCIA");
+            Comparator<Consulta> ordem = Comparator.comparing(Consulta::getInicio).thenComparing(Consulta::getId);
+            if (modalidade == ModalidadeConsulta.EMERGENCIA) {
+                ordem = Comparator.<Consulta>comparingInt(c -> ((AtendimentoEmergencia) c).getPrioridade().getPeso())
+                        .reversed().thenComparing(Consulta::getCriadoEm).thenComparing(Consulta::getId);
+            }
             return repository.listar().stream()
                     .filter(c -> profissionalId == null || c.getProfissional().getId().equals(profissionalId))
                     .filter(c -> pacienteId == null || c.getPaciente().getId().equals(pacienteId))
                     .filter(c -> data == null || c.getInicio().toLocalDate().equals(data))
-                    .filter(c -> status == null || c.getStatus() == status)
+                    .filter(c -> status == null || SituacaoConsulta.de(c) == status)
                     .filter(c -> modalidade == null || c.getModalidade() == modalidade)
-                    .sorted(Comparator.comparing(Consulta::getInicio).thenComparing(Consulta::getId))
+                    .sorted(ordem)
                     .map(ConsultaResponse::new).collect(Collectors.toList());
         }
     }
 
     public ConsultaResponse confirmar(Long id) { return alterar(id, Consulta::confirmar); }
-    public ConsultaResponse iniciar(Long id) { return alterar(id, Consulta::iniciar); }
-    public ConsultaResponse concluir(Long id, String observacoes) { return alterar(id, c -> c.concluir(observacoes)); }
+    public ConsultaResponse iniciar(Long id) {
+        return alterar(id, c -> {
+            if (c instanceof AtendimentoEmergencia) ((AtendimentoEmergencia) c).iniciar(LocalDateTime.now(clock));
+            else c.iniciar();
+        });
+    }
+    public ConsultaResponse concluir(Long id, String observacoes) {
+        return alterar(id, c -> {
+            if (c instanceof AtendimentoEmergencia) {
+                ((AtendimentoEmergencia) c).concluir(observacoes, LocalDateTime.now(clock));
+            } else c.concluir(observacoes);
+        });
+    }
     public ConsultaResponse registrarFalta(Long id) { return alterar(id, Consulta::registrarNaoComparecimento); }
     public ConsultaResponse registrarObservacoes(Long id, String observacoes) {
         return alterar(id, c -> c.registrarObservacoes(observacoes));

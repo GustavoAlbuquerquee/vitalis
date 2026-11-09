@@ -1,0 +1,111 @@
+classDiagram
+    class Pessoa {
+        <<abstract>>
+        -Long id
+        -String nome
+        -String telefone
+        -String email
+        -boolean ativo
+        +getIdentificacaoPrincipal()* String
+        +desativar() void
+    }
+    class Atendimento {
+        <<abstract>>
+        -Long id
+        -P paciente
+        -R profissional
+        -String observacoes
+        -LocalDateTime criadoEm
+        +getInicio()* LocalDateTime
+        +getFim()* LocalDateTime
+        +validarCondicoes()* void
+        +conflitaCom(Atendimento outro) boolean
+        +ocupaAgenda() boolean
+    }
+    class Paciente {
+        -String cpf
+    }
+    class ProfissionalSaude {
+        <<abstract>>
+        -String registroProfissional
+        -Especialidade especialidade
+        -List~Disponibilidade~ disponibilidades
+        +estaDisponivelEm(inicio, fim) boolean
+    }
+    class Consulta {
+        <<abstract>>
+        -String motivo
+        -StatusConsulta status
+        +confirmar() void
+        +iniciar() void
+        +concluir(observacoes) void
+        +cancelar() void
+        +registrarNaoComparecimento() void
+        +registrarObservacoes(observacoes) void
+    }
+    class ConsultaAgendada {
+        <<abstract>>
+        -LocalDateTime inicio
+        -int duracaoMinutos
+        #validarAgenda() void
+    }
+    class ConsultaRotina {
+        +validarCondicoes() void
+    }
+    class ConsultaEspecializada {
+        -Especialidade especialidade
+        +validarCondicoes() void
+    }
+    class AtendimentoEmergencia {
+        -PrioridadeEmergencia prioridade
+        -LocalDateTime iniciadoEm
+        -LocalDateTime concluidoEm
+        +getChegada() LocalDateTime
+        +validarCondicoes() void
+    }
+    class StatusConsulta {
+        <<enumeration>>
+        AGENDADA
+        CONFIRMADA
+        EM_ATENDIMENTO
+        CONCLUIDA
+        CANCELADA
+        NAO_COMPARECEU
+        +permite(destino) boolean
+    }
+    class PrioridadeEmergencia {
+        <<enumeration>>
+        BAIXA
+        MODERADA
+        ALTA
+        CRITICA
+    }
+    class EstadoTransicionavel {
+        <<interface>>
+        +permite(destino) boolean
+    }
+    class Transicoes {
+        +validar(atual, destino) E
+    }
+    class FonteAgenda {
+        <<interface>>
+        +buscarAtendimentos(profissionalId) List
+    }
+    class AgendaService {
+        +validarAusenciaDeConflito(atendimento) void
+    }
+    Pessoa <|-- Paciente
+    Pessoa <|-- ProfissionalSaude
+    ProfissionalSaude <|-- ClinicoGeral
+    ProfissionalSaude <|-- Especialista
+    Atendimento <|-- Consulta
+    Consulta <|-- ConsultaAgendada
+    ConsultaAgendada <|-- ConsultaRotina
+    ConsultaAgendada <|-- ConsultaEspecializada
+    Consulta <|-- AtendimentoEmergencia
+    Consulta --> StatusConsulta
+    EstadoTransicionavel <|.. StatusConsulta
+    Consulta ..> Transicoes
+    AtendimentoEmergencia --> PrioridadeEmergencia
+    ConsultaAgendada --> AgendaService
+    AgendaService --> FonteAgenda

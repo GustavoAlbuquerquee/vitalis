@@ -166,6 +166,22 @@ a agenda sem excluir o registro.
 - Intervalos adjacentes são aceitos. A comparação é por profissional, inclusive
   quando os identificadores dos atendimentos coincidem entre módulos.
 
+### Emergência e fila (issue #10)
+
+- Prioridades são `BAIXA`, `MODERADA`, `ALTA`, `CRITICA`, com peso explícito.
+- A chegada é registrada pelo servidor; não aceita data/horário de agendamento.
+- A presença é confirmada na chegada por transição validada. A projeção na API é
+  `AGUARDANDO`; pode iniciar diretamente, concluir depois do início ou cancelar.
+- A emergência não admite confirmação repetida nem não comparecimento.
+- O filtro `modalidade=EMERGENCIA` ordena por gravidade decrescente e chegada
+  crescente, com ID crescente como último desempate. Pode filtrar `AGUARDANDO`,
+  `EM_ATENDIMENTO`, `CONCLUIDA` e `CANCELADA`.
+- `AGUARDANDO` exige o filtro explícito de emergência. Os demais estados seguem
+  os seis valores da consulta; não há valores textuais livres.
+- Início e conclusão registram seus momentos, sem permitir tempos invertidos.
+- A fila inclui apenas os registros do grupo solicitado; a conclusão e o
+  cancelamento preservam o registro para consulta.
+
 | Regra | Módulo dono | Exceção | HTTP |
 |---|---|---|---|
 | RN1 | `pacientes` | — | — |

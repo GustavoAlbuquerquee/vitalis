@@ -55,7 +55,7 @@ class ModalidadesTest {
     @Test void emergenciaDispensaAgendaMasExigeParticipantesAtivos() {
         ocupados.add(rotina(inicio));
         AtendimentoEmergencia emergencia = new AtendimentoEmergencia(3L, paciente, medico,
-                "Urgência", inicio.withHour(23));
+                "Urgência", inicio.withHour(23), PrioridadeEmergencia.ALTA);
         assertDoesNotThrow(emergencia::validarCondicoes);
         paciente.desativar();
         assertThrows(CondicaoAtendimentoException.class, emergencia::validarCondicoes);

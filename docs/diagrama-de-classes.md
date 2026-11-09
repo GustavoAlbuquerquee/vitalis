@@ -11,6 +11,10 @@ Este documento apresenta a modelagem orientada a objetos completa do sistema, di
 
 ## Implementação da Sprint 2
 
+Fontes do contrato implementado: [Mermaid da Trilha B](diagramas/04-trilha-b.mmd)
+e [PlantUML da Trilha B](diagramas/trilha-b.puml). Os demais diagramas abaixo
+continuam sendo a visão original e incluem entidades ainda não implementadas.
+
 As visões abaixo registram o desenho original da Sprint 1. O contrato implementado
 da base compartilhada está em [ADR 0005](decisoes/0005-base-compartilhada-de-atendimentos.md):
 `Pessoa` e `Atendimento<P, R>` são abstratas; `Atendimento` declara
@@ -26,6 +30,12 @@ para compartilhar horários entre módulos, consumido por `AgendaService`.
 `StatusConsulta` implementa `EstadoTransicionavel<StatusConsulta>` com seis valores:
 AGENDADA, CONFIRMADA, EM_ATENDIMENTO, CONCLUIDA, CANCELADA e NAO_COMPARECEU.
 As transições implementadas estão na [tabela de regras](regras-de-negocio.md#estados-da-consulta-issue-9).
+
+`AtendimentoEmergencia` mantém prioridade tipada, chegada (o `criadoEm` herdado),
+início e conclusão. Sua presença é confirmada na criação usando a mesma validação
+de estados. `SituacaoConsulta` projeta essa espera como `AGUARDANDO` na API, sem
+adicionar um sétimo valor a `StatusConsulta`. A fila usa prioridade decrescente,
+chegada crescente e ID crescente em empate exato.
 
 ---
 
@@ -663,7 +673,7 @@ classDiagram
 | `QuartoIndisponivelException` | 409 | RN4 — quarto em manutenção/interditado ou lotado |
 | `CapacidadeExcedidaException` | 409 | RN5 — ocupação atingiria `capacidadeMaxima` |
 | `PacienteJaInternadoException` | 409 | Paciente com internação `ATIVA` |
-| `TransicaoInvalidaException` | 422 | Operação impossível para o estado atual do recurso |
+| `TransicaoInvalidaException` | 409 | Operação impossível para o estado atual do recurso |
 | `DadosInvalidosException` | 400 | Falha de validação de campos (Bean Validation) |
 | Exceção não prevista | 500 | Falha não prevista — resposta sem detalhes internos |
 

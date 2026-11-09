@@ -1,0 +1,84 @@
+@startuml
+title Sprint 2 — Trilha B implementada
+abstract class Pessoa {
+  - id : Long
+  - nome : String
+  - telefone : String
+  - email : String
+  - ativo : boolean
+  {abstract} + getIdentificacaoPrincipal() : String
+}
+abstract class "Atendimento<P extends Pessoa, R extends Pessoa>" as Atendimento {
+  - id : Long
+  - paciente : P
+  - profissional : R
+  - observacoes : String
+  - criadoEm : LocalDateTime
+  {abstract} + getInicio() : LocalDateTime
+  {abstract} + getFim() : LocalDateTime
+  {abstract} + validarCondicoes() : void
+  + conflitaCom(outro) : boolean
+}
+abstract class ProfissionalSaude
+abstract class Consulta {
+  - motivo : String
+  - status : StatusConsulta
+  + confirmar()
+  + iniciar()
+  + concluir(observacoes)
+  + cancelar()
+  + registrarNaoComparecimento()
+}
+abstract class ConsultaAgendada {
+  - inicio : LocalDateTime
+  - duracaoMinutos : int
+  # validarAgenda()
+}
+class ConsultaEspecializada {
+  - especialidade : Especialidade
+  + validarCondicoes()
+}
+class ConsultaRotina {
+  + validarCondicoes()
+}
+class AtendimentoEmergencia {
+  - prioridade : PrioridadeEmergencia
+  - iniciadoEm : LocalDateTime
+  - concluidoEm : LocalDateTime
+  + getChegada() : LocalDateTime
+  + validarCondicoes()
+}
+enum StatusConsulta {
+  AGENDADA
+  CONFIRMADA
+  EM_ATENDIMENTO
+  CONCLUIDA
+  CANCELADA
+  NAO_COMPARECEU
+}
+enum PrioridadeEmergencia {
+  BAIXA
+  MODERADA
+  ALTA
+  CRITICA
+}
+interface EstadoTransicionavel
+interface FonteAgenda
+class Transicoes
+class AgendaService
+Pessoa <|-- Paciente
+Pessoa <|-- ProfissionalSaude
+ProfissionalSaude <|-- ClinicoGeral
+ProfissionalSaude <|-- Especialista
+Atendimento <|-- Consulta
+Consulta <|-- ConsultaAgendada
+ConsultaAgendada <|-- ConsultaRotina
+ConsultaAgendada <|-- ConsultaEspecializada
+Consulta <|-- AtendimentoEmergencia
+Consulta --> StatusConsulta
+StatusConsulta ..|> EstadoTransicionavel
+Consulta ..> Transicoes
+AtendimentoEmergencia --> PrioridadeEmergencia
+ConsultaAgendada --> AgendaService
+AgendaService --> FonteAgenda
+@enduml

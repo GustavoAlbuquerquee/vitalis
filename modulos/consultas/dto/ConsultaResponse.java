@@ -9,7 +9,7 @@ public class ConsultaResponse {
     public final Long pacienteId;
     public final Long profissionalId;
     public final ModalidadeConsulta modalidade;
-    public final StatusConsulta status;
+    public final SituacaoConsulta status;
     public final LocalDate data;
     public final LocalTime horario;
     public final Integer duracaoMinutos;
@@ -17,13 +17,17 @@ public class ConsultaResponse {
     public final String motivo;
     public final String observacoes;
     public final Especialidade especialidade;
+    public final PrioridadeEmergencia prioridade;
+    public final LocalDateTime chegada;
+    public final LocalDateTime iniciadoEm;
+    public final LocalDateTime concluidoEm;
 
     public ConsultaResponse(Consulta consulta) {
         id = consulta.getId();
         pacienteId = consulta.getPaciente().getId();
         profissionalId = consulta.getProfissional().getId();
         modalidade = consulta.getModalidade();
-        status = consulta.getStatus();
+        status = SituacaoConsulta.de(consulta);
         data = consulta.getInicio().toLocalDate();
         horario = consulta.getInicio().toLocalTime();
         duracaoMinutos = consulta instanceof ConsultaAgendada
@@ -33,5 +37,11 @@ public class ConsultaResponse {
         observacoes = consulta.getObservacoes();
         especialidade = consulta instanceof ConsultaEspecializada
                 ? ((ConsultaEspecializada) consulta).getEspecialidade() : null;
+        AtendimentoEmergencia emergencia = consulta instanceof AtendimentoEmergencia
+                ? (AtendimentoEmergencia) consulta : null;
+        prioridade = emergencia == null ? null : emergencia.getPrioridade();
+        chegada = emergencia == null ? null : emergencia.getChegada();
+        iniciadoEm = emergencia == null ? null : emergencia.getIniciadoEm();
+        concluidoEm = emergencia == null ? null : emergencia.getConcluidoEm();
     }
 }
