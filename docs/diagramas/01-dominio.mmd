@@ -18,34 +18,21 @@ classDiagram
         <<abstract>>
         #String registroProfissional
         #List~Disponibilidade~ disponibilidades
-        +podeRealizar(Atendimento a) boolean
-        +getAtribuicao() String
         +estaDisponivelEm(LocalDateTime ini, LocalDateTime fim) boolean
-        +possuiConflito(Atendimento novo) boolean
         +getIdentificacaoPrincipal() String
     }
 
     class ClinicoGeral {
-        +podeRealizar(Atendimento a) boolean
-        +realizarAvaliacaoInicial(Paciente p) ConsultaRotina
-        +encaminhar(Paciente p, Especialidade e, String motivo) Encaminhamento
-        +getAtribuicao() String
+        +encaminhar(Long pacienteId, Especialidade e, String motivo) Encaminhamento
     }
 
     class Especialista {
         -Especialidade especialidade
-        +podeRealizar(Atendimento a) boolean
-        +atendeEspecialidade(Especialidade e) boolean
-        +getAtribuicao() String
+        +atendeNaEspecialidade(Especialidade e) boolean
     }
 
     class Cirurgiao {
-        -String registroEspecializacao
-        -List~TipoCirurgia~ habilitacoes
-        +podeRealizar(Atendimento a) boolean
-        +ehHabilitadoPara(TipoCirurgia t) boolean
-        +getProcedimentos() List~ProcedimentoCirurgico~
-        +getAtribuicao() String
+        -String areaCirurgica
     }
 
     class Paciente {
@@ -93,70 +80,68 @@ classDiagram
     class Atendimento {
         <<abstract>>
         #Long id
-        #Paciente paciente
-        #ProfissionalSaude profissional
+        #P extends Pessoa paciente
+        #R extends Pessoa profissional
         #String observacoes
         #LocalDateTime criadoEm
         +getInicio() LocalDateTime
         +getFim() LocalDateTime
         +validarCondicoes() void
-        +getResumo() String
         +conflitaCom(Atendimento outro) boolean
         +ocupaAgenda() boolean
     }
 
     class Consulta {
         <<abstract>>
-        #LocalDate data
-        #LocalTime horario
-        #int duracaoMinutos
         #String motivo
-        #String observacoesMedicas
         #StatusConsulta status
         +confirmar() void
         +iniciar() void
-        +concluir(String observacoesMedicas) void
-        +cancelar(String motivo) void
-        +registrarAusencia() void
-        +getInicio() LocalDateTime
-        +getFim() LocalDateTime
+        +concluir(String observacoes) void
+        +cancelar() void
+        +registrarNaoComparecimento() void
+    }
+
+    class ConsultaAgendada {
+        <<abstract>>
+        -LocalDateTime inicio
+        -int duracaoMinutos
+        -AgendaService agenda
+        +validarAgenda() void
+        +getData() LocalDate
+        +getHorario() LocalTime
     }
 
     class ConsultaRotina {
         +validarCondicoes() void
-        +getResumo() String
     }
 
     class ConsultaEspecializada {
         -Especialidade especialidade
         +validarCondicoes() void
-        +getResumo() String
     }
 
     class AtendimentoEmergencia {
         -PrioridadeEmergencia prioridade
-        -LocalDateTime chegadaEm
+        -LocalDateTime iniciadoEm
+        -LocalDateTime concluidoEm
         +validarCondicoes() void
-        +reclassificar(PrioridadeEmergencia nova) void
-        +aguardaAvaliacao() boolean
         +ocupaAgenda() boolean
-        +getResumo() String
     }
 
     class ProcedimentoCirurgico {
         -String descricao
-        -TipoCirurgia tipoCirurgia
+        -String tipoCirurgia
         -String observacoesPreOperatorias
         -String observacoesPosOperatorias
         -LocalDateTime dataHoraPrevista
         -LocalDateTime dataHoraEfetiva
+        -LocalDateTime dataHoraConclusao
         -StatusProcedimento status
         +iniciar(LocalDateTime inicio) void
-        +concluir(String observacoesPosOperatorias) void
-        +cancelar(String motivo) void
+        +concluir(LocalDateTime dataHoraConclusao, String observacoesPosOperatorias) void
+        +cancelar() void
         +validarCondicoes() void
-        +getInicio() LocalDateTime
-        +getFim() LocalDateTime
     }
 
     class Internacao {
@@ -246,14 +231,6 @@ classDiagram
         CANCELADO
     }
 
-    class TipoCirurgia {
-        <<enumeration>>
-        ELETIVA
-        URGENCIA
-        EMERGENCIA
-        AMBULATORIAL
-    }
-
     class Especialidade {
         <<enumeration>>
         CARDIOLOGIA
@@ -326,14 +303,13 @@ classDiagram
     Atendimento <|-- Consulta
     Atendimento <|-- ProcedimentoCirurgico
     Atendimento <|-- Internacao
-    Consulta <|-- ConsultaRotina
-    Consulta <|-- ConsultaEspecializada
+    Consulta <|-- ConsultaAgendada
+    ConsultaAgendada <|-- ConsultaRotina
+    ConsultaAgendada <|-- ConsultaEspecializada
     Consulta <|-- AtendimentoEmergencia
 
     %% ===================== REALIZAÇÃO =====================
-    EstadoTransicionavel <|.. Consulta
-    EstadoTransicionavel <|.. ProcedimentoCirurgico
-    EstadoTransicionavel <|.. Internacao
+    EstadoTransicionavel <|.. StatusConsulta
 
     %% ===================== ASSOCIAÇÕES =====================
     Paciente "1" *-- "1" Endereco : possui
@@ -350,13 +326,11 @@ classDiagram
 
     %% ===================== DEPENDÊNCIAS DE ENUM =====================
     Especialista ..> Especialidade
-    Cirurgiao ..> TipoCirurgia
     Encaminhamento ..> Especialidade
     Consulta ..> StatusConsulta
     ConsultaEspecializada ..> Especialidade
     AtendimentoEmergencia ..> PrioridadeEmergencia
     ProcedimentoCirurgico ..> StatusProcedimento
-    ProcedimentoCirurgico ..> TipoCirurgia
     Internacao ..> StatusInternacao
     Quarto ..> SituacaoQuarto
     Quarto ..> TipoQuarto

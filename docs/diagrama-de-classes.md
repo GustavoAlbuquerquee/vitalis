@@ -121,17 +121,24 @@ classDiagram
 
     class Consulta {
         <<abstract>>
-        #LocalDate data
-        #LocalTime horario
-        #int duracaoMinutos
         #String motivo
         #String observacoesMedicas
         #StatusConsulta status
         +confirmar() void
         +iniciar() void
         +concluir(String obs) void
-        +cancelar(String motivo) void
-        +registrarAusencia() void
+        +cancelar() void
+        +registrarNaoComparecimento() void
+    }
+
+    class ConsultaAgendada {
+        <<abstract>>
+        -LocalDateTime inicio
+        -int duracaoMinutos
+        -AgendaService agenda
+        +validarAgenda() void
+        +getData() LocalDate
+        +getHorario() LocalTime
     }
 
     class ConsultaRotina {
@@ -158,6 +165,7 @@ classDiagram
         -String observacoesPosOperatorias
         -LocalDateTime dataHoraPrevista
         -LocalDateTime dataHoraEfetiva
+        -LocalDateTime dataHoraConclusao
         -StatusProcedimento status
         +iniciar(LocalDateTime inicio) void
         +concluir(String obsPos) void
@@ -264,8 +272,9 @@ classDiagram
     Atendimento <|-- Consulta
     Atendimento <|-- ProcedimentoCirurgico
     Atendimento <|-- Internacao
-    Consulta <|-- ConsultaRotina
-    Consulta <|-- ConsultaEspecializada
+    Consulta <|-- ConsultaAgendada
+    ConsultaAgendada <|-- ConsultaRotina
+    ConsultaAgendada <|-- ConsultaEspecializada
     Consulta <|-- AtendimentoEmergencia
 
     EstadoTransicionavel <|.. StatusConsulta

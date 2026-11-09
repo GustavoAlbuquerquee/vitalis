@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/internacoes")
+@RequestMapping("/internacoes")
 public class InternacaoController {
 
     private final InternacaoService service;
@@ -35,7 +35,7 @@ public class InternacaoController {
     public ResponseEntity<Internacao> internar(@Valid @RequestBody InternacaoRequest request,
                                                UriComponentsBuilder uriBuilder) {
         Internacao internacao = service.internar(request);
-        URI location = uriBuilder.path("/api/v1/internacoes/{id}")
+        URI location = uriBuilder.path("/internacoes/{id}")
                 .buildAndExpand(internacao.getId()).toUri();
         return ResponseEntity.created(location).body(internacao);
     }

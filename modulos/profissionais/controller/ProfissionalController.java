@@ -28,7 +28,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/profissionais")
+@RequestMapping("/profissionais")
 public class ProfissionalController {
 
     private final ProfissionalCadastroService service;
@@ -41,7 +41,7 @@ public class ProfissionalController {
     public ResponseEntity<ProfissionalSaude> cadastrar(@Valid @RequestBody ProfissionalRequest request,
                                                         UriComponentsBuilder uriBuilder) {
         ProfissionalSaude profissional = service.cadastrar(request);
-        URI location = uriBuilder.path("/api/v1/profissionais/{id}")
+        URI location = uriBuilder.path("/profissionais/{id}")
                 .buildAndExpand(profissional.getId()).toUri();
         return ResponseEntity.created(location).body(profissional);
     }
@@ -69,7 +69,7 @@ public class ProfissionalController {
             @PathVariable Long id, @Valid @RequestBody DisponibilidadeRequest request,
             UriComponentsBuilder uriBuilder) {
         Disponibilidade disponibilidade = service.adicionarDisponibilidade(id, request);
-        URI location = uriBuilder.path("/api/v1/profissionais/{id}/disponibilidades/{disponibilidadeId}")
+        URI location = uriBuilder.path("/profissionais/{id}/disponibilidades/{disponibilidadeId}")
                 .buildAndExpand(id, disponibilidade.getId()).toUri();
         return ResponseEntity.created(location).body(disponibilidade);
     }
@@ -79,7 +79,7 @@ public class ProfissionalController {
                                                      @Valid @RequestBody EncaminhamentoRequest request,
                                                      UriComponentsBuilder uriBuilder) {
         Encaminhamento encaminhamento = service.encaminhar(id, request);
-        URI location = uriBuilder.path("/api/v1/profissionais/{id}/encaminhamentos")
+        URI location = uriBuilder.path("/profissionais/{id}/encaminhamentos")
                 .buildAndExpand(id).toUri();
         return ResponseEntity.created(location).body(encaminhamento);
     }

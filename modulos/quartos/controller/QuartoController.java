@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/quartos")
+@RequestMapping("/quartos")
 public class QuartoController {
 
     private final QuartoService service;
@@ -35,7 +35,7 @@ public class QuartoController {
     public ResponseEntity<Quarto> cadastrar(@Valid @RequestBody QuartoRequest request,
                                             UriComponentsBuilder uriBuilder) {
         Quarto quarto = service.cadastrar(request);
-        URI location = uriBuilder.path("/api/v1/quartos/{id}")
+        URI location = uriBuilder.path("/quartos/{id}")
                 .buildAndExpand(quarto.getId()).toUri();
         return ResponseEntity.created(location).body(quarto);
     }

@@ -56,6 +56,7 @@ class ProcedimentoCirurgicoTest {
         concluido.iniciar(inicio);
         concluido.concluir(inicio.plusHours(1), "Sem intercorrências");
         assertEquals(StatusProcedimento.CONCLUIDO, concluido.getStatus());
+        assertEquals(inicio.plusHours(1), concluido.getDataHoraConclusao());
         assertThrows(TransicaoInvalidaException.class, concluido::cancelar);
     }
 

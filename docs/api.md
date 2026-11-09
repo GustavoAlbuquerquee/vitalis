@@ -167,7 +167,8 @@ situação calculadas a partir de internações ativas e bloqueios administrativ
 | `PATCH` | `/procedimentos-cirurgicos/{id}/cancelamento` | `200` · `422` se já concluído/cancelado |
 
 O procedimento conserva as observações pré e pós-operatórias separadas. A data
-efetiva fica nula até o início efetivo e o estado só pode seguir
+efetiva registra o início e fica nula até que ele ocorra; `dataHoraConclusao`
+registra o término efetivo. O estado só pode seguir
 `AGENDADO → EM_ANDAMENTO → CONCLUIDO`; pode ser cancelado enquanto agendado ou
 em andamento.
 

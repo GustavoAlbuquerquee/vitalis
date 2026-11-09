@@ -36,23 +36,16 @@ package "model" {
     }
 
     class ClinicoGeral extends ProfissionalSaude {
-        + podeRealizar(a : Atendimento) : boolean
-        + realizarAvaliacaoInicial(p : Paciente) : ConsultaRotina
-        + encaminhar(p : Paciente, e : Especialidade, motivo : String) : Encaminhamento
+        + encaminhar(pacienteId : Long, e : Especialidade, motivo : String) : Encaminhamento
     }
 
     class Especialista extends ProfissionalSaude {
         - especialidade : Especialidade
-        + podeRealizar(a : Atendimento) : boolean
-        + atendeEspecialidade(e : Especialidade) : boolean
+        + atendeNaEspecialidade(e : Especialidade) : boolean
     }
 
     class Cirurgiao extends ProfissionalSaude {
-        - registroEspecializacao : String
-        - habilitacoes : List<TipoCirurgia>
-        + podeRealizar(a : Atendimento) : boolean
-        + ehHabilitadoPara(t : TipoCirurgia) : boolean
-        + getProcedimentos() : List<ProcedimentoCirurgico>
+        - areaCirurgica : String
     }
 
     class Encaminhamento {
@@ -98,24 +91,29 @@ package "model" {
     }
 
     abstract class Consulta extends Atendimento {
-        # data : LocalDate
-        # horario : LocalTime
-        # duracaoMinutos : int
         # motivo : String
-        # observacoesMedicas : String
         # status : StatusConsulta
         + confirmar() : void
         + iniciar() : void
         + concluir(obs : String) : void
-        + cancelar(motivo : String) : void
-        + registrarAusencia() : void
+        + cancelar() : void
+        + registrarNaoComparecimento() : void
     }
 
-    class ConsultaRotina extends Consulta {
+    abstract class ConsultaAgendada extends Consulta {
+        - inicio : LocalDateTime
+        - duracaoMinutos : int
+        - agenda : AgendaService
+        + validarAgenda() : void
+        + getData() : LocalDate
+        + getHorario() : LocalTime
+    }
+
+    class ConsultaRotina extends ConsultaAgendada {
         + validarCondicoes() : void
     }
 
-    class ConsultaEspecializada extends Consulta {
+    class ConsultaEspecializada extends ConsultaAgendada {
         - especialidade : Especialidade
         + validarCondicoes() : void
     }
@@ -130,15 +128,16 @@ package "model" {
 
     class ProcedimentoCirurgico extends Atendimento {
         - descricao : String
-        - tipoCirurgia : TipoCirurgia
+        - tipoCirurgia : String
         - observacoesPreOperatorias : String
         - observacoesPosOperatorias : String
         - dataHoraPrevista : LocalDateTime
         - dataHoraEfetiva : LocalDateTime
+        - dataHoraConclusao : LocalDateTime
         - status : StatusProcedimento
         + iniciar(inicio : LocalDateTime) : void
-        + concluir(obsPos : String) : void
-        + cancelar(motivo : String) : void
+        + concluir(dataHoraConclusao : LocalDateTime, obsPos : String) : void
+        + cancelar() : void
         + validarCondicoes() : void
     }
 
@@ -215,12 +214,6 @@ package "model.enums" {
         CONCLUIDO
         CANCELADO
     }
-    enum TipoCirurgia {
-        ELETIVA
-        URGENCIA
-        EMERGENCIA
-        AMBULATORIAL
-    }
     enum Especialidade {
         CARDIOLOGIA
         NEUROLOGIA
@@ -249,9 +242,7 @@ package "model.enums" {
     }
 }
 
-Consulta ..|> EstadoTransicionavel
-ProcedimentoCirurgico ..|> EstadoTransicionavel
-Internacao ..|> EstadoTransicionavel
+StatusConsulta ..|> EstadoTransicionavel
 
 Paciente "1" *-- "1" Endereco : possui >
 Paciente "1" o-- "0..*" Atendimento : recebe >
@@ -264,13 +255,11 @@ Atendimento "1" *-- "0..*" RegistroClinico : gera >
 HistoricoMedico "1" --> "1" Paciente : consolida >
 
 Especialista ..> Especialidade
-Cirurgiao ..> TipoCirurgia
 Encaminhamento ..> Especialidade
 Consulta ..> StatusConsulta
 ConsultaEspecializada ..> Especialidade
 AtendimentoEmergencia ..> PrioridadeEmergencia
 ProcedimentoCirurgico ..> StatusProcedimento
-ProcedimentoCirurgico ..> TipoCirurgia
 Internacao ..> StatusInternacao
 Quarto ..> SituacaoQuarto
 Quarto ..> TipoQuarto

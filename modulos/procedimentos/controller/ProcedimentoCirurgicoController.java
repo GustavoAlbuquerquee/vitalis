@@ -21,7 +21,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping
 public class ProcedimentoCirurgicoController {
 
     private final ProcedimentoCirurgicoService service;
@@ -35,7 +35,7 @@ public class ProcedimentoCirurgicoController {
             @Valid @RequestBody ProcedimentoCirurgicoRequest request,
             UriComponentsBuilder uriBuilder) {
         ProcedimentoCirurgico procedimento = service.cadastrar(request);
-        URI location = uriBuilder.path("/api/v1/procedimentos-cirurgicos/{id}")
+        URI location = uriBuilder.path("/procedimentos-cirurgicos/{id}")
                 .buildAndExpand(procedimento.getId()).toUri();
         return ResponseEntity.created(location).body(procedimento);
     }

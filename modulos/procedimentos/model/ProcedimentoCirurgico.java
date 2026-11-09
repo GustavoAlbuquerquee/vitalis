@@ -15,6 +15,7 @@ public class ProcedimentoCirurgico extends Atendimento<Paciente, Cirurgiao> {
     private String observacoesPosOperatorias;
     private final LocalDateTime dataHoraPrevista;
     private LocalDateTime dataHoraEfetiva;
+    private LocalDateTime dataHoraConclusao;
     private StatusProcedimento status;
 
     public ProcedimentoCirurgico(Long id, Paciente paciente, Cirurgiao cirurgiao,
@@ -84,6 +85,7 @@ public class ProcedimentoCirurgico extends Atendimento<Paciente, Cirurgiao> {
             throw new IllegalArgumentException("A conclusão deve ocorrer após o início efetivo");
         }
         this.observacoesPosOperatorias = observacoesPosOperatorias;
+        this.dataHoraConclusao = dataHoraConclusao;
         status = StatusProcedimento.CONCLUIDO;
     }
 
@@ -101,6 +103,7 @@ public class ProcedimentoCirurgico extends Atendimento<Paciente, Cirurgiao> {
     public String getObservacoesPosOperatorias() { return observacoesPosOperatorias; }
     public LocalDateTime getDataHoraPrevista() { return dataHoraPrevista; }
     public LocalDateTime getDataHoraEfetiva() { return dataHoraEfetiva; }
+    public LocalDateTime getDataHoraConclusao() { return dataHoraConclusao; }
     public Cirurgiao getCirurgiao() { return getProfissional(); }
     public StatusProcedimento getStatus() { return status; }
 }
