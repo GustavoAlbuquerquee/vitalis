@@ -35,6 +35,32 @@ Manter o cadastro dos pacientes: identificação, contato e endereço. É a port
 | `DELETE` | `/pacientes/{id}` | Desativa o paciente |
 | `GET` | `/pacientes/{id}/historico` | Delega para o módulo [`historico`](../historico) |
 
+## Estado da implementação
+
+Implementado na [#7](https://github.com/GustavoAlbuquerquee/vitalis/issues/7).
+
+| Camada | Classe |
+|---|---|
+| `model` | `Paciente` — estende `Pessoa`, do `comum` |
+| `repository` | `PacienteRepository` (interface) e `PacienteRepositoryEmMemoria` |
+| `service` | `PacienteService` |
+| `controller` | `PacienteController` |
+| `dto` | `PacienteRequest`, `PacienteResponse`, `EnderecoDTO`, `PaginaResponse` |
+
+O repositório é uma interface de propósito: a Sprint 2 cobra domínio e API, não
+persistência. Trocar a implementação em memória por JPA na Sprint 3 não toca em
+nenhuma regra de negócio, porque o serviço só conhece o contrato.
+
+`PaginaResponse` foi escrita à mão porque o projeto ainda não tem Spring Data.
+Quando tiver, vira `Page<T>` e o formato da resposta não muda.
+
+### Ainda não implementado
+
+`estaInternado()` aparece no diagrama mas não existe na classe. Saber se um
+paciente está internado exige consultar as internações, e a regra de fronteira
+do projeto proíbe este módulo de acessar o repositório de outro. A integração
+acontece na camada de serviço quando [#12](https://github.com/GustavoAlbuquerquee/vitalis/issues/12) existir — não no modelo.
+
 ## Dependências
 
 `comum`
