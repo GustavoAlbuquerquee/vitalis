@@ -9,6 +9,14 @@ Este documento apresenta a modelagem orientada a objetos completa do sistema, di
 2. **Arquitetura em camadas** — Controller → Service → Repository → Model, DTOs e validadores
 3. **Hierarquia de exceções** — tratamento de erros da API
 
+## Implementação da Sprint 2
+
+As visões abaixo registram o desenho original da Sprint 1. O contrato implementado
+da base compartilhada está em [ADR 0005](decisoes/0005-base-compartilhada-de-atendimentos.md):
+`Pessoa` e `Atendimento<P, R>` são abstratas; `Atendimento` declara
+`getInicio()`, `getFim()` e `validarCondicoes()`, e implementa `conflitaCom()` uma vez.
+`EstadoTransicionavel<E>` e `Transicoes.validar(atual, destino)` ficam em `comum.model`.
+
 ---
 
 ## 1. Visão de Domínio (Model)
